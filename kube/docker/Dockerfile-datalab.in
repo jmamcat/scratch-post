@@ -1,0 +1,5 @@
+FROM gcr.io/cloud-datalab/datalab:latest
+
+RUN apt-get update && apt-get install
+RUN apt-get install htop
+RUN pip install --upgrade h5py

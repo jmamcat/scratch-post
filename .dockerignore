@@ -1,0 +1,10 @@
+# exclude models
+
+data/*
+
+# exclude pycache
+*pycache*
+
+# invisible files
+.git/*
+.idea/*
