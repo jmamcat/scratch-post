@@ -1,3 +1,20 @@
+### USER_DEFINED
+
+# for Mac OS
+.DS_STORE
+
+# exclude data, logs
+data/
+data*/
+logs/
+*.log.*
+
+
+# Idea IntelliJ
+.idea/
+
+### DEFAULT
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
