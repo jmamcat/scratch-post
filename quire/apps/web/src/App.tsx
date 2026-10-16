@@ -4,7 +4,7 @@ import { EmptyState } from './app/EmptyState.tsx';
 import { LazyGraphView, LazyLiveStatus, LazyNoteView, LazyRightPane } from './app/lazy-views.tsx';
 import { ViewHeader } from './app/ViewHeader.tsx';
 import type { Dialog, DrawerState } from './app/dialog-state.ts';
-import { useLayoutState } from './app/layout-state.ts';
+import { useLayoutState, useNarrow } from './app/layout-state.ts';
 import { useCommands } from './app/use-commands.ts';
 import { useNavigation } from './app/use-navigation.ts';
 import { ConflictBadge, ConflictStore } from './review/index.ts';
@@ -50,6 +50,20 @@ export function App({ ws }: { ws: Workspace }) {
     ws.syncSoon(300);
   };
 
+  // On narrow screens the left sidebar opens over the content: what it covers leaves the Tab
+  // order (inert) and Escape closes it, as a click on the scrim does.
+  const overlay = useNarrow() && leftOpen;
+  useEffect(() => {
+    if (!overlay || dialog || drawer) return;
+    const onKey = (e: KeyboardEvent) => {
+      // A field's own Escape (cancel an edit, clear a search) comes first.
+      if (e.key !== 'Escape' || e.defaultPrevented || (e.target instanceof HTMLElement && e.target.matches('input, textarea, select'))) return;
+      setLeftOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [overlay, dialog, drawer, setLeftOpen]);
+
   const commands = useCommands({ ws, path, exists, layout, dialog, setDialog, setDrawer, focusTitle, newNote, dailyNote, editor, attachmentsRef });
   const openReview = (focus: string | null) => setDrawer({ kind: 'review', focus });
   const openDeleteDialog = () => path && setDialog({ kind: 'confirm-delete', path });
@@ -82,9 +96,10 @@ export function App({ ws }: { ws: Workspace }) {
       />
       {leftOpen && <div className="scrim" onClick={() => setLeftOpen(false)} aria-hidden="true" />}
 
-      <main className="main">
+      <main className="main" inert={overlay}>
         <ViewHeader
           path={exists ? path : null}
+          {...(route.kind === 'graph' ? { title: 'Graph' } : {})}
           leftOpen={leftOpen}
           rightOpen={rightOpen}
           reading={reading}
@@ -153,7 +168,7 @@ export function App({ ws }: { ws: Workspace }) {
         />
       )}
 
-      <StatusBar status={snap.status} loaded={snap.loaded} device={ws.device} onSync={() => void ws.syncNow()}>
+      <StatusBar status={snap.status} loaded={snap.loaded} device={ws.device} inert={overlay} onSync={() => void ws.syncNow()}>
         <LazyLiveStatus ws={ws} editor={handle} />
         <ConflictBadge store={conflicts} onOpen={() => openReview(null)} />
       </StatusBar>

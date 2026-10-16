@@ -151,7 +151,8 @@ button.danger:hover:not(:disabled) {
 }
 :focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  /* 2 px clear of the control, so the ring keeps its full area round rounded corners (WCAG 2.4.13). */
+  outline-offset: 2px;
 }
 
 input,
@@ -448,6 +449,11 @@ kbd {
 .crumb-folder {
   color: var(--text-faint);
 }
+.view-title {
+  display: inline;
+  margin: 0;
+  font: inherit;
+}
 .view-content {
   flex: 1;
   min-height: 0;
@@ -470,6 +476,10 @@ kbd {
 }
 .inline-title:focus {
   box-shadow: none;
+}
+.inline-title-heading {
+  margin: 0;
+  font: inherit;
 }
 .editor-host {
   flex: 1;
@@ -570,16 +580,20 @@ kbd {
 }
 .markdown a {
   color: var(--link);
-  text-decoration: none;
+  /* Underlined, so links in running text differ by more than colour (WCAG 1.4.1), as in live preview. */
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 2px;
 }
 .markdown a:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 .markdown a.unresolved {
   color: var(--unresolved);
   opacity: 0.8;
 }
 .markdown a.tag {
+  text-decoration: none;
   background: var(--accent-soft);
   color: var(--link);
   border-radius: 999px;
@@ -815,7 +829,7 @@ details.callout > summary.callout-title {
   padding-bottom: max(2px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--border);
   background: var(--bg-alt);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   min-height: 26px;
 }
@@ -826,7 +840,7 @@ details.callout > summary.callout-title {
   border: none;
   background: transparent;
   padding: 2px 6px;
-  font-size: 12px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
   gap: 6px;

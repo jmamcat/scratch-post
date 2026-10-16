@@ -68,7 +68,7 @@ export function GraphView(props: Props) {
 
 function Node(props: { node: LaidNode; focus: boolean; dim: boolean; onHover: (p: string | null) => void; onOpen: (p: string) => void }) {
   const { node: n } = props;
-  const hitW = Math.max(n.r * 2 + 4, n.title.length * 6.5);
+  const hitW = Math.max(n.r * 2 + 4, n.title.length * 9);
   return (
     <g
       data-node={n.path}
@@ -90,9 +90,9 @@ function Node(props: { node: LaidNode; focus: boolean; dim: boolean; onHover: (p
     >
       <title>{n.path}</title>
       {/* The dot and its name are one target; without this the gap between them is background. */}
-      <rect className="graph-hit" x={-hitW / 2} y={-n.r - 2} width={hitW} height={n.r * 2 + 18} />
+      <rect className="graph-hit" x={-hitW / 2} y={-n.r - 2} width={hitW} height={n.r * 2 + 24} />
       <circle r={n.r} />
-      <text y={n.r + 12} textAnchor="middle">
+      <text y={n.r + 17} textAnchor="middle">
         {n.title}
       </text>
     </g>
@@ -128,10 +128,10 @@ function bounds(layout: Layout | null): Bounds | null {
   for (const n of layout.nodes) {
     const x = n.x ?? 0;
     const y = n.y ?? 0;
-    b.minX = Math.min(b.minX, x - n.r - 40);
-    b.maxX = Math.max(b.maxX, x + n.r + 40);
+    b.minX = Math.min(b.minX, x - n.r - 56);
+    b.maxX = Math.max(b.maxX, x + n.r + 56);
     b.minY = Math.min(b.minY, y - n.r);
-    b.maxY = Math.max(b.maxY, y + n.r + 16);
+    b.maxY = Math.max(b.maxY, y + n.r + 22);
   }
   return b;
 }

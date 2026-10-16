@@ -11,7 +11,8 @@ export function syncLabel(s: WorkspaceStatus, loaded: boolean): string {
 }
 
 /** Bottom bar: sync state (Synced / Syncing / Offline / N pending) and slots for badges. */
-export function StatusBar(props: { status: WorkspaceStatus; loaded: boolean; device: string; onSync: () => void; children?: ReactNode }) {
+/** `inert` while something covers the bar (the sidebar over the content on narrow screens). */
+export function StatusBar(props: { status: WorkspaceStatus; loaded: boolean; device: string; onSync: () => void; inert?: boolean; children?: ReactNode }) {
   const { status, loaded } = props;
   // Short syncs would make the label flicker on every keystroke; show "Syncing" only if it lasts.
   const [showSyncing, setShowSyncing] = useState(false);
@@ -29,7 +30,7 @@ export function StatusBar(props: { status: WorkspaceStatus; loaded: boolean; dev
   const tone = shown.sync === 'error' ? 'error' : shown.sync === 'offline' || !shown.online ? 'offline' : shown.pending || shown.sync === 'syncing' ? 'busy' : 'ok';
   const last = status.lastSyncAt ? `Last synced ${new Date(status.lastSyncAt).toLocaleTimeString()}` : 'Not synced yet';
   return (
-    <footer className="status-bar">
+    <footer className="status-bar" inert={props.inert}>
       <span className="status-device" title="This device">
         {props.device}
       </span>

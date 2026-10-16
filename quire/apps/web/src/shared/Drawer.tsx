@@ -1,7 +1,11 @@
 import { type ReactNode, useEffect, useRef } from 'react';
+import { trapTab } from './focus-trap.ts';
 import { Icon } from './Icon.tsx';
 
-/** Side drawer over the right of the window. Escape or the close button closes it. */
+/**
+ * Side drawer over the right of the window, modal for the keyboard: Tab stays inside it.
+ * Escape or the close button closes it.
+ */
 export function Drawer(props: { label: string; title: ReactNode; onClose: () => void; children: ReactNode; actions?: ReactNode; wide?: boolean }) {
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -16,6 +20,7 @@ export function Drawer(props: { label: string; title: ReactNode; onClose: () => 
       ref={panel}
       className={`drawer ${props.wide ? 'wide' : ''}`}
       role="dialog"
+      aria-modal="true"
       aria-label={props.label}
       tabIndex={-1}
       onKeyDown={(e) => {
@@ -23,6 +28,7 @@ export function Drawer(props: { label: string; title: ReactNode; onClose: () => 
           e.stopPropagation();
           props.onClose();
         }
+        trapTab(e, panel.current);
       }}
     >
       <header className="drawer-header">

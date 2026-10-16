@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef } from 'react';
+import { trapTab } from './focus-trap.ts';
 
 /** Centered dialog with a backdrop. Escape and a backdrop click close it. */
 export function Modal(props: { label: string; onClose: () => void; children: ReactNode; className?: string; role?: 'dialog' | 'alertdialog' }) {
@@ -32,6 +33,7 @@ export function Modal(props: { label: string; onClose: () => void; children: Rea
             e.stopPropagation();
             props.onClose();
           }
+          trapTab(e, panel.current);
         }}
       >
         {props.children}

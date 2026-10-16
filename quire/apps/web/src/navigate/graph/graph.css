@@ -47,7 +47,6 @@
 
 .graph-node {
   cursor: pointer;
-  outline: none;
   transition: opacity 0.15s;
 }
 .graph-hit {
@@ -60,10 +59,12 @@
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
+/* Names at body size and in the text colour (Obsidian's graph text is the normal text colour);
+   they scale with the zoom like the dots. */
 .graph-node text {
-  fill: var(--text-muted);
+  fill: var(--text);
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 16px;
   pointer-events: none;
 }
 .graph-node.focus circle {
@@ -83,7 +84,7 @@
 }
 .graph-node:hover text,
 .graph-node:focus-visible text {
-  fill: var(--text);
+  font-weight: 600;
 }
 .graph-node.dim {
   opacity: 0.2;

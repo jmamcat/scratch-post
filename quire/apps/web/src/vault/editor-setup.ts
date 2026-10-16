@@ -81,7 +81,8 @@ export function baseExtensions(): Extension[] {
     syntaxHighlighting(themedHighlight),
     placeholder('Start writing…'),
     keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab]),
-    EditorView.contentAttributes.of({ 'aria-label': 'Note editor', spellcheck: 'true', autocapitalize: 'sentences' }),
+    // tabindex: contenteditable is focusable anyway; the attribute tells checkers the scroller has focusable content.
+    EditorView.contentAttributes.of({ 'aria-label': 'Note editor', tabindex: '0', spellcheck: 'true', autocapitalize: 'sentences' }),
     theme,
   ];
 }

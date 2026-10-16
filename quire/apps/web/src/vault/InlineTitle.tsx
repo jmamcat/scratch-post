@@ -40,25 +40,28 @@ export function InlineTitle({ path, focusSignal, onRename, onDone }: Props) {
 
   return (
     <div className="inline-title-wrap">
-      <input
-        ref={input}
-        className="inline-title"
-        aria-label="Note title"
-        value={value}
-        spellCheck={false}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            if (commit()) onDone();
-          } else if (e.key === 'Escape') {
-            setValue(titleOf(path));
-            setError(null);
-            onDone();
-          }
-        }}
-      />
+      {/* The note's name is the page's level-1 heading, as the window title is. */}
+      <h1 className="inline-title-heading">
+        <input
+          ref={input}
+          className="inline-title"
+          aria-label="Note title"
+          value={value}
+          spellCheck={false}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (commit()) onDone();
+            } else if (e.key === 'Escape') {
+              setValue(titleOf(path));
+              setError(null);
+              onDone();
+            }
+          }}
+        />
+      </h1>
       {error && (
         <p className="field-error" role="alert">
           {error}

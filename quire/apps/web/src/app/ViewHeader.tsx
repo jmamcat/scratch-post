@@ -5,6 +5,8 @@ import { folderOf } from '../vault/index.ts';
 interface Props {
   /** The open note, or null when none exists. */
   path: string | null;
+  /** Name of a view that is not a note (the graph), shown as the page's level-1 heading. */
+  title?: string;
   leftOpen: boolean;
   rightOpen: boolean;
   reading: boolean;
@@ -30,6 +32,8 @@ export function ViewHeader(props: Props) {
             {folder && <span className="crumb-folder">{folder.split('/').join(' / ')} / </span>}
             <span className="crumb-title">{titleOf(path)}</span>
           </>
+        ) : props.title ? (
+          <h1 className="view-title">{props.title}</h1>
         ) : null}
       </div>
       {path && (
