@@ -127,3 +127,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Node / TypeScript
+node_modules/
+*.tsbuildinfo
+.vite/
+coverage/
+
+# RefSpec: captured visuals of closed-source references are never committed
+references/*/product/visuals/captures/
+
+# Quire runtime data
+quire/.data/

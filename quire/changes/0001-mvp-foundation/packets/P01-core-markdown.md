@@ -1,0 +1,78 @@
+---
+id: 0001-mvp-foundation/P01
+title: Markdown parsing, link resolution and OFM rendering in @quire/core
+lane: A
+depends_on: [P00]
+owns:
+  - quire/packages/core/src/markdown/**
+  - quire/packages/core/src/paths.ts
+  - quire/packages/core/src/search.ts
+  - quire/packages/core/test/markdown*.test.ts
+  - quire/packages/core/test/paths.test.ts
+  - quire/packages/core/test/search.test.ts
+reads:
+  - quire/changes/0001-mvp-foundation/spec/render/spec.md
+  - quire/changes/0001-mvp-foundation/spec/navigate/spec.md
+  - quire/changes/0001-mvp-foundation/spec/vault/spec.md
+  - references/obsidian/product/data-model.md
+size: M
+status: doing
+claimed_by: claude-code/claude
+---
+
+# Markdown parsing, link resolution and OFM rendering
+
+## Context
+
+Implements R-RND-01..07, R-NAV-02, R-NAV-03, R-NAV-04, R-NAV-06 (extraction only) and
+R-VLT-02 as pure functions usable in Node and the browser. Dependencies: `markdown-it`,
+`markdown-it-footnote`, `markdown-it-mark`, `yaml`.
+
+## Contract
+
+```ts
+// paths.ts
+export class InvalidPathError extends Error {}
+export function normalizePath(p: string): string;          // R-VLT-02; throws InvalidPathError
+export function titleOf(path: string): string;             // "a/B c.md" -> "B c"
+export function resolveLink(target: string, fromPath: string, paths: readonly string[]): string | null; // R-NAV-02
+
+// markdown/frontmatter.ts
+export interface Frontmatter { data: Record<string, unknown> | null; raw: string | null; body: string; bodyStart: number }
+export function splitFrontmatter(text: string): Frontmatter;   // raw = text between the --- fences, data = parsed map or null
+
+// markdown/extract.ts
+export interface WikiLink { target: string; alias?: string; heading?: string; block?: string; embed: boolean; start: number; end: number }
+export function extractLinks(text: string): WikiLink[];   // [[...]], ![[...]], and [label](relative.md); skips code spans/blocks
+export function extractTags(text: string): string[];      // R-NAV-03, de-duplicated, front matter + inline
+export interface Heading { level: number; text: string; line: number; slug: string }
+export function extractHeadings(text: string): Heading[];
+
+// markdown/render.ts
+export interface RenderOptions {
+  resolve?: (target: string) => string | null;            // wikilink target -> vault path or null
+  href?: (path: string, heading?: string) => string;      // default "#/" + encodeURI(path)
+  tagHref?: (tag: string) => string;                      // default "#/tag/" + tag
+}
+export function renderMarkdown(text: string, opts?: RenderOptions): string;  // HTML string, html: false
+
+// search.ts
+export interface SearchHit { path: string; title: string; snippet: string; score: number }
+export function search(docs: Iterable<{ path: string; text: string }>, query: string, limit?: number): SearchHit[];
+```
+
+Rendered HTML classes: internal link `a.internal-link[data-path]`, unresolved adds
+`.unresolved`, tag `a.tag`, highlight `mark`, callout `div.callout[data-callout=<type>]`
+with `div.callout-title` and `div.callout-content`, foldable callout uses
+`details.callout` / `summary.callout-title`, note embed `div.embed[data-path]`.
+
+## Acceptance
+
+```sh
+pnpm -C quire --filter @quire/core test
+pnpm -C quire --filter @quire/core typecheck
+```
+
+Every scenario in the render and navigate specs has a test.
+
+## Decisions log
