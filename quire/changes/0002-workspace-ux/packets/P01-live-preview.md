@@ -17,7 +17,8 @@ reads:
   - references/obsidian/product/features.md
 size: M
 revision: 1
-status: todo
+claimed_by: claude-code/tier-A
+status: doing
 ---
 
 # Live Preview editing mode

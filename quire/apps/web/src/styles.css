@@ -517,7 +517,7 @@ kbd {
   max-width: var(--line-width);
   margin: 0 auto;
   padding: 8px 24px 40vh;
-  font: var(--editor-font-size) / 1.65 var(--font-text);
+  font: var(--editor-font-size) / var(--text-line-height, 1.65) var(--font-text);
   overflow-wrap: break-word;
 }
 .markdown h1,
@@ -526,17 +526,43 @@ kbd {
 .markdown h4,
 .markdown h5,
 .markdown h6 {
-  line-height: 1.25;
+  line-height: var(--heading-line-height, 1.25);
   margin: 1.4em 0 0.5em;
 }
+/* Heading levels 1 to 3 read their look from variables, so a theme (platforms/themes) can
+   restyle them; the fallbacks are the Default theme. */
 .markdown h1 {
-  font-size: 1.8em;
+  font-size: var(--h1-size, 1.8em);
+  font-weight: var(--h1-weight, 700);
+  font-family: var(--h1-family, inherit);
+  color: var(--h1-color, var(--text));
+  letter-spacing: var(--h1-spacing, normal);
+  margin-top: var(--h1-margin-top, 1.4em);
+  margin-bottom: var(--h1-margin-bottom, 0.5em);
+  padding-bottom: var(--h1-pad-bottom, 0);
+  border-bottom: var(--h1-border, none);
 }
 .markdown h2 {
-  font-size: 1.5em;
+  font-size: var(--h2-size, 1.5em);
+  font-weight: var(--h2-weight, 600);
+  font-family: var(--h2-family, inherit);
+  color: var(--h2-color, var(--text));
+  letter-spacing: var(--h2-spacing, normal);
+  margin-top: var(--h2-margin-top, 1.4em);
+  margin-bottom: var(--h2-margin-bottom, 0.5em);
+  padding-bottom: var(--h2-pad-bottom, 0);
+  border-bottom: var(--h2-border, none);
 }
 .markdown h3 {
-  font-size: 1.25em;
+  font-size: var(--h3-size, 1.25em);
+  font-weight: var(--h3-weight, 600);
+  font-family: var(--h3-family, inherit);
+  color: var(--h3-color, var(--link));
+  letter-spacing: var(--h3-spacing, normal);
+  margin-top: var(--h3-margin-top, 1.4em);
+  margin-bottom: var(--h3-margin-bottom, 0.5em);
+  padding-bottom: var(--h3-pad-bottom, 0);
+  border-bottom: var(--h3-border, none);
 }
 .markdown a {
   color: var(--link);

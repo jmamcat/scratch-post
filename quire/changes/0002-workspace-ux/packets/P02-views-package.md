@@ -13,7 +13,8 @@ reads:
   - quire/packages/**
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-B
 ---
 
 # @quire/views and setProperty
