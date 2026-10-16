@@ -5,15 +5,26 @@ import type RightPaneType from './RightPaneWithProperties.tsx';
 
 /**
  * A view fetched when it is first shown (R-PLT-07), so it stays out of the first-load bundle.
- * `prefetch` fetches it earlier; once it has arrived the view renders without suspending.
- * Views are imported through the capability's index to keep the dependency rules; the
- * bundler still splits at the component.
+ * `prefetch` fetches it earlier. Views are imported through the capability's index to keep
+ * the dependency rules; the bundler still splits at the component.
  */
+/** Shown when a chunk cannot be fetched (the worker has it cached once the app was online). */
+function LoadFailed() {
+  return <p className="muted">This view could not be loaded. Reload to try again.</p>;
+}
+
 function lazyView<C extends ComponentType<any>>(load: () => Promise<{ default: C }>, fallback: ReactNode = null) {
-  let loaded: C | null = null;
-  const fetching = () => load().then((m) => (loaded = m.default));
-  const Pending = lazy(() => fetching().then((c) => ({ default: c })));
-  const View = (props: ComponentProps<C>) => (loaded ? createElement(loaded, props) : <Suspense fallback={fallback}>{createElement(Pending, props)}</Suspense>);
+  let ready: { default: C } | null = null;
+  const fetching = () => load().then((m) => (ready = m));
+  // React calls a thenable's callback at once when it is already settled, so a view that has
+  // arrived by its first render mounts without suspending. The component type never changes,
+  // which keeps the view mounted (editor state included) across later renders.
+  const Pending = lazy(() =>
+    ready
+      ? (({ then: (resolve: (m: { default: C }) => void) => resolve(ready!) }) as unknown as Promise<{ default: C }>)
+      : fetching().catch(() => ({ default: LoadFailed as unknown as C })),
+  );
+  const View = (props: ComponentProps<C>) => <Suspense fallback={fallback}>{createElement(Pending, props)}</Suspense>;
   return Object.assign(View, { prefetch: () => void fetching().catch(() => undefined) });
 }
 

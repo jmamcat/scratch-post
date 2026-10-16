@@ -29,6 +29,7 @@ async function score(browser: Browser, url: string, theme: string, scheme: Schem
     return await scoreApp(page, quireApp, {
       themes: [theme],
       schemes: [scheme],
+      clsSamples: 3,
       ...(screens ? { screens } : {}),
       onState: (s) => console.log(`${s.id}  ${s.total}`),
     });

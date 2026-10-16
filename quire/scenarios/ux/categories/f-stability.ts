@@ -1,6 +1,6 @@
 // F. Stability and responsiveness (weight 10):
 //   cls (w 1): largest session window of layout shifts without recent input since the page
-//     loaded, 0.1 good, 0.25 poor (web.dev CLS);
+//     loaded (the median over the runner's loads), 0.1 good, 0.25 poor (web.dev CLS);
 //   reflow (w 1, narrow states): at 320 px nothing scrolls or sticks out sideways (WCAG 1.4.10);
 //   text-spacing (w 1): text newly cut off under the WCAG 1.4.12 overrides, 0 good, 5 poor;
 //   reduced-motion (w 1): animations still running with prefers-reduced-motion, 0 good, 3 poor;

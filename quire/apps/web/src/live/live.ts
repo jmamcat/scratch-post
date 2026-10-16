@@ -111,6 +111,8 @@ export class LiveSession {
       return;
     }
 
+    // Taken before waiting for the libraries: text typed meanwhile is carried into the room by `bind`.
+    const joinText = this.view.state.doc.toString();
     let libs: LiveLibs;
     try {
       libs = await libsLoading;
@@ -122,7 +124,6 @@ export class LiveSession {
     }
     if (this.stopped || this.provider) return;
 
-    const joinText = this.view.state.doc.toString();
     const doc = new libs.Y.Doc();
     let auth: Record<string, string>;
     try {

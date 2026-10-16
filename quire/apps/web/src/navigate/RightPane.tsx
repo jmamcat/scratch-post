@@ -1,8 +1,9 @@
 import { extractHeadings, extractTags } from '@quire/render';
 import { titleOf } from '@quire/vault';
-import { type ReactNode, useMemo } from 'react';
+import { lazy, type ReactNode, Suspense, useMemo } from 'react';
 import type { Workspace } from '../sync/index.ts';
-import { GraphView } from './graph/GraphView.tsx';
+// The local graph (and d3-force) loads when its tab is first opened (R-PLT-07).
+const GraphView = lazy(() => import('./graph/GraphView.tsx').then((m) => ({ default: m.GraphView })));
 
 export type RightTab = 'backlinks' | 'outgoing' | 'outline' | 'properties' | 'graph';
 
@@ -132,7 +133,11 @@ function Panel(props: Props & { path: string; text: string }) {
   }
 
   if (tab === 'graph') {
-    return <GraphView ws={ws} version={version} focus={path} depth={2} onOpen={props.onOpen} />;
+    return (
+      <Suspense fallback={<p className="muted small">Loading graph…</p>}>
+        <GraphView ws={ws} version={version} focus={path} depth={2} onOpen={props.onOpen} />
+      </Suspense>
+    );
   }
 
   return (

@@ -15,7 +15,7 @@ deploy: pnpm -C quire scenarios:deploy   # container image and Compose stack (mo
 ux: pnpm -C quire ux                     # UX scorer report and baseline check (modules/ux)
 structure_roots: quire/packages, quire/apps/server/src, quire/apps/web/src
 structure_ext: .ts, .tsx
-structure_allow: shared
+structure_allow: shared, app   # app: the web client's shell (layout, commands, dialogs); composes capabilities
 structure_soft_lines: 300
 structure_hard_lines: 500
 scenario_filter_flag: --grep   # how gate.sh passes scenario tags to the runner

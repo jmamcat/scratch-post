@@ -22,6 +22,8 @@ export interface StateSpec {
   viewport: Viewport;
   /** Also run the 320 px reflow check (narrow states). */
   reflow: boolean;
+  /** CLS of earlier loads of the same screen; the score uses the median with this load's. */
+  clsSamples?: number[];
 }
 
 /** Records layout shifts on every load of the page's context; call once before the first load. */
@@ -33,7 +35,7 @@ export async function prepareContext(page: Page): Promise<void> {
 export async function scoreState(page: Page, state: StateSpec): Promise<StateScore & { engine: string }> {
   await ensureHelpers(page);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
-  const cls = await measureCls(page);
+  const cls = median([...(state.clsSamples ?? []), await measureCls(page)]);
   const axe: AxeRun = await runAxe(page);
 
   const a = scoreConformance(axe);
@@ -78,6 +80,12 @@ export async function scoreState(page: Page, state: StateSpec): Promise<StateSco
   };
 }
 
+function median(xs: number[]): number {
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
+}
+
 function dedupe<T extends { key: string }>(list: T[]): T[] {
   const seen = new Set<string>();
   return list.filter((v) => (seen.has(v.key) ? false : (seen.add(v.key), true)));
@@ -90,6 +98,8 @@ export interface AppRun {
   viewports?: readonly string[];
   /** Wait after the screen is ready, so late layout shifts are counted (default 1000 ms). */
   settleMs?: number;
+  /** Loads per state for CLS, which takes the median (default 1). */
+  clsSamples?: number;
   onState?: (s: StateScore) => void;
 }
 
@@ -112,14 +122,25 @@ export async function scoreApp(page: Page, app: UxApp, run: AppRun = {}): Promis
       for (const viewport of app.viewports.filter((v) => !run.viewports || run.viewports.includes(v.name))) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         for (const screen of app.screens.filter((s) => !run.screens || run.screens.includes(s.id))) {
+          const settle = async () => {
+            await page.waitForTimeout(run.settleMs ?? 1000);
+            await waitForQuiet(page);
+          };
           if (!(await screen.open(page, viewport))) {
             missing.add(screen.id);
             continue;
           }
-          await page.waitForTimeout(run.settleMs ?? 1000);
-          await waitForQuiet(page);
+          await settle();
+          // Extra loads only for CLS; the last load is the one scored.
+          const clsSamples: number[] = [];
+          for (let i = 1; i < (run.clsSamples ?? 1); i++) {
+            await ensureHelpers(page);
+            clsSamples.push(await measureCls(page));
+            await screen.open(page, viewport);
+            await settle();
+          }
           const key: StateKey = { screen: screen.id, viewport: viewport.name, theme, scheme };
-          const s = await scoreState(page, { key, app, viewport, reflow: viewport.name === app.reflowFrom });
+          const s = await scoreState(page, { key, app, viewport, reflow: viewport.name === app.reflowFrom, clsSamples });
           axeVersion = s.engine;
           const { engine: _engine, ...state } = s;
           states.push(state);

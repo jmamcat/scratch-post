@@ -8,6 +8,8 @@ When('{string} picks the theme {string}', async ({ world }, d: string, name: str
   const { page } = app(world, d);
   await page.getByRole('button', { name: 'Open settings' }).click();
   const dialog = page.getByRole('dialog', { name: 'Settings' });
+  // The settings dialog loads on first use (R-PLT-07).
+  await expect(dialog.getByLabel('Theme')).toBeVisible();
   await dialog.getByLabel('Theme').selectOption({ label: name });
   // The theme applies as soon as it is chosen; closing the dialog saves nothing else.
   await page.keyboard.press('Escape');
@@ -31,6 +33,7 @@ Then('in every theme the headings on {string} look different from each other', a
   // Theme ids are the lower-case names in the Theme select, so the list cannot drift from the app.
   await page.getByRole('button', { name: 'Open settings' }).click();
   const dialog = page.getByRole('dialog', { name: 'Settings' });
+  await expect(dialog.getByLabel('Theme')).toBeVisible();
   const ids = await dialog.getByLabel('Theme').locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();

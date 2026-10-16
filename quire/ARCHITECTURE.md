@@ -35,6 +35,7 @@ spec capabilities in `spec/` and `changes/*/spec/` (structure rule S2).
 | `apps/web/src/platforms` | platforms | Settings (server URL, token, device name), themes, offline start |
 | `apps/web/src/views` | views | Sidebar views: Recent, Domains, Tags, Timeline, Board |
 | `apps/web/src/shared` | shared | UI primitives, router, preferences |
+| `apps/web/src/app` | (shell) | Application shell: layout state, navigation, commands, dialogs, lazy views |
 | `apps/android` | platforms | Capacitor wrapper around the web build |
 | `scenarios` | (verification) | Spec scenarios run at the system boundary and in the browser |
 | `demo` | (demo) | Seed vault and one-command cloud plus local node |
