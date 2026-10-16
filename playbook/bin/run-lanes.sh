@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run every ready packet of a change with any agent CLI, respecting depends_on.
-#   AGENT_CMD='claude -p' PARALLEL=3 scripts/run-lanes.sh quire/changes/0001-mvp
+#   AGENT_CMD='claude -p' PARALLEL=3 playbook/bin/run-lanes.sh quire/changes/0001-mvp
 # AGENT_CMD receives the packet prompt on stdin. Loops until no packet is ready.
 set -euo pipefail
 change="${1:?usage: run-lanes.sh <change folder>}"

@@ -1,7 +1,7 @@
 # Reference set
 
-Products Quire learns from. Each folder follows `method/templates/REFERENCE.md`; roles and
-cadences are defined in `method/reference-roles.md`. Decisions about what Quire takes from
+Products Quire learns from. Each folder follows `playbook/modules/references/REFERENCE.template.md`; roles and
+cadences are defined in `playbook/modules/references/roles.md`. Decisions about what Quire takes from
 them live in [`feature-matrix.md`](feature-matrix.md).
 
 | ID | Product | Role | Domain | Cadence | Source | License | Upstream copy | Included | Last review |
@@ -15,10 +15,10 @@ them live in [`feature-matrix.md`](feature-matrix.md).
 ## Working with upstream copies
 
 ```sh
-scripts/refs.sh list            # roles and cadences
-scripts/refs.sh fetch joplin    # shallow clone of the pinned commit
-scripts/refs.sh status          # pinned vs upstream head
-scripts/refs.sh update joplin   # move the pin; then update REFERENCE.md and commit
+playbook/bin/refs.sh list            # roles and cadences
+playbook/bin/refs.sh fetch joplin    # shallow clone of the pinned commit
+playbook/bin/refs.sh status          # pinned vs upstream head
+playbook/bin/refs.sh update joplin   # move the pin; then update REFERENCE.md and commit
 ```
 
 Upstream folders are read-only. Visual captures go in each `product/visuals/captures/`,

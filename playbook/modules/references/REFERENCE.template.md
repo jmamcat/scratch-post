@@ -40,7 +40,7 @@ One paragraph: what question this reference answers for the target product.
 
 ## Upstream (open source only)
 
-How to fetch and update the copy: `scripts/refs.sh update <id>`.
+How to fetch and update the copy: `playbook/bin/refs.sh update <id>`.
 Paths inside the upstream worth reading first.
 
 ## Review log

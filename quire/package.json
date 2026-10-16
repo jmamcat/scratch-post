@@ -18,7 +18,8 @@
     "build:web": "pnpm --filter @quire/web build",
     "start": "pnpm build:web && pnpm --filter @quire/server start",
     "demo": "pnpm build:web && node demo/run.mjs",
-    "deps": "depcruise --config .dependency-cruiser.cjs packages apps scenarios/support scenarios/steps"
+    "deps": "depcruise --config .dependency-cruiser.cjs packages apps scenarios/support scenarios/steps",
+    "demo:conflict": "node demo/stage-conflict.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

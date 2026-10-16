@@ -62,7 +62,8 @@ export function NoteEditor({ ws, path, hidden, onOpenLink, onHandle, isLive }: P
       ],
     });
 
-  useEffect(() => {
+  // Layout effects run in order: the view exists before the path effect below reports it.
+  useLayoutEffect(() => {
     const view = new EditorView({ parent: host.current!, state: makeState(ws.read(path) ?? '') });
     viewRef.current = view;
     return () => {

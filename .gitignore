@@ -143,3 +143,4 @@ quire/.e2e-data/
 quire/e2e/test-results/
 quire/test-results/
 quire/playwright-report/
+quire/.demo/

@@ -70,7 +70,7 @@ copies, while tolerating external editors writing the same files.
 
 ## Upstream (open source only)
 
-How to fetch and update the copy: `scripts/refs.sh update silverbullet`.
+How to fetch and update the copy: `playbook/bin/refs.sh update silverbullet`.
 
 Paths worth reading first:
 

@@ -65,7 +65,7 @@ The app is closed. Two public repos are tracked as submodules for study:
 - `upstream/obsidian-help`: source of https://obsidian.md/help (an Obsidian vault per locale). No LICENSE file at the pinned revision, so treat it as all rights reserved: quote sparingly and paraphrase.
 - `upstream/obsidian-api`: TypeScript definitions for the plugin API (`obsidian.d.ts`, `canvas.d.ts`, `publish.d.ts`). MIT, copyright Dynalist Inc. `package.json` version at the pinned revision: 1.14.4.
 
-How to fetch and update the copy: `scripts/refs.sh fetch obsidian`, `scripts/refs.sh update obsidian`, `scripts/refs.sh status`. Never edit files under `upstream/`.
+How to fetch and update the copy: `playbook/bin/refs.sh fetch obsidian`, `playbook/bin/refs.sh update obsidian`, `playbook/bin/refs.sh status`. Never edit files under `upstream/`.
 
 ### Paths worth reading first
 

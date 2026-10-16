@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Manage upstream copies of open-source reference products.
 #
-#   scripts/refs.sh list                 show every reference, its role and pinned rev
-#   scripts/refs.sh fetch <id|all>       shallow-clone the pinned revision(s)
-#   scripts/refs.sh update <id|all>      move the pin to the upstream branch head
-#   scripts/refs.sh status               pinned vs. upstream head, per submodule
+#   playbook/bin/refs.sh list                 show every reference, its role and pinned rev
+#   playbook/bin/refs.sh fetch <id|all>       shallow-clone the pinned revision(s)
+#   playbook/bin/refs.sh update <id|all>      move the pin to the upstream branch head
+#   playbook/bin/refs.sh status               pinned vs. upstream head, per submodule
 #
 # Plain bash + git so any harness can run it. Upstream copies are read-only study
 # material: never edit files under <references>/*/upstream/.

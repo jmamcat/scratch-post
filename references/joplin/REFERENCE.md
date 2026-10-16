@@ -84,7 +84,7 @@ reconnect merge.
 
 ## Upstream (open source only)
 
-How to fetch and update the copy: `scripts/refs.sh update joplin`.
+How to fetch and update the copy: `playbook/bin/refs.sh update joplin`.
 
 The repository is very large. For study, prefer a blobless sparse clone outside the
 workspace:

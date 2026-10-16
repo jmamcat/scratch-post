@@ -6,7 +6,7 @@ server, a local node that may be switched off, and an offline-capable web/Androi
 Edits made anywhere, online or offline, converge; anything that cannot merge safely goes
 to a review inbox instead of being lost.
 
-Built with the RefSpec method: see `../method/`, the reference set in `../references/`,
+Built with the RefSpec playbook: see `../playbook/`, the reference set in `../references/`,
 and the specs in `changes/0001-mvp-foundation/` (moved to `spec/` when archived).
 
 ## Layout

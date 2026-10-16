@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Print a self-contained worker prompt for one RefSpec packet, for any agent CLI.
-#   scripts/packet-prompt.sh quire/changes/0001-mvp/packets/P03-sync-core.md | <agent cli>
+#   playbook/bin/packet-prompt.sh quire/changes/0001-mvp/packets/P03-sync-core.md | <agent cli>
 set -euo pipefail
 packet="${1:?usage: packet-prompt.sh <packet.md>}"
 root="$(git rev-parse --show-toplevel)"
