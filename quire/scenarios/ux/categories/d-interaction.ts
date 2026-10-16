@@ -118,11 +118,11 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
   for (let presses = 0; reached.length < maxTabs && presses < maxTabs + 5; presses++) {
     if (escape) await page.keyboard.press(escape);
     await page.keyboard.press('Tab');
-    // One round trip per stop: let focus handlers and the next paint run (text fields and editors
-    // draw their caret late, so they get longer), then describe the focused element.
+    // One round trip per stop. CSS focus styles are in the next screenshot anyway; text fields
+    // and editors draw their caret late (an editor measures, then draws its own cursor layer),
+    // so they get time and two frames first.
     const step = await page.evaluate(async (escapes) => {
       const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-      await frames();
       const a = document.activeElement;
       if (!a || a === document.body || a === document.documentElement) return { f: null, escape: null };
       if (a instanceof HTMLElement && (a.isContentEditable || a.matches('input, textarea'))) {

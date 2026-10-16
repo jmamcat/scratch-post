@@ -100,6 +100,8 @@ export interface AppRun {
   viewports?: readonly string[];
   /** Wait after the screen is ready, so late layout shifts are counted (default 1000 ms). */
   settleMs?: number;
+  /** How long the DOM must stay unchanged before scoring (default 400 ms). */
+  quietMs?: number;
   /** Loads per state for CLS, which takes the median (default 1). */
   clsSamples?: number;
   onState?: (s: StateScore) => void;
@@ -126,7 +128,7 @@ export async function scoreApp(page: Page, app: UxApp, run: AppRun = {}): Promis
         for (const screen of app.screens.filter((s) => !run.screens || run.screens.includes(s.id))) {
           const settle = async () => {
             await page.waitForTimeout(run.settleMs ?? 1000);
-            await waitForQuiet(page);
+            await waitForQuiet(page, run.quietMs ?? 400);
           };
           if (!(await screen.open(page, viewport))) {
             missing.add(screen.id);

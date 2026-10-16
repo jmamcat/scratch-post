@@ -20,16 +20,17 @@ Given('device {string} with the demo notes', async ({ world }, name: string) => 
 });
 
 Then('in every theme the standard screens on {string} pass the UX gate', async ({ world, $testInfo }, d: string) => {
-  // Kept inside the everyday scenarios gate: every theme, light and dark, at the desktop
-  // viewport; the phone viewport and the 320 px reflow check in the default theme only; one CLS
-  // sample. `pnpm -C quire ux` runs the full matrix with three CLS samples.
+  // Kept inside the everyday scenarios gate (about 5 minutes): every theme, light and dark, at
+  // the desktop viewport; the phone viewport and the 320 px reflow check in the default theme,
+  // light; one CLS sample and a short settle. `pnpm -C quire ux` runs the full matrix with three
+  // CLS samples (D-P12-10).
   $testInfo.setTimeout(8 * 60_000);
   const { page } = appDevice(world, d);
   expect(await offeredThemes(page), 'the scorer covers every theme the app offers').toEqual([...quireApp.themes]);
   await prepareContext(page);
-  const run = { settleMs: 300 };
+  const run = { settleMs: 0, quietMs: 250 };
   const desktop = await scoreApp(page, quireApp, { ...run, viewports: ['1280x800'] });
-  const phone = await scoreApp(page, quireApp, { ...run, viewports: ['390x844'], themes: ['default'] });
+  const phone = await scoreApp(page, quireApp, { ...run, viewports: ['390x844'], themes: ['default'], schemes: ['light'] });
   const score = { states: [...desktop.states, ...phone.states], missing: [...new Set([...desktop.missing, ...phone.missing])], engines: desktop.engines };
   const verdict = judge(score, readBaseline());
   const report = $testInfo.outputPath('ux-report.md');
