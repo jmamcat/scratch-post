@@ -12,7 +12,8 @@ reads:
   - quire/changes/0001-mvp-foundation/spec/vault/spec.md
   - quire/changes/0001-mvp-foundation/spec/platforms/spec.md
 size: M
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # HTTP server
@@ -58,4 +59,22 @@ pnpm -C quire --filter @quire/server typecheck
 Tests start the server on an ephemeral port with a temp data dir and cover every vault
 and platform scenario over real HTTP.
 
+Result: vitest: 9 app tests passed; tsc clean.
+
 ## Decisions log
+
+- **D-P04-1** · confidence: med
+  - Question: A head whose file is missing at startup: delete it or restore it?
+  - Did: Restore the file from the head. Only removals seen by the watcher while running become deletions.
+  - Why: A missing file at startup usually means a new or moved folder, and deleting a vault's notes by accident is the worst failure.
+  - Reverse: VaultMirror.scan() in vault.ts.
+- **D-P04-2** · confidence: high
+  - Question: How to pass paths in URLs?
+  - Did: As the ?path= query parameter.
+  - Why: Avoids slash-encoding problems in route params across proxies.
+  - Reverse: Routes in app.ts and HttpTransport.
+- **D-P04-3** · confidence: med
+  - Question: Should the replicator follow upstream SSE?
+  - Did: No: it polls every 10 s and runs 1 s after any local commit. Node 22 has no stable EventSource.
+  - Why: Simpler and robust to restarts; 10 s staleness on the local node is acceptable.
+  - Reverse: Add an SSE reader in replicator.ts.

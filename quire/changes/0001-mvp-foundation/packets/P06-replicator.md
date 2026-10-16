@@ -11,7 +11,8 @@ reads:
   - quire/packages/sync/src/**
   - quire/changes/0001-mvp-foundation/spec/sync/spec.md
 size: S
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # Local node replicator
@@ -44,4 +45,12 @@ pnpm -C quire --filter @quire/server test
 Test with two in-process servers: edits on either side converge; with the upstream
 closed, local edits still commit, and they arrive after the upstream restarts.
 
+Result: vitest: 2 replicator tests passed (both directions converge; upstream down then back).
+
 ## Decisions log
+
+- **D-P06-1** · confidence: med
+  - Question: Where do conflicts between a local node and the cloud appear?
+  - Did: In the cloud's review inbox only (the local node is a device to the cloud). The local node's own inbox shows conflicts among its LAN clients.
+  - Why: Keeps one authority per collision; mirrors how the browser client works.
+  - Reverse: Replicate conflict records down to the local node in replicator.ts.

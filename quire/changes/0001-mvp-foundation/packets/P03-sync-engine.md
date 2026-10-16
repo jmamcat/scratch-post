@@ -12,7 +12,8 @@ reads:
   - quire/changes/0001-mvp-foundation/spec/review/spec.md
   - quire/changes/0001-mvp-foundation/design.md
 size: M
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # Sync protocol and engines
@@ -115,4 +116,27 @@ Tests cover every sync and review scenario, plus a seeded randomized convergence
 3 clients, 200 random operations (edit line, append, delete, create, sync), then two
 quiet sync rounds; every client equals the server heads and no conflict loses text.
 
+Result: vitest: 17 passed (12 scenario tests, 5 seeded convergence runs; every run creates 11 to 34 conflict records and still converges).
+
 ## Decisions log
+
+- **D-P03-1** · confidence: med
+  - Question: When the user types while a push is in flight and the server returned merged text, who wins overlapping hunks during the client-side rebase?
+  - Did: Local typing wins; the server's version stays in the revision history but no conflict record is made.
+  - Why: Never discard what the user is looking at; the race window is one round trip.
+  - Reverse: In client.ts pushDirty(), swap the merge3 sides and open a client-side review item.
+- **D-P03-2** · confidence: high
+  - Question: A conflict whose provisional text equals the head (incoming lost every hunk)?
+  - Did: Still create the conflict record at the head revision.
+  - Why: R-SYN-05: both sides must be kept until a person decides.
+  - Reverse: n.a.
+- **D-P03-3** · confidence: high
+  - Question: Where does the HTTP transport live?
+  - Did: HttpTransport is in @quire/sync, shared by the web client and the local node replicator.
+  - Why: One implementation of the wire protocol.
+  - Reverse: Move to apps/web if the server ever needs a different client.
+- **D-P03-4** · confidence: med
+  - Question: Two devices create the same path independently (baseRev null on both).
+  - Did: Merged with an empty base: both texts kept (both-inserted, flagged for review).
+  - Why: No loss; daily notes created on two devices are the common case.
+  - Reverse: Treat as a content conflict instead in server.ts pushOne().

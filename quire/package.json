@@ -1,0 +1,30 @@
+{
+  "name": "quire",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "check": "pnpm -r typecheck && pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "dev:server": "pnpm --filter @quire/server dev",
+    "dev:web": "pnpm --filter @quire/web dev",
+    "build:web": "pnpm --filter @quire/web build",
+    "start": "pnpm build:web && pnpm --filter @quire/server start",
+    "e2e": "pnpm build:web && playwright test -c e2e/playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "^22.10.0",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

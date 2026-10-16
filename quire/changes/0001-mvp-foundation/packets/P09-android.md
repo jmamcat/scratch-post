@@ -8,7 +8,8 @@ owns:
 reads:
   - quire/apps/web/**
 size: S
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # Capacitor Android scaffold
@@ -34,4 +35,12 @@ packet produces config and docs, not an APK.
 pnpm -C quire --filter @quire/android exec cap --version
 ```
 
+Result: cap --version: 7.6.9.
+
 ## Decisions log
+
+- **D-P09-1** · confidence: med
+  - Question: Generate the native android/ project now?
+  - Did: No. Config, scripts and README only; `pnpm --filter @quire/android add` generates it on a machine with the SDK.
+  - Why: No Android SDK in the agent container; a generated Gradle tree would be unverified bulk.
+  - Reverse: Run cap add android and commit apps/android/android/.

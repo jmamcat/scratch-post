@@ -14,7 +14,8 @@ owns:
 reads:
   - quire/changes/0001-mvp-foundation/design.md
 size: S
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # Set up the pnpm workspace
@@ -50,4 +51,17 @@ pnpm -C quire install
 pnpm -C quire check
 ```
 
+Result: pnpm install: ok. pnpm check: see run report.
+
 ## Decisions log
+
+- **D-P00-1** · confidence: med
+  - Question: Use the newest major versions (TypeScript 7, vitest 5, vite 8, Capacitor 8)?
+  - Did: Pinned the previous stable majors: TypeScript 5.9, vitest 3, vite 7, @vitejs/plugin-react 5, Capacitor 7, Playwright 1.56 (matches the preinstalled Chromium).
+  - Why: Those are fresh major releases with new toolchains (TypeScript 7 is the native compiler, vite 8 switched bundlers); stability first for an MVP that several harnesses must run.
+  - Reverse: Bump versions in quire/*/package.json and rerun pnpm check.
+- **D-P00-2** · confidence: high
+  - Question: How do other packages see core's ambient module types for markdown-it plugins?
+  - Did: Added a triple-slash reference to markdown/vendor.d.ts in core/src/index.ts.
+  - Why: Packages consume core as source; ambient .d.ts files are not picked up otherwise.
+  - Reverse: Publish real types or move declarations into each consumer.

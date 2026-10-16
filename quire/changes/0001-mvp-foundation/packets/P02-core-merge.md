@@ -10,7 +10,8 @@ reads:
   - quire/changes/0001-mvp-foundation/spec/merge/spec.md
   - quire/changes/0001-mvp-foundation/design.md
 size: M
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # Three-way merge engine
@@ -60,4 +61,22 @@ pnpm -C quire --filter @quire/core test
 Every scenario in `spec/merge/spec.md` has a test, plus: identical inputs, empty base,
 CRLF input, a document where both sides delete the same paragraph.
 
+Result: vitest: 22 merge tests passed (test/merge.test.ts).
+
 ## Decisions log
+
+- **D-P02-1** · confidence: high
+  - Question: Depend on P01's splitFrontmatter or not?
+  - Did: Merge has its own minimal front matter splitter.
+  - Why: P01 ran in parallel; merge must not wait for it, and the regex is five lines.
+  - Reverse: Swap splitFm for splitFrontmatter from markdown/frontmatter.ts.
+- **D-P02-2** · confidence: high
+  - Question: Order of tiers.
+  - Did: whitespace before intraline, as in the spec table; design.md updated to match.
+  - Why: Cheapest silent rule first.
+  - Reverse: Reorder classify() in merge3.ts.
+- **D-P02-3** · confidence: high
+  - Question: Both sides appended, one append extends the other.
+  - Did: Keep the longer one instead of duplicating lines.
+  - Why: Common when one device synced part of the same edit.
+  - Reverse: Remove the prefix checks in insertBoth().

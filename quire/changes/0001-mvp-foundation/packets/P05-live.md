@@ -10,7 +10,8 @@ reads:
   - quire/apps/server/src/**
   - quire/changes/0001-mvp-foundation/spec/live/spec.md
 size: M
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # Yjs live rooms
@@ -48,4 +49,17 @@ pnpm -C quire --filter @quire/server test
 Tests: two `WebsocketProvider` clients see each other's edits; a commit appears after the
 idle delay; an offline push to another paragraph appears in both clients' `Y.Text`.
 
+Result: vitest: 3 live tests passed (two stock y-websocket clients, idle commit, offline push merged into the room).
+
 ## Decisions log
+
+- **D-P05-1** · confidence: high
+  - Question: How can flush run synchronously inside a push?
+  - Did: Room commits write the store directly (sync SHA-256 via node:crypto) inside SyncServer.exclusive, and call QuireServer.committed() for disk mirror and events.
+  - Why: SyncServer pushes are serialised; a nested push would deadlock.
+  - Reverse: live.ts flushRoom().
+- **D-P05-2** · confidence: low
+  - Question: A pushed change and live typing overlap in the tiny window between flush and apply.
+  - Did: Live typing wins in the room; the pushed text stays in the revision log, no conflict record.
+  - Why: Window is the duration of one hash computation; flagging would need a room-side review item.
+  - Reverse: live.ts apply(): open a review conflict when merge3 is not clean.
