@@ -15,7 +15,8 @@ cannot reach the risk cheaply (see "Below the boundary" in `modules/scenarios/RE
 
 ## Evidence in packets and reports
 
-Under a packet's Acceptance section, paste a short summary:
+Packets name gates (`bin/gate.sh check`, `bin/gate.sh scenarios "<tags>"`), never the tool
+commands behind them. Under a packet's Acceptance section, paste a short summary:
 
 ```
 check: ok (typecheck 5 packages, structure rules 0 violations)

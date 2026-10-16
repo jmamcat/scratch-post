@@ -7,6 +7,12 @@ result: complete | partial | blocked
 
 # Run report: <change title>
 
+## Execution
+
+| Packet | Run by | Mode | Coordinator ran it |
+| --- | --- | --- | --- |
+| P01 | <harness/model> | parallel with P02, P03 / sequential | no / yes (decision D-...) |
+
 ## Summary
 
 What shipped, in three to six bullets. Each bullet names the packet(s).

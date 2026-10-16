@@ -15,13 +15,15 @@ Your packet: ${packet#"$root"/}
 
 Rules (full text in the playbook: core/run-protocol.md and core/decisions.md):
 1. Set status: doing and claimed_by: <your harness>/<your model> in the packet front matter.
-2. Edit only paths matching the packet's "owns" globs. You may read "reads" paths.
+2. Edit paths matching "owns"; edit "borrows" paths only as narrowly as their reason says.
+   You may read "reads" paths. Need any other path? Stop, log a decision record, and ask the
+   coordinator (or set status: blocked). Never edit it and explain afterwards.
 3. When something is unclear: follow the spec, then existing conventions, then the baseline
    reference, then the simplest reversible option. Log each such call as a decision record.
    Keep the structure rules (modules/structure) if the project has them on.
 4. Stop only for destructive actions outside "owns", secrets/credentials/payments, or
    license problems. Then set status: blocked with the reason.
-5. Done means every Acceptance command exits 0, including the named scenarios. Paste a
+5. Done means every gate in Acceptance passes (playbook/bin/gate.sh), including the named scenarios. Paste a
    short result summary (counts, scenario tags) under Acceptance, then set status: done.
 6. Never put model names in code or commit messages.
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.0 (2026-10-16)
+
+- Amendment 0004: Acceptance names gates through `bin/gate.sh`; mid-run policy changes
+  re-issue open packets (`revision:`).
+
+## 1.3.0 (2026-10-16)
+
+- Amendment 0003: `borrows:` for narrow edits outside owned paths; `run-lanes.sh` never
+  batches packets whose paths overlap.
+
+## 1.2.0 (2026-10-16)
+
+- Amendment 0002: run reports open with an Execution table; a coordinator taking a worker
+  packet logs a decision record.
+
 ## 1.1.0 (2026-10-16)
 
 - Amendment 0001: state indicators need a `@ui` scenario (counterexample from Quire 0001).

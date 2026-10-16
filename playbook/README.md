@@ -25,7 +25,7 @@ Version: see `VERSION`. Changes: `CHANGELOG.md`.
 | [`modules/demo`](modules/demo/) | Making each change demo-able: seed data, one command to run, a walkthrough. | optional |
 | [`amendments/`](amendments/) | How the playbook changes itself, only with evidence that the change is better. | always applies |
 | [`adapters/`](adapters/) | Notes for specific harnesses and model tiers. Never required. | optional |
-| [`bin/`](bin/) | Small scripts (bash and Python 3, no dependencies) that implement the mechanical parts. | optional |
+| [`bin/`](bin/) | Small scripts (bash and Python 3, no dependencies): `gate.sh`, `spec-scenarios.py`, `check-structure.py`, `packet-prompt.sh`, `run-lanes.sh`, `refs.sh`. | optional |
 | [`templates/`](templates/) | Proposal, packet and run report templates. | always |
 
 ## Binding a project

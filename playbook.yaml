@@ -15,3 +15,4 @@ structure_ext: .ts, .tsx
 structure_allow: shared
 structure_soft_lines: 300
 structure_hard_lines: 500
+scenario_filter_flag: --grep   # how gate.sh passes scenario tags to the runner

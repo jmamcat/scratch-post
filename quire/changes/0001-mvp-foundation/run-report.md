@@ -7,6 +7,28 @@ result: complete
 
 # Run report: MVP foundation
 
+## Execution
+
+Added after the run under playbook amendment 0002. All agents were Claude Code on the same
+model; no other harness or model took part, so harness and model agnosticism is untested.
+
+| Packet | Run by | Mode | Coordinator ran it |
+| --- | --- | --- | --- |
+| P00 workspace | coordinator | sequential, first | yes (integration packet, owned by the coordinator by design) |
+| P01 markdown and rendering | worker A | parallel with P02, P03, P04 | no |
+| P02 merge engine | coordinator | parallel with P01 | yes: correctness-critical, contracts still settling |
+| P03 sync engine | coordinator | parallel with P01 | yes: same reason, depends on P02 |
+| P04 server | coordinator | parallel with P01, then with P07 | yes: no free worker briefed; tightly coupled to P03 |
+| P05 live rooms | coordinator | parallel with P07 | yes: coupled to P04 internals |
+| P06 replicator | coordinator | parallel with P07 | yes: small, coupled to P04 |
+| P07 web shell | worker B | parallel with P04 to P06, P09 | no |
+| P08 live, review, history (web) | worker B | sequential after P07 | no (edited P07 files; see D-P08-1 and amendment 0003) |
+| P09 Android scaffold | coordinator | parallel with P07 | yes: small |
+| P10 verification and report | coordinator | sequential, last | yes (coordinator packet by design) |
+
+Research ran in parallel separately: four agents built the reference folders while the
+coordinator wrote the methodology; two agents researched testing and code structure.
+
 ## Summary
 
 - **Storage and sync core** (P02, P03): three-way merge with per-property front matter and
@@ -92,8 +114,10 @@ as line breaks like Obsidian (D-P01-3); remaining P01 parsing details are in pac
   in `modules/references`: create the empty submodule folders, or use `git add -u`
   carefully. Candidate amendment.
 - Packets written before the switch to scenarios still name `vitest` in some acceptance
-  lines; the gates in `playbook.yaml` are what count. Candidate amendment: packets should
-  reference the gate names from `playbook.yaml`, never tool commands.
+  lines. Accepted as amendment 0004 (packets name gates via `bin/gate.sh`).
+- The coordinator ran 8 of 11 packets and P08 edited P07's files; neither was visible or
+  allowed by the playbook. Accepted as amendments 0002 (Execution table) and 0003
+  (`borrows:` and overlap-aware lanes). Playbook now 1.4.0.
 
 ## Spec drift
 

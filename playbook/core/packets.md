@@ -11,12 +11,16 @@ them and no overlapping owned paths, can run at the same time.
    packet verbatim, never "see design.md".
 2. **Owned paths.** `owns` lists globs the packet may create or edit. Nobody else edits them
    while it runs. Shared integration files (dependency manifests, lockfiles, workspace config,
-   root CI) belong to `P00`, owned by the coordinator.
+   root CI) belong to `P00`, owned by the coordinator. `borrows` lists specific paths outside
+   `owns` the packet must touch narrowly (wiring a feature into an existing file), each with
+   a reason; a borrowed path is never owned or borrowed by a packet running at the same time.
 3. **Small.** `size: S` (under ~300 changed lines), `M` (under ~800), never `L`: split it.
    A packet must fit a 32k-token context with room to work. This is what keeps the
    playbook usable with mid-size and local models.
-4. **Verifiable.** The Acceptance section lists commands that must exit 0. For behaviour,
-   that means named scenarios (`modules/scenarios`), not "tests pass".
+4. **Verifiable.** The Acceptance section names gates from `playbook.yaml` through
+   `bin/gate.sh` (`gate.sh check`, `gate.sh scenarios "@R-XXX-01"`), never tool commands, so a
+   change of tooling never makes a packet stale. For behaviour, that means named scenarios
+   (`modules/scenarios`), not "tests pass".
 5. **Traceable.** The Context section cites the requirement IDs it implements.
 
 ## Lanes by play
@@ -33,7 +37,8 @@ Plays suggest typical lanes. Examples:
 ## Template
 
 `templates/change/packet.md`. Front matter keys: `id`, `title`, `lane`, `depends_on`,
-`owns`, `reads`, `size`, `status` (`todo | doing | done | blocked`), `claimed_by`.
+`owns`, `borrows`, `reads`, `size`, `revision`, `status` (`todo | doing | done | blocked`),
+`claimed_by`.
 
 ## Model tiers
 
@@ -41,6 +46,6 @@ Plays suggest typical lanes. Examples:
 | --- | --- | --- | --- |
 | A | frontier models | S, M, coordinator, proposals, designs | |
 | B | strong open-weight models | S, M | contracts copied into the packet |
-| C | small or local models | S | explicit steps and acceptance commands |
+| C | small or local models | S | explicit steps and named gates |
 
 Write packets for tier B by default.

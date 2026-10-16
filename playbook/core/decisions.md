@@ -43,6 +43,8 @@ choices the spec or conventions already settle.
 
 The coordinator copies `templates/run-report.md` to `changes/<id>/run-report.md`:
 
+- **Execution.** One row per packet: who ran it (harness/model), parallel with which
+  packets or sequential, and whether the coordinator ran it instead of a worker.
 - **"I have some questions, but I proceeded with these recommendations; kindly direct me if
   any were incorrect."** Every `med` and `low` decision, as a table: question, what was done,
   why, confidence, how to reverse.
