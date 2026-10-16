@@ -22,7 +22,8 @@ reads:
   - references/obsidian/product/features.md
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-B
 ---
 
 # Attachments: content store, routes, file sync

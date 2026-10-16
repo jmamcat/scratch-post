@@ -58,7 +58,8 @@ export class VaultMirror {
       await this.captureFile(sync, path);
     }
     for (const meta of this.store.heads()) {
-      if (meta.deleted || onDisk.has(meta.path)) continue;
+      // Attachments are restored by the files module, never treated as notes (R-VLT-11).
+      if (meta.kind === 'file' || meta.deleted || onDisk.has(meta.path)) continue;
       this.write(meta.path, this.store.text(meta.rev), meta.rev);
     }
   }
