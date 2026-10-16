@@ -20,7 +20,11 @@ pnpm -C quire install
 pnpm -C quire check        # types, dependency rules, structure rules
 pnpm -C quire scenarios    # every spec scenario, at the system boundary and in the browser
 pnpm -C quire demo         # cloud server + local node with seed data
+playbook/bin/gate.sh deploy   # builds the image, runs the Compose stack (needs Docker)
 ```
+
+Python tooling (the playbook scripts) runs through `uv run playbook/bin/<script>.py`; the root
+`pyproject.toml` declares it. Deployment: `Dockerfile`, `compose.yaml`, `deploy/README.md`.
 
 ## Rules that are easy to miss
 

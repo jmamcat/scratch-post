@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Record and summarise token and credit usage per slice of work (modules/usage).
 
     playbook/bin/usage.py add --change C --scope S --harness H --model M [--tier T] [numbers...]

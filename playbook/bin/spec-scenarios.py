@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Generate Gherkin .feature files from the GIVEN/WHEN/THEN scenarios in Markdown specs.
 
     playbook/bin/spec-scenarios.py            write features to the configured output folder

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Archive a finished change: apply its spec deltas to the living specs, then move it.
 
     playbook/bin/archive-change.py <change-id> [--dry-run]

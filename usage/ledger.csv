@@ -25,3 +25,4 @@ date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_rea
 2026-10-16,0003-production-hardening,P02,claude-code,m1,A,1,,,,,168816,,,25.6,"done, 43/43",harness-subagent-report,61 tool uses
 2026-10-16,0003-production-hardening,P04,claude-code,m2,B,1,,,,,126815,,,12.3,blocked on a harness timing gap; 1/1 after coordinator fix,harness-subagent-report,56 tool uses
 2026-10-16,0003-production-hardening,P03,claude-code,m1,A,1,,,,,195756,,,17.2,"done, 29/30 (R-BAK-07 was P04's)",harness-subagent-report,50 tool uses
+2026-10-16,0003-production-hardening,P08,claude-code,m2,B,1,,,,,99828,,,24.1,"done, R-PLT-06 1/1",harness-subagent-report,27 tool uses

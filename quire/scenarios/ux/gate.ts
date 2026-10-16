@@ -50,15 +50,32 @@ export function toBaseline(score: AppScore): Baseline {
     const categories: Baseline['states'][string]['categories'] = {};
     for (const id of CATEGORY_IDS) {
       const c = s.categories[id];
-      categories[id] = { score: c.score, metrics: Object.fromEntries(Object.entries(c.metrics).map(([k, m]) => [k, { raw: m.raw, score: m.score, n: m.n }])) };
+      // Axe rules that pass are only counted; the failing ones and every other metric are kept.
+      const rules = id === 'A' || id === 'E';
+      const kept = Object.entries(c.metrics).filter(([, m]) => !rules || m.score !== 1);
+      categories[id] = {
+        score: c.score,
+        metrics: Object.fromEntries(kept.map(([k, m]) => [k, { raw: m.raw, score: m.score, n: m.n }])),
+        ...(rules ? { passing: Object.keys(c.metrics).length - kept.length } : {}),
+      };
     }
     states[s.id] = { total: s.total, categories, violations: s.violations.map((v) => v.key).sort() };
   }
   return { schema: 1, engines: score.engines, states };
 }
 
+/** One line per state and category, so a re-approval reads as a short diff in review. */
+export function formatBaseline(b: Baseline): string {
+  const j = JSON.stringify;
+  const states = Object.entries(b.states).map(([id, s]) => {
+    const cats = Object.entries(s.categories).map(([c, v]) => `    ${j(c)}: ${j(v)}`);
+    return `  ${j(id)}: {\n   "total": ${s.total},\n   "violations": ${j(s.violations)},\n   "categories": {\n${cats.join(',\n')}\n   }\n  }`;
+  });
+  return `{\n "schema": ${b.schema},\n "engines": ${j(b.engines)},\n "states": {\n${states.join(',\n')}\n }\n}\n`;
+}
+
 export function writeBaseline(score: AppScore, path: URL = BASELINE_PATH): void {
-  writeFileSync(path, `${JSON.stringify(toBaseline(score), null, 1)}\n`);
+  writeFileSync(path, formatBaseline(toBaseline(score)));
 }
 
 function pointsLost(s: StateScore, before: Baseline['states'][string]): Partial<Record<CategoryId, number>> {

@@ -91,7 +91,7 @@ export interface Engines {
 export interface Baseline {
   schema: 1;
   engines: Engines;
-  states: Record<string, { total: number; categories: Partial<Record<CategoryId, { score: number | null; metrics: Record<string, { raw: number | string | null; score: number | null; n: number }> }>>; violations: string[] }>;
+  states: Record<string, { total: number; categories: Partial<Record<CategoryId, { score: number | null; metrics: Record<string, { raw: number | string | null; score: number | null; n: number }>; passing?: number }>>; violations: string[] }>;
 }
 
 /** What the scorer needs to know about the app under test; one per project. */

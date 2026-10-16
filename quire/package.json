@@ -7,11 +7,11 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "check": "pnpm -r typecheck && pnpm deps && python3 ../playbook/bin/check-structure.py",
+    "check": "pnpm -r typecheck && pnpm deps && uv run ../playbook/bin/check-structure.py",
     "typecheck": "pnpm -r typecheck",
     "scenarios": "pnpm --filter @quire/scenarios test",
     "scenarios:system": "pnpm --filter @quire/scenarios system",
-    "scenarios:deploy": "pnpm --filter @quire/scenarios deploy",
+    "scenarios:deploy": "pnpm --filter @quire/scenarios run deploy",
     "scenarios:ui": "pnpm build:web && pnpm --filter @quire/scenarios ui",
     "scenarios:approve": "pnpm --filter @quire/scenarios approve",
     "ux": "pnpm --filter @quire/scenarios build:web:if-needed && pnpm --filter @quire/scenarios exec playwright test -c ux/playwright.config.ts",

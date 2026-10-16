@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "python3 ../../playbook/bin/spec-scenarios.py --check && bddgen",
+    "generate": "uv run ../../playbook/bin/spec-scenarios.py --check && bddgen",
     "test": "pnpm build:web:if-needed && pnpm generate && playwright test",
     "system": "pnpm generate && playwright test --grep @system",
     "deploy": "pnpm generate && QUIRE_DEPLOY=1 playwright test --workers 1",

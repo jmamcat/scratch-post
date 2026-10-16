@@ -17,7 +17,7 @@ reads:
   - quire/scenarios/**
 size: S
 revision: 1
-status: doing
+status: done
 claimed_by: claude-code/tier-B
 ---
 
@@ -60,4 +60,37 @@ playbook/bin/gate.sh check
 playbook/bin/gate.sh scenarios "@R-PLT-06|@R-SYN-10|@R-PLT-0"
 ```
 
+## Result
+
+- `vite build` into `/tmp/quire-web-P08`: ok (`sw.js`, `manifest.webmanifest` emitted, manifest and theme-colour links injected into `index.html`).
+- `check`: 0 type errors, no dependency violations (224 modules), structure 0 violations (6 existing soft-limit warnings, none in P08 files).
+- `scenarios "@R-PLT-06"`: 1 passed (R-PLT-06 Start offline). Negative check: the same scenario fails when `sw.js` is removed from the build, so it exercises the worker.
+- `scenarios "@R-PLT-06|@R-SYN-10|@R-PLT-0"`: 10 run, 8 passed (R-PLT-01, 02, 03, 05 x2, 06, R-SYN-10 x2), 2 failed, neither in P08: R-PLT-07 (undefined steps "the web app is built" / "first-load JavaScript ..." belong to P09) and R-PLT-08 (UX scorer contrast and focus findings, P12/P14).
+- No `offline.steps.ts` written: the scenario uses only existing steps; the browser device's `goOffline` uses `context.setOffline(true)`.
+
 ## Decisions log
+- **D-P08-1** · confidence: med
+  - Question: which files does the worker precache?
+  - Did: every emitted file (all chunks, including the ~200 lazy CodeMirror language chunks) plus `public/` files, about 2.5 MB; `sw.js` and the manifest are excluded. The build id is a hash of file names and contents.
+  - Why: contract says "the list of emitted files"; a lazy chunk missing offline would break opening a note with a code block. P03 (bundles) may change the chunk set; the plugin follows it automatically.
+  - Reverse: filter `names` in `offlinePlugin` (`platforms/offline/plugin.ts`), e.g. skip `assets/*` language chunks.
+- **D-P08-2** · confidence: med
+  - Question: manifest and theme colour links: edit `index.html` or inject?
+  - Did: the plugin injects `<link rel="manifest">` and two `theme-color` metas (light `#ffffff`, dark `#1e1e21`) at build time only, so the dev server does not request a missing manifest; `index.html` is untouched.
+  - Why: packet says "if needed"; avoids a dev-server 404 and keeps colours next to the manifest.
+  - Reverse: move the tags into `apps/web/index.html` and drop `transformIndexHtml`.
+- **D-P08-3** · confidence: med
+  - Question: first-install activation and update flow.
+  - Did: the first worker activates by itself and claims the page; a later worker waits (only shown when a controller exists). Clicking posts `SKIP_WAITING`; the page reloads once on `controllerchange`, only if the person clicked. The page also calls `registration.update()` when the tab becomes visible. Old caches are deleted on activation.
+  - Why: contract ("a new worker waits ... reloads once it controls the page"); the visibility check is the cheapest way for a long-lived tab to find a new deploy.
+  - Reverse: `register.ts` (drop the `visibilitychange` listener) and `worker.ts` (`clients.claim`).
+- **D-P08-4** · confidence: high
+  - Question: `index.ts` cannot hold JSX and the plugin must not reach the browser bundle.
+  - Did: `index.ts` re-exports `registerOffline` (`register.ts`) and `UpdatePrompt` (`UpdatePrompt.tsx`); `plugin.ts` and `worker.ts` are imported by `vite.config.ts` only. The prompt has no `role="status"` (steps look up the single status bar by that role); it is a labelled `div` with a button.
+  - Why: dependency rules (public entry only) and the existing step `reloads the app`.
+  - Reverse: n/a.
+- **D-P08-5** · confidence: high
+  - Question: server cache headers for `sw.js`.
+  - Did: nothing; browsers fetch the worker script bypassing the HTTP cache for update checks, and the static server needs no change (`apps/server` not owned).
+  - Why: standard service worker behaviour.
+  - Reverse: add `Cache-Control: no-cache` for `/sw.js` in `apps/server/src/platforms/web.ts` if a proxy caches it.

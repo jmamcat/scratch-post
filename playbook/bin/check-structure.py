@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """Check the language-neutral structure rules (modules/structure: S2, S8, S9, S10).
 
     playbook/bin/check-structure.py           exit 1 on violations, print warnings
