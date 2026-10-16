@@ -125,6 +125,21 @@ export class SqliteRevisionStore implements RevisionStore {
     return this.changesSince(0);
   }
 
+  /** The newest name of the note `path` was renamed away from after `afterRev` (R-VLT-09). */
+  renamedTo(path: string, afterRev: number): string | null {
+    const step = this.db.prepare('SELECT path, rev FROM revisions WHERE renamed_from = ? AND rev > ? ORDER BY rev LIMIT 1');
+    // Each hop starts after the previous one, so a chain always ends.
+    let current = path;
+    let after = afterRev;
+    for (;;) {
+      const next = step.get(current, after) as { path: string; rev: number } | undefined;
+      if (!next) break;
+      current = next.path;
+      after = next.rev;
+    }
+    return current === path ? null : current;
+  }
+
   saveConflict(c: Conflict): void {
     this.db
       .prepare(

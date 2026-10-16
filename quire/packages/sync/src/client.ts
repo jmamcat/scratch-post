@@ -11,6 +11,8 @@ export interface LocalDoc {
   baseText: string | null;
   /** True when the user deleted the document and the deletion is not synced yet. */
   deleted: boolean;
+  /** Set until the push succeeds when this copy was created by renaming that path (R-VLT-09). */
+  renamedFrom?: string;
 }
 
 export interface LocalStore {
@@ -81,6 +83,29 @@ export class SyncClient {
     this.emit([path]);
   }
 
+  /**
+   * Moves a note locally (R-VLT-09). The next push sends `{ path: to, renamedFrom: from }`
+   * and the deletion of `from`, so the server keeps one history across both names.
+   */
+  async rename(from: string, to: string): Promise<void> {
+    if (from === to) return;
+    const doc = await this.store.get(from);
+    if (!doc || doc.deleted) throw new Error(`no note ${from} to rename`);
+    const target = await this.store.get(to);
+    if (target && !target.deleted) throw new Error(`${to} already exists`);
+    // A path that never reached the server passes on where it came from, if anywhere.
+    const origin = doc.renamedFrom ?? (doc.baseRev === null ? undefined : from);
+    const moved: LocalDoc = target
+      ? // Back onto a path whose deletion is still pending: that is an edit of it.
+        { ...withoutRename(target), text: doc.text, deleted: false }
+      : { path: to, text: doc.text, baseRev: null, baseText: null, deleted: false };
+    if (!target && origin !== undefined && origin !== to) moved.renamedFrom = origin;
+    await this.store.put(moved);
+    if (doc.baseRev === null) await this.store.remove(from);
+    else await this.store.put({ ...withoutRename(doc), deleted: true });
+    this.emit([from, to]);
+  }
+
   /** Live documents are owned by their room while connected: not pushed, and pulls only move their base. */
   setLive(path: string, live: boolean): void {
     if (live) this.live.add(path);
@@ -137,16 +162,29 @@ export class SyncClient {
   private async pushDirty(report: SyncReport, changed: string[]): Promise<void> {
     const dirty = (await this.store.all()).filter((d) => isDirty(d) && !this.live.has(d.path));
     if (dirty.length === 0) return;
-    const items: PushItem[] = dirty.map((d) => ({ path: d.path, baseRev: d.baseRev, text: d.deleted ? null : d.text }));
+    // Renamed copies go first, so the server sees the rename before the old path's deletion.
+    dirty.sort((a, b) => Number(!a.renamedFrom) - Number(!b.renamedFrom));
+    const items: PushItem[] = dirty.map((d) => ({
+      path: d.path,
+      baseRev: d.baseRev,
+      text: d.deleted ? null : d.text,
+      ...(d.renamedFrom && !d.deleted ? { renamedFrom: d.renamedFrom } : {}),
+    }));
     const results = await this.transport.push({ device: this.device, items });
     report.pushed += results.length;
 
     for (const [n, res] of results.entries()) {
       const sent = dirty[n]!;
       if (res.conflictId) report.conflicts.push(res.conflictId);
-      const cur = await this.store.get(sent.path);
+      const stored = await this.store.get(sent.path);
+      const cur = stored && withoutRename(stored);
       const untouched = !!cur && cur.text === sent.text && cur.deleted === sent.deleted;
 
+      if (res.movedTo && res.movedTo !== sent.path) {
+        await this.moved(sent, cur, untouched, res);
+        changed.push(sent.path, res.movedTo);
+        continue;
+      }
       if (res.text === null) {
         if (!cur || untouched) await this.store.remove(sent.path);
         else await this.store.put({ ...cur, baseRev: res.meta.rev, baseText: null, deleted: false });
@@ -163,6 +201,25 @@ export class SyncClient {
       }
       changed.push(sent.path);
     }
+  }
+
+  /**
+   * The server renamed the path after this copy's base and put the edit on `movedTo`
+   * (R-VLT-09): drop the old path and keep the new head, with any typing from the round trip.
+   */
+  private async moved(sent: LocalDoc, cur: LocalDoc | undefined, untouched: boolean, res: PushResult): Promise<void> {
+    const to = res.movedTo!;
+    const there = await this.store.get(to);
+    if (!there || !isDirty(there)) {
+      if (res.text === null) {
+        if (there) await this.store.remove(to);
+      } else {
+        const typed = cur && !untouched && !cur.deleted;
+        const text = typed ? merge3(sent.text, cur.text, res.text).text : res.text;
+        await this.store.put({ path: to, text, baseRev: res.meta.rev, baseText: res.text, deleted: false });
+      }
+    }
+    if (cur) await this.store.remove(sent.path);
   }
 
   private async pull(report: SyncReport, changed: string[]): Promise<void> {
@@ -205,6 +262,12 @@ export class SyncClient {
     }
     await this.store.setCursor(feed.cursor);
   }
+}
+
+function withoutRename(d: LocalDoc): LocalDoc {
+  if (d.renamedFrom === undefined) return d;
+  const { renamedFrom: _, ...rest } = d;
+  return rest;
 }
 
 export class MemoryLocalStore implements LocalStore {

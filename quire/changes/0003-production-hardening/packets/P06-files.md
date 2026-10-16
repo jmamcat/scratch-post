@@ -22,7 +22,7 @@ reads:
   - references/obsidian/product/features.md
 size: M
 revision: 1
-status: doing
+status: done
 claimed_by: claude-code/tier-B
 ---
 
@@ -95,4 +95,51 @@ playbook/bin/gate.sh scenarios "@R-VLT-11|@cap-sync|@cap-vault"
 
 The three R-VLT-11 scenarios pass; sync and vault scenarios still pass.
 
+## Acceptance result
+
+- `playbook/bin/gate.sh check`: typecheck, dependency rules and structure rules pass (0 violations, 5 existing S8 warnings).
+- `playbook/bin/gate.sh scenarios "@R-VLT-11"`: 3 of 3 pass (A file reaches every device, Same bytes stored once, Files open offline once fetched).
+- `playbook/bin/gate.sh scenarios "@R-VLT-11|@cap-sync|@cap-vault"`: 30 passed, 5 failed. The 5 failures all stop at `Missing step` for phrases owned by other packets: R-VLT-09 and R-VLT-10 (renames, P05) and R-VLT-12 (attachments in the app, P07). None involve code from this packet.
+
 ## Decisions log
+
+- **D-P06-1** · confidence: med
+  - Question: How does a file conflict name "both" in a review item, since `Conflict` has one `path` and text segments?
+  - Did: `path` is the original file, `kind: 'file'`, `status: 'review'` (so it can be dismissed), `rev` is the revision of the saved copy, and one stable segment lists both paths (`Both versions were kept:\n<path>\n<copy path>\n`).
+  - Why: R-VLT-11 "a review item names both"; `resolve()` only fits note kinds, `dismiss()` fits `review`.
+  - Reverse: the `Conflict` literal in `put()` in `apps/server/src/vault/files/index.ts`; a typed field for the copy path would need a `protocol.ts` change.
+- **D-P06-2** · confidence: med
+  - Question: No conflict event is announced for a file conflict, since `FileDeps` offers no event hub (only `committed` for commit events).
+  - Did: the conflict is saved with `store.saveConflict`; the commit of the copy is announced through `committed`. Clients see the review item on their next conflicts fetch.
+  - Why: `FileDeps` is fixed by P00; reaching the hub needs a wider `FileDeps` or a `SyncServer` hook.
+  - Reverse: add `onEvent` to `FileDeps` in P00's `app.ts` wiring and emit `{ type: 'conflict', ... }` after `saveConflict`.
+- **D-P06-3** · confidence: med
+  - Question: A deletion with a stale `baseRev` against a head that changed.
+  - Did: the edit wins like for notes (R-SYN-06): nothing is deleted, the result is `noop` with the current head, and no conflict is opened. A deletion against a head with the same content as its base, or without `baseRev`, is committed.
+  - Why: R-SYN-06 "the edit always wins"; the spec has no file delete-edit scenario.
+  - Reverse: `del()` in `apps/server/src/vault/files/index.ts`.
+- **D-P06-4** · confidence: med
+  - Question: Which extensions are allowed attachments?
+  - Did: images (png jpg jpeg gif webp avif bmp svg ico heic), pdf, txt csv json zip, docx xlsx pptx, audio (mp3 wav ogg oga m4a flac aac), video (mp4 m4v webm mov mkv ogv). `.md`, html and scripts are refused with 400. SVG is served with `Content-Security-Policy: sandbox`, everything with `nosniff`.
+  - Why: "images, PDF, audio, video and other allowed types"; OBS-F-045 and JOP-F-023 list media and documents.
+  - Reverse: the `MIME` table in `packages/vault/src/files.ts`.
+- **D-P06-5** · confidence: med
+  - Question: The scenario steps cannot attach a `FileSync` to a device when it is created (`world.addDevice` is not in this packet), and `addDevice` already syncs once.
+  - Did: the first file step attaches an engine to every system device then in the world, and resets the cursor of each newly attached device to 0 so the next pull replays all file heads.
+  - Why: the packet says attach "on first use"; without this, `b`'s pull in "A file reaches every device" would drop the file head.
+  - Reverse: `filesOf()` in `quire/scenarios/steps/files.steps.ts`; or attach in `World.addDevice` if a later packet owns it.
+- **D-P06-6** · confidence: high
+  - Question: Device names in headers and file names.
+  - Did: `x-quire-device` carries `encodeURIComponent(device)` (the server decodes it); in a copy's file name unsafe characters become `_`; a second copy by the same device with different bytes becomes `name (device 2).ext`.
+  - Why: HTTP headers must be ASCII; paths must stay valid.
+  - Reverse: `deviceOf`, `safeDevice`, `copyName` in the server file and `upload()` in `packages/sync/src/files.ts`.
+- **D-P06-7** · confidence: med
+  - Question: Scan and startup with attachment heads in the revision log.
+  - Did: `VaultMirror.scan` skips file heads in its "restore missing" loop (it would otherwise write a null text). `createFiles` restores missing file copies from the content store at startup, never deletes. Files on disk with attachment extensions are ignored by the scan and watcher because `toVaultPath` only accepts `.md`.
+  - Why: Architecture invariant "a file missing at startup is restored, never deleted"; packet text on `mirror.ts`.
+  - Reverse: the one-line condition in `mirror.ts` and the loop at the top of `createFiles`.
+- **D-P06-8** · confidence: low
+  - Question: Other readers of the revision log see file heads as notes.
+  - Did: nothing, they are outside this packet. Found: `GET /api/docs` (`vault/routes.ts`) lists file heads with the notes (the web `head-meta.ts` calls it), and the local node's `NodeStore` in `sync/replicator.ts` turns every head into a note (`get()` returns `''` for a file head and pushes it upstream as text, which the server rejects with 400, so a node with attachments would report sync errors and not replicate files).
+  - Why: both paths are owned by other packets or by no one in this wave.
+  - Reverse: filter `kind === 'file'` in `/api/docs`; teach `NodeStore` to skip file heads (or replicate them with `FileSync`-like code).

@@ -4,7 +4,7 @@ import { Mutex } from './lock.ts';
 import type { Settings } from '../platforms/index.ts';
 import { EventStream } from './server-events.ts';
 import { IdbLocalStore } from './idb-store.ts';
-import { LinkIndex } from '@quire/navigate';
+import { LinkIndex, planRename } from '@quire/navigate';
 
 export type SyncState = 'idle' | 'syncing' | 'offline' | 'error';
 
@@ -216,12 +216,26 @@ export class Workspace {
     this.syncSoon(1000);
   }
 
-  /** Moves a note to a new path (a create plus a delete). Links to it are not rewritten. */
+  /**
+   * Renames a note (R-VLT-09): rewrites the links that pointed at it through `write`, so open
+   * editors and live rooms see them, then moves it with the sync client, which keeps its
+   * history. The new path is readable at once; the move reaches the store after queued edits.
+   */
   async rename(from: string, to: string): Promise<boolean> {
-    const text = this.read(from);
-    if (text === undefined || from === to || this.has(to)) return false;
-    this.write(to, text);
-    await this.remove(from);
+    if (from === to || this.read(from) === undefined || this.has(to)) return false;
+    for (const edit of planRename(this.notes(), from, to)) this.write(edit.path, edit.text);
+    const text = this.read(from)!;
+    // Optimistic: the editor switches to `to` in the same render. The store move replaces this.
+    this.docs.set(to, { path: to, text, baseRev: null, baseText: null, deleted: false });
+    this.pathsDirty = true;
+    this.bump();
+    try {
+      await this.lock.run(() => this.client.rename(from, to));
+    } catch {
+      this.queueReload([from, to], false);
+      return false;
+    }
+    this.syncSoon(1000);
     return true;
   }
 

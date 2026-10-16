@@ -26,6 +26,11 @@ export interface RevisionStore {
   headRev(): number;
   history(path: string): DocMeta[];
   heads(): DocMeta[];
+  /**
+   * Where `path` went: the path it was renamed to after revision `afterRev`, following later
+   * renames of that path to the newest name. Null when it was not renamed since (R-VLT-09).
+   */
+  renamedTo(path: string, afterRev: number): string | null;
   saveConflict(c: Conflict): void;
   getConflict(id: string): Conflict | null;
   listConflicts(status?: ConflictStatus): Conflict[];
@@ -128,9 +133,9 @@ export class SyncServer {
     return { path, status: 'noop', meta: head, text: head.deleted ? null : this.store.text(head.rev) };
   }
 
-  private async commit(path: string, text: string | null, device: string): Promise<DocMeta> {
+  private async commit(path: string, text: string | null, device: string, extra?: CommitExtra): Promise<DocMeta> {
     const hash = text === null ? DELETED_HASH : await hashText(text);
-    const meta = this.store.commit(path, text, device, hash);
+    const meta = this.store.commit(path, text, device, hash, extra);
     this.hooks.afterWrite?.(path, text, meta);
     this.hooks.onEvent?.({ type: 'commit', path, rev: meta.rev, hash, device, deleted: meta.deleted });
     return meta;
@@ -138,15 +143,38 @@ export class SyncServer {
 
   private async pushOne(device: string, item: PushItem): Promise<PushResult> {
     const path = checkPath(item.path);
+    const renamedFrom = item.renamedFrom === undefined ? undefined : checkPath(item.renamedFrom);
+    // R-VLT-09: an edit made before its device heard of a rename lands on the new path. This
+    // runs before the delete-versus-edit rule, so the old path is not brought back.
+    if (item.text !== null && item.baseRev !== null && renamedFrom === undefined) {
+      const current = this.store.head(path);
+      if (!current || current.rev !== item.baseRev) {
+        const moved = this.store.renamedTo(path, item.baseRev);
+        if (moved && moved !== path) {
+          const res = await this.pushAt(device, moved, item, path);
+          return { ...res, path, movedTo: moved };
+        }
+      }
+    }
+    return this.pushAt(device, path, item, path, renamedFrom);
+  }
+
+  /**
+   * Applies `item` to `path`. `basePath` is the path the item's base revision may belong to
+   * (the old name when an edit follows a rename); `renamedFrom` marks a rename's first commit.
+   */
+  private async pushAt(device: string, path: string, item: PushItem, basePath: string, renamedFrom?: string): Promise<PushResult> {
     this.hooks.beforeWrite?.(path);
     const head = this.store.head(path);
+    // The first revision of a path created by a rename records where it came from.
+    const extra: CommitExtra | undefined = renamedFrom !== undefined && (!head || head.deleted) ? { renamedFrom } : undefined;
 
     if (!head) {
       if (item.text === null) {
         const meta: DocMeta = { path, rev: 0, hash: DELETED_HASH, deleted: true, device, createdAt: this.now() };
         return { path, status: 'noop', meta, text: null };
       }
-      const meta = await this.commit(path, item.text, device);
+      const meta = await this.commit(path, item.text, device, extra);
       return { path, status: 'applied', meta, text: item.text };
     }
 
@@ -160,7 +188,7 @@ export class SyncServer {
 
     // A base from another path (or a made-up rev) is treated as "no common base".
     const baseMeta = item.baseRev === null ? null : this.store.revision(item.baseRev);
-    const baseText = baseMeta && baseMeta.path === path ? (this.store.text(baseMeta.rev) ?? '') : '';
+    const baseText = baseMeta && (baseMeta.path === path || baseMeta.path === basePath) ? (this.store.text(baseMeta.rev) ?? '') : '';
 
     // Incoming delete against a head that changed since the client's base.
     if (item.text === null) {
@@ -175,7 +203,7 @@ export class SyncServer {
     // Incoming edit against a deleted head.
     if (headText === null) {
       if (item.text === baseText) return { path, status: 'noop', meta: head, text: null };
-      const meta = await this.commit(path, item.text, device);
+      const meta = await this.commit(path, item.text, device, extra);
       const conflict = this.openDeleteEdit(path, head, meta.rev, item.text, device, false);
       return { path, status: 'conflict', meta, text: item.text, conflictId: conflict.id };
     }
@@ -297,6 +325,19 @@ export class MemoryRevisionStore implements RevisionStore {
 
   heads(): DocMeta[] {
     return this.changesSince(0);
+  }
+
+  renamedTo(path: string, afterRev: number): string | null {
+    // Each hop starts after the previous one, so a chain always ends.
+    let current = path;
+    let after = afterRev;
+    for (;;) {
+      const next = this.revs.find((r) => r.meta.rev > after && r.meta.renamedFrom === current);
+      if (!next) break;
+      current = next.meta.path;
+      after = next.meta.rev;
+    }
+    return current === path ? null : current;
   }
 
   saveConflict(c: Conflict): void {
