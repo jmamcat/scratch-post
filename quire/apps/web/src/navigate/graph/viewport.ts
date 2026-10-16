@@ -29,10 +29,13 @@ export function fit(b: Bounds | null, w: number, h: number): View {
 
 /**
  * Wheel zooms around the pointer, dragging the background pans, double-clicking it fits the
- * graph again. Until the person moves the view it follows `auto` (the fitted view).
+ * graph again. Until the person moves the view, or after `subject` changes, it follows `auto`
+ * (the fitted view).
  */
-export function usePanZoom(svg: RefObject<SVGSVGElement | null>, auto: View) {
+export function usePanZoom(svg: RefObject<SVGSVGElement | null>, auto: View, subject: unknown) {
   const [manual, setManual] = useState<View | null>(null);
+  // Another note in the local graph starts fitted again.
+  useEffect(() => setManual(null), [subject]);
   const [panning, setPanning] = useState(false);
   const view = manual ?? auto;
   const latest = useRef(view);

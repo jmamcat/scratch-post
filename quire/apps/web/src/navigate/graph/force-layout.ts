@@ -1,7 +1,6 @@
 import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY, type SimulationNodeDatum } from 'd3-force';
 import { useEffect, useRef, useState } from 'react';
-// The web app has no `@quire/views` dependency entry yet (D-P04-1); this is that package's public entry.
-import type { GraphData } from '../../../../../packages/views/src/index.ts';
+import type { GraphData } from '@quire/views';
 
 export interface LaidNode extends SimulationNodeDatum {
   path: string;

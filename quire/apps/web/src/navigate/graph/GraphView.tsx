@@ -1,8 +1,7 @@
 import './graph.css';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import type { Workspace } from '../../sync/index.ts';
-// The web app has no `@quire/views` dependency entry yet (D-P04-1); this is that package's public entry.
-import { type GraphData, linkGraph, neighbourhood } from '../../../../../packages/views/src/index.ts';
+import { type GraphData, linkGraph, neighbourhood } from '@quire/views';
 import { type LaidNode, type Layout, useForceLayout } from './force-layout.ts';
 import { type Bounds, fit, usePanZoom } from './viewport.ts';
 
@@ -32,7 +31,7 @@ export function GraphView(props: Props) {
   const host = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const size = useSize(host);
-  const { view, panning, handlers } = usePanZoom(svg, fit(bounds(layout), size.w, size.h));
+  const { view, panning, handlers } = usePanZoom(svg, fit(bounds(layout), size.w, size.h), focus);
   const [hover, setHover] = useState<string | null>(null);
   const near = useMemo(() => neighbours(layout, hover), [layout, hover]);
 
@@ -105,7 +104,7 @@ function useStableGraph(g: GraphData): GraphData {
   return last.current.graph;
 }
 
-function useSize(el: React.RefObject<HTMLElement | null>): { w: number; h: number } {
+function useSize(el: RefObject<HTMLElement | null>): { w: number; h: number } {
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
     const node = el.current;

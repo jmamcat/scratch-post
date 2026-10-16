@@ -7,6 +7,8 @@ import { useNotes } from './use-notes.ts';
 import './views.css';
 
 const DEFAULT_KEY = 'status';
+/** Columns always offered for `status`, so a board with one column can still move cards. */
+const STARTER_COLUMNS = ['todo', 'doing', 'done'];
 
 /**
  * Notes as columns by the value of a front matter property, `status` by default. Moving a
@@ -33,7 +35,14 @@ export function BoardView(props: {
 
   const columns = useMemo(() => groupByProperty(notes, key), [notes, key]);
   const text = useMemo(() => new Map(notes.map((n) => [n.path, n.text])), [notes]);
+  // Move targets: the real columns, the starter ones not yet columns (status only), and
+  // `No <key>` last, which removes the property.
   const missingLabel = `No ${key}`;
+  const targets = useMemo(() => {
+    const real = columns.filter((c) => c.label !== missingLabel).map((c) => ({ key: c.key, label: c.label }));
+    if (key === DEFAULT_KEY) for (const name of STARTER_COLUMNS) if (!real.some((c) => c.key === name)) real.push({ key: name, label: name });
+    return [...real, { key: missingLabel.toLowerCase(), label: missingLabel }];
+  }, [columns, key, missingLabel]);
 
   const move = (path: string, column: string) => {
     const current = text.get(path);
@@ -55,7 +64,7 @@ export function BoardView(props: {
         extra: (
           <select className="view-move" aria-label={`Move ${title} to`} value="" onChange={(e) => e.target.value && move(path, e.target.value)}>
             <option value="">Move to…</option>
-            {columns
+            {targets
               .filter((c) => c.key !== col.key)
               .map((c) => (
                 <option key={c.key} value={c.label}>
