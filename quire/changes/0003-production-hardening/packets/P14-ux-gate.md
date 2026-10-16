@@ -12,7 +12,8 @@ reads:
   - playbook/modules/ux/**
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-A
 ---
 
 # Every screen passes the UX gate

@@ -47,7 +47,7 @@ Small capabilities may be a single file (`src/<capability>.ts`); split into `cor
 | S5 | Cross-capability imports go through public entries and appear in ARCHITECTURE.md's dependency table. | dependency rules |
 | S6 | No import cycles, between modules or files. | dependency rules |
 | S7 | `shared/` imports no capability. | dependency rules |
-| S8 | Files: soft limit 300 lines, hard limit 500. Functions about 60 lines. Prefer few deep modules over many shallow ones. | `bin/check-structure.py` |
+| S8 | Files: soft limit 300 lines, hard limit 500. Functions about 60 lines. Prefer few deep modules over many shallow ones. A file over the soft limit is a warning ("consider splitting this when you next change it"); over the hard limit it fails `check`. | `bin/check-structure.py` |
 | S9 | Names say what the code does (`three-way-merge.ts`). No `utils`, `helpers`, `misc`, `common` folders or files. | `bin/check-structure.py` |
 | S10 | Every module has a README of 15 lines or fewer; ARCHITECTURE.md lists every module. | `bin/check-structure.py` |
 | S11 | Changing a rule or a dependency between capabilities needs a decision record in the change. | review |

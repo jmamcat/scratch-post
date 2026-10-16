@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0 (2026-10-16)
+
+- Amendment 0008: `modules/hardening` (the production-readiness review), `modules/ux` (a
+  0-100 readability and UX scorer with hard checks, floors and a baseline ratchet),
+  `adapters/environments.md` (uv, Docker, Compose, sandboxed environments); gates that need
+  special machinery (`deploy`, `ux`) get their own names; `structure_allow` may name an app
+  shell beside `shared`.
+
 ## 1.7.0 (2026-10-16)
 
 - Amendment 0007: `bin/archive-change.py` applies a change's spec deltas to the living specs
