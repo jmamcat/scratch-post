@@ -1,6 +1,7 @@
 ---
 id: 0001-mvp-foundation
-status: in-progress
+play: new-system
+status: done
 created: 2026-10-16
 references: [obsidian, notion, confluence, joplin, silverbullet]
 capabilities: [vault, render, navigate, merge, sync, review, live, platforms]
@@ -15,10 +16,18 @@ storage, an Obsidian-compatible renderer, a client that works offline, and a syn
 that never loses an edit. Everything later (databases, templates, embeds, canvas) builds
 on these contracts.
 
+## Headline scenarios
+
+- Two devices edit different paragraphs of one note offline; both edits survive (R-SYN-03).
+- A true collision waits in the review inbox with both versions until someone picks (R-RVW-03).
+- The vault folder opens in Obsidian, and edits made there show up in the app (R-VLT-05).
+- A local node keeps serving while the cloud is down and catches up after (R-SYN-09).
+
 ## What changes
 
-- New pnpm workspace in `quire/` with `@quire/core`, `@quire/sync`, `@quire/server`,
-  `@quire/web` and `@quire/android`.
+- New pnpm workspace in `quire/` with capability packages `@quire/vault`, `@quire/render`,
+  `@quire/navigate`, `@quire/merge`, `@quire/sync`, and apps `@quire/server`, `@quire/web`,
+  `@quire/android` (split from an initial `@quire/core` during the run).
 - Obsidian Flavored Markdown rendering with wikilinks, embeds, callouts, highlights,
   tags, footnotes and task lists; raw HTML escaped.
 - A three-way merge engine with front matter merged per property and five collision tiers.

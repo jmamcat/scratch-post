@@ -7,17 +7,23 @@ Edits made anywhere, online or offline, converge; anything that cannot merge saf
 to a review inbox instead of being lost.
 
 Built with the RefSpec playbook: see `../playbook/`, the reference set in `../references/`,
-and the specs in `changes/0001-mvp-foundation/` (moved to `spec/` when archived).
+the specs in `changes/0001-mvp-foundation/` (moved to `spec/` when archived), and the
+code map in `ARCHITECTURE.md`.
 
 ## Layout
 
 | Path | What |
 | --- | --- |
-| `packages/core` | Obsidian Flavored Markdown parsing and rendering, link resolution, search, three-way merge |
+| `packages/vault` | Path rules and front matter |
+| `packages/render` | Obsidian Flavored Markdown parsing and rendering |
+| `packages/navigate` | Link resolution, link index, offline search |
+| `packages/merge` | Three-way merge with collision tiers |
 | `packages/sync` | Sync protocol, server push handler, client engine, HTTP transport |
 | `apps/server` | Hono API, SQLite revision log, vault folder mirror, Yjs live rooms, local node replicator |
 | `apps/web` | Local-first React client (IndexedDB, CodeMirror, review inbox) |
 | `apps/android` | Capacitor wrapper around the web build |
+| `scenarios` | The scenario suite, generated from the specs |
+| `demo` | Seed vault, one-command demo, walkthrough |
 
 ## Run it
 
@@ -25,7 +31,9 @@ Requires Node 22.13+ and pnpm 10.
 
 ```sh
 pnpm install
-pnpm check                 # typecheck + unit tests
+pnpm check                 # types, dependency rules, structure rules
+pnpm scenarios             # every spec scenario: real servers, real clients, real browser
+pnpm demo                  # cloud server + local node with seed data (demo/WALKTHROUGH.md)
 pnpm start                 # build the web client, serve everything on :8787
 ```
 

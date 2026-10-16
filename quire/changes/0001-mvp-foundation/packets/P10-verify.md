@@ -9,7 +9,8 @@ owns:
 reads:
   - quire/**
 size: S
-status: todo
+status: done
+claimed_by: claude-code/claude
 ---
 
 # End-to-end verification
@@ -20,17 +21,18 @@ Coordinator packet. Proves the slice works in a real browser and writes the run 
 
 ## Contract
 
-Playwright (Chromium at `/opt/pw-browsers` in the agent container) against a server
-serving the web build. Scenarios: create a note with a wikilink and see the backlink;
-go offline (`context.setOffline(true)`), edit, come back online and see the server head
-change; two browser contexts edit different paragraphs of one note offline and both edits
-survive; a true conflict shows in the review inbox and resolves.
+Superseded during the run by the scenarios module: every spec scenario is generated into
+Gherkin and run by playwright-bdd, `@system` against real server processes and `@ui` in
+Chromium (`quire/scenarios/`).
 
 ## Acceptance
 
 ```sh
 pnpm -C quire check
-pnpm -C quire e2e
+pnpm -C quire scenarios
 ```
+
+Result: check ok (9 packages, 0 dependency violations, 0 structure violations); scenarios
+66 passed. Run report written.
 
 ## Decisions log
