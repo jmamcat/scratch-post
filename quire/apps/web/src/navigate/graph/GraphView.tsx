@@ -68,6 +68,7 @@ export function GraphView(props: Props) {
 
 function Node(props: { node: LaidNode; focus: boolean; dim: boolean; onHover: (p: string | null) => void; onOpen: (p: string) => void }) {
   const { node: n } = props;
+  const hitW = Math.max(n.r * 2 + 4, n.title.length * 6.5);
   return (
     <g
       data-node={n.path}
@@ -88,6 +89,8 @@ function Node(props: { node: LaidNode; focus: boolean; dim: boolean; onHover: (p
       onBlur={() => props.onHover(null)}
     >
       <title>{n.path}</title>
+      {/* The dot and its name are one target; without this the gap between them is background. */}
+      <rect className="graph-hit" x={-hitW / 2} y={-n.r - 2} width={hitW} height={n.r * 2 + 18} />
       <circle r={n.r} />
       <text y={n.r + 12} textAnchor="middle">
         {n.title}

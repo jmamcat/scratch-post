@@ -50,6 +50,10 @@
   outline: none;
   transition: opacity 0.15s;
 }
+.graph-hit {
+  fill: transparent;
+  pointer-events: all;
+}
 .graph-node circle {
   fill: var(--text-muted);
   stroke: var(--bg);
