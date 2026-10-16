@@ -65,7 +65,7 @@ export async function createQuireServer(config: Config): Promise<QuireServer> {
     onEvent: (e) => events.emit(e),
   });
 
-  files = createFiles({ config, store, sync, vaultDir, committed });
+  files = createFiles({ config, store, sync, vaultDir, committed, emit: (e) => events.emit(e) });
   const backupDeps: BackupDeps = { config, store, sync, vaultDir, hooks, committed, log: ops.log, metrics: ops.metrics };
 
   const app = new Hono();

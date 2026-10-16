@@ -18,3 +18,4 @@ date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_rea
 2026-10-16,0002-workspace-ux,follow-up:board-new-columns,claude-code,m1,A,1,,,,,,,,,"done, 89/89",unknown,"coordinator, owner request after the run; tokens not reported per slice"
 2026-10-16,0003-production-hardening,research:ux-scorer,claude-code,m1,A,1,,,,,102550,,,6.1,"done, design with sources",harness-subagent-report,38 tool uses
 2026-10-16,0003-production-hardening,P10,claude-code,m3,C,1,,,,,151715,,,6.3,"done, 22/22; R-OPS-01 waits on P03",harness-subagent-report,39 tool uses
+2026-10-16,0003-production-hardening,P06,claude-code,m2,B,1,,,,,136640,,,6.9,"done, 3/3 R-VLT-11",harness-subagent-report,31 tool uses

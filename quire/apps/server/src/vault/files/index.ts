@@ -2,7 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { InvalidPathError, mimeOf, normalizeFilePath } from '@quire/vault';
-import { DELETED_HASH, type DocMeta, type Conflict, type PushResult, SyncError, type SyncServer } from '@quire/sync';
+import { DELETED_HASH, type DocMeta, type Conflict, type PushResult, type ServerEvent, SyncError, type SyncServer } from '@quire/sync';
 import type { Context, Hono } from 'hono';
 import type { Config } from '../../platforms/index.ts';
 import { requirePath, toInt } from '../../shared/http.ts';
@@ -14,6 +14,8 @@ export function blobPath(dataDir: string, hash: string): string {
 }
 
 export interface FileDeps {
+  /** Announce a server event (file conflicts). */
+  emit?(e: ServerEvent): void;
   config: Config;
   store: SqliteRevisionStore;
   sync: SyncServer;
@@ -159,6 +161,7 @@ export function createFiles(deps: FileDeps): Files {
         segments: [{ type: 'stable', text: `Both versions were kept:\n${path}\n${copy}\n` }],
       };
       store.saveConflict(conflict);
+      deps.emit?.({ type: 'conflict', id: conflict.id, path, status: conflict.status });
       return { path, status: 'conflict', meta, text: null, conflictId: conflict.id };
     });
   };

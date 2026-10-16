@@ -19,6 +19,8 @@ export interface Config {
   insecureNoAuth: boolean;
   /** Extra origins allowed to call the API from a browser (R-ACC-05). */
   allowedOrigins: string[];
+  /** Behind a reverse proxy: take the client address from the first `X-Forwarded-For` entry (R-ACC-06). */
+  trustProxy: boolean;
   /** Size limits in bytes (R-ACC-06). */
   maxNoteBytes: number;
   maxFileBytes: number;
@@ -55,6 +57,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     ...(env.QUIRE_REPLICATE_MAX_BACKOFF_MS ? { replicateMaxBackoffMs: Number(env.QUIRE_REPLICATE_MAX_BACKOFF_MS) } : {}),
     insecureNoAuth: env.QUIRE_INSECURE_NO_AUTH === '1',
     allowedOrigins: (env.QUIRE_ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+    trustProxy: env.QUIRE_TRUST_PROXY === '1',
     maxNoteBytes: Number(env.QUIRE_MAX_NOTE_BYTES ?? 2 * 1024 * 1024),
     maxFileBytes: Number(env.QUIRE_MAX_FILE_BYTES ?? 25 * 1024 * 1024),
     ticketTtlMs: Number(env.QUIRE_TICKET_TTL_MS ?? 60_000),

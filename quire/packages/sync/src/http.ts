@@ -57,19 +57,20 @@ export class HttpTransport implements Transport {
     return this.call('GET', '/api/health');
   }
 
-  /** URL with the token as a query parameter, for EventSource and WebSocket. */
+  /** URL for callers that authorize some other way; it never carries the token (R-ACC-03). */
   url(path: string, params: Record<string, string> = {}): string {
-    const q = new URLSearchParams({ ...params, ...(this.token ? { token: this.token } : {}) });
-    const s = q.toString();
+    const s = new URLSearchParams(params).toString();
     return `${this.baseUrl}${path}${s ? `?${s}` : ''}`;
   }
 
   /**
-   * Query parameters that authorize one event stream or live connection. Change 0003/P01 makes
-   * this fetch a single-use ticket (R-ACC-03); call it again for every new connection.
+   * Query parameters that authorize one event stream or live connection: a single-use ticket
+   * from `POST /api/tickets` (R-ACC-03). Call it again for every new connection.
    */
   async streamParams(): Promise<Record<string, string>> {
-    return this.token ? { token: this.token } : {};
+    if (!this.token) return {};
+    const { ticket } = await this.request<{ ticket: string; expiresAt: string }>('POST', '/api/tickets');
+    return { ticket };
   }
 
   /** Full URL for one event stream connection, authorized by `streamParams`. */

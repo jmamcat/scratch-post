@@ -91,7 +91,10 @@ export function sizeLimits(config: Config): MiddlewareHandler {
   };
   return async (c, next) => {
     const limit = c.req.path === '/api/files' ? files : other;
-    return limit(c, () => textCheck(c, next));
+    return limit(c, async () => {
+      const refused = await textCheck(c, next);
+      if (refused) c.res = refused;
+    });
   };
 }
 

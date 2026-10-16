@@ -85,7 +85,8 @@ class NodeStore implements LocalStore {
   }
 
   async all(): Promise<LocalDoc[]> {
-    const paths = new Set(this.q.store.heads().map((m) => m.path));
+    // Attachments do not replicate through a local node yet (D-C-1 in the 0003 run report).
+    const paths = new Set(this.q.store.heads().filter((m) => m.kind !== 'file').map((m) => m.path));
     for (const key of this.q.store.kvKeys(BASE_PREFIX)) paths.add(key.slice(BASE_PREFIX.length));
     const docs: LocalDoc[] = [];
     for (const p of paths) {

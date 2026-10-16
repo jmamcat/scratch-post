@@ -12,6 +12,8 @@ type Pane = 'Backlinks' | 'Outgoing' | 'Outline' | 'Properties';
 export class BrowserDevice implements Device {
   /** Server-side view for lookups a person would do by reading the screen (conflict ids). */
   private readonly api: HttpTransport;
+  /** Every URL the browser requested, WebSockets included (R-ACC-04). */
+  readonly requestUrls: string[] = [];
 
   private constructor(
     readonly name: string,
@@ -32,8 +34,10 @@ export class BrowserDevice implements Device {
       [JSON.stringify({ serverUrl: url, token: token ?? '', device: name })],
     );
     const page = await context.newPage();
-    await page.goto(url);
     const device = new BrowserDevice(name, context, page, url, token);
+    context.on('request', (r) => device.requestUrls.push(r.url()));
+    page.on('websocket', (ws) => device.requestUrls.push(ws.url()));
+    await page.goto(url);
     await expect(page.getByRole('status')).toBeVisible();
     return device;
   }

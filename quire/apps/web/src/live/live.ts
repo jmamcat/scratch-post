@@ -104,7 +104,14 @@ export class LiveSession {
 
     const joinText = this.view.state.doc.toString();
     const doc = new Y.Doc();
-    const auth = await this.ws.transport.streamParams();
+    let auth: Record<string, string>;
+    try {
+      auth = await this.ws.transport.streamParams();
+    } catch {
+      this.set('off');
+      this.retryLater();
+      return;
+    }
     if (this.stopped || this.provider) return;
     const provider = new WebsocketProvider(`${wsBase(this.ws.settings.serverUrl)}/live`, '', doc, {
       params: { path: this.path, device: this.ws.device, ...auth },
@@ -128,6 +135,13 @@ export class LiveSession {
         this.drop();
         if (!connectedOnce || !this.bound) this.retryLater();
       }
+    });
+    // A refused handshake (spent or expired ticket) never reports "disconnected", and the
+    // provider would retry the same URL forever: start a new join with a fresh ticket instead.
+    provider.on('connection-close', () => {
+      if (this.provider !== provider || connectedOnce) return;
+      this.drop();
+      this.retryLater();
     });
     provider.on('sync', (synced: boolean) => {
       if (synced && !this.bound && this.provider === provider) this.bind(doc, provider, joinText);

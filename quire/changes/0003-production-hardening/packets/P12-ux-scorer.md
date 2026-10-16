@@ -22,7 +22,8 @@ reads:
   - playbook/**
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-A
 ---
 
 # UX scorer

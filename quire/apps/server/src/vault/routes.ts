@@ -6,7 +6,7 @@ import { requirePath, toInt } from '../shared/http.ts';
 export function vaultRoutes(app: Hono, deps: { store: RevisionStore; sync: SyncServer }): void {
   const { store, sync } = deps;
 
-  app.get('/api/docs', (c) => c.json(store.heads().filter((m) => !m.deleted)));
+  app.get('/api/docs', (c) => c.json(store.heads().filter((m) => !m.deleted && m.kind !== 'file')));
 
   app.get('/api/doc', (c) => {
     const rev = c.req.query('rev');
