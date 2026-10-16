@@ -59,7 +59,8 @@ correctly, logged a decision with the fix, and did not weaken a scenario.
 - **Interactive tasks** (P00, P01): checkboxes toggle the Markdown in both reading view and
   Live Preview.
 - **Sidebar views** (P02, P03, P07): Folders, Search, Recent, Changes, Domains, Tags,
-  Timeline and Board (group by any property, move a card to change the property).
+  Timeline and Board (group by any property, move a card to change the property, or name
+  a new column for it).
 - **Graph** (P02, P04): a global graph at `#/~graph` (Mod+G) and a local graph in the right
   pane at depth 2.
 - **Search operators** (P07): `path:`, `file:`, `tag:`, quoted phrases and `-term`.
@@ -75,7 +76,7 @@ Kindly direct me if any of these were incorrect. Each one is reversible as noted
 
 | # | Question | What I did | Confidence | To reverse |
 | --- | --- | --- | --- | --- |
-| D-P03-1 | The Board scenario moves a card to `done` when only `todo` exists. Where do new columns come from? | For `status`, starter columns `todo`, `doing`, `done` are always offered; other keys offer existing columns only. There is no way to name a brand-new column yet. | med | `STARTER_COLUMNS` in `apps/web/src/views/BoardView.tsx` |
+| D-P03-1 | The Board scenario moves a card to `done` when only `todo` exists. Where do new columns come from? | For `status`, starter columns `todo`, `doing`, `done` are always offered. **Owner direction after the run:** every key also gets "New column…", which names a column and moves the card into it (R-VIEW-05, scenario "Move a card to a column the user names"). | high | `STARTER_COLUMNS` and `NewColumn` in `apps/web/src/views/BoardView.tsx` |
 | D-P06-3 | Can the Add property form create a list? | No: it infers booleans and numbers, everything else is text. Existing lists can be edited. | low | `inferValue` in `vault/properties/PropertiesEditor.tsx` |
 | D-P06-2 | Nested maps and mixed lists in front matter | Shown read-only, so the editor never rewrites their types | med | `kindOf` in `PropertiesEditor.tsx` |
 | D-P06-4 | Adding a key that already exists | Overwrites it with no prompt | med | `submit` in `PropertiesEditor.tsx` |
@@ -107,7 +108,8 @@ coordinator (P06 and P03 by the missing dependency, P07 by live attribution).
 
 - `pnpm -C quire check`: green (types, dependency rules, structure: 0 violations, 5 soft
   size warnings, all from 0001).
-- `pnpm -C quire scenarios`: 88 of 88 passed, twice in a row (66 from 0001, 22 new).
+- `pnpm -C quire scenarios`: 88 of 88 passed, twice in a row (66 from 0001, 22 new). After
+  the owner's follow-up (new Board columns), 89 of 89.
 - P01 and P05 also looked at the result in a real browser (screenshots outside git).
 
 ## Playbook friction

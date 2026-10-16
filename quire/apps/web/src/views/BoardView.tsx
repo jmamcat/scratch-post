@@ -9,10 +9,13 @@ import './views.css';
 const DEFAULT_KEY = 'status';
 /** Columns always offered for `status`, so a board with one column can still move cards. */
 const STARTER_COLUMNS = ['todo', 'doing', 'done'];
+/** Move-select value that asks for a new column name. Labels are trimmed, so none starts with a space. */
+const NEW_COLUMN = ' new column';
 
 /**
  * Notes as columns by the value of a front matter property, `status` by default. Moving a
  * card changes that property in the note (R-VIEW-05); the select is the accessible way.
+ * "New column…" in the select asks for a name and moves the card there.
  */
 export function BoardView(props: {
   ws: Workspace;
@@ -25,6 +28,8 @@ export function BoardView(props: {
   const { ws, active, onOpen, onEdit } = props;
   const [key, setKey] = useState(DEFAULT_KEY);
   const [error, setError] = useState<string | null>(null);
+  /** The card whose new column is being named, if any. */
+  const [naming, setNaming] = useState<string | null>(null);
   const notes = useNotes(ws, props.version);
 
   const keys = useMemo(() => {
@@ -59,10 +64,22 @@ export function BoardView(props: {
     label: col.label,
     items: col.items.map((path) => {
       const title = titleOf(path);
+      if (naming === path) {
+        return { path, extra: <NewColumn title={title} onDone={(name) => (setNaming(null), name && move(path, name))} /> };
+      }
       return {
         path,
         extra: (
-          <select className="view-move" aria-label={`Move ${title} to`} value="" onChange={(e) => e.target.value && move(path, e.target.value)}>
+          <select
+            className="view-move"
+            aria-label={`Move ${title} to`}
+            value=""
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === NEW_COLUMN) setNaming(path);
+              else if (v) move(path, v);
+            }}
+          >
             <option value="">Move to…</option>
             {targets
               .filter((c) => c.key !== col.key)
@@ -71,6 +88,7 @@ export function BoardView(props: {
                   {c.label}
                 </option>
               ))}
+            <option value={NEW_COLUMN}>New column…</option>
           </select>
         ),
       };
@@ -96,5 +114,34 @@ export function BoardView(props: {
       )}
       <GroupList label="Board" active={active} onOpen={onOpen} empty="No notes yet." groups={groups} />
     </div>
+  );
+}
+
+/** Inline name field for a new column: Enter or Move commits, Escape or an empty name cancels. */
+function NewColumn(props: { title: string; onDone: (name: string | null) => void }) {
+  const [name, setName] = useState('');
+  const done = (value: string | null) => props.onDone(value?.trim() || null);
+  return (
+    <form
+      className="board-new-column"
+      onSubmit={(e) => {
+        e.preventDefault();
+        done(name);
+      }}
+    >
+      <input
+        className="view-move"
+        aria-label={`New column for ${props.title}`}
+        placeholder="Column name"
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Escape' && done(null)}
+        onBlur={(e) => !e.relatedTarget && !name.trim() && done(null)}
+      />
+      <button type="submit" className="board-new-column-ok">
+        Move
+      </button>
+    </form>
   );
 }

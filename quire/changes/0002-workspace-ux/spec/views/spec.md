@@ -80,7 +80,7 @@ Layer: ui
 
 ### Requirement R-VIEW-05: Board
 
-The client SHALL group notes into columns by the value of a chosen property (default `status`), with notes lacking it in a `No status` column, and SHALL move a note to another column by changing that property.
+The client SHALL group notes into columns by the value of a chosen property (default `status`), with notes lacking it in a `No status` column, and SHALL move a note to another column by changing that property, including to a new column the user names.
 
 Layer: ui
 
@@ -104,6 +104,17 @@ Grounding: NOT-F-052, OBS-F-111, CNF-F-052
 - **WHEN** `pixel` switches the sidebar to `Board`
 - **AND** `pixel` moves `t1` to the `done` column
 - **THEN** `t1.md` on `pixel` reads `---\nstatus: done\n---\nfirst\n`
+
+#### Scenario: Move a card to a column the user names
+
+- **GIVEN** a cloud server
+- **AND** device `pixel`
+- **AND** `pixel` has `t1.md` reading `---\npriority: low\n---\nfirst\n`
+- **WHEN** `pixel` switches the sidebar to `Board`
+- **AND** `pixel` groups the board by `priority`
+- **AND** `pixel` moves `t1` to a new column `urgent`
+- **THEN** `t1.md` on `pixel` reads `---\npriority: urgent\n---\nfirst\n`
+- **AND** the sidebar on `pixel` shows `t1` under `urgent`
 
 ### Requirement R-VIEW-06: Recent
 

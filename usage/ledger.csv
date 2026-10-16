@@ -15,3 +15,4 @@ date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_rea
 2026-10-16,0002-workspace-ux,P03,claude-code,m2,B,1,,,,,95098,,,7.7,"done, 7/7 after coordinator added the web dependency",harness-subagent-report,35 tool uses
 2026-10-16,0002-workspace-ux,P04,claude-code,m1,A,1,,,,,119140,,,11.1,"done, 3/3 (one fix after first run)",harness-subagent-report,38 tool uses
 2026-10-16,0002-workspace-ux,P01,claude-code,m1,A,1,,,,,136232,,,21.0,"done, 5/5",harness-subagent-report,53 tool uses; ran in parallel with both waves
+2026-10-16,0002-workspace-ux,follow-up:board-new-columns,claude-code,m1,A,1,,,,,,,,,"done, 89/89",unknown,"coordinator, owner request after the run; tokens not reported per slice"

@@ -115,6 +115,8 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `the sidebar on "d" shows the tag "t" with N notes` | Tags view count |
 | `the sidebar on "d" shows "title" changed by "device"` | Changes view row |
 | `"d" moves "title" to the "Column" column` | Board: change the grouping property |
+| `"d" moves "title" to a new column "Name"` | Board: name a new column and move the note into it |
+| `"d" groups the board by "key"` | Board: pick the grouping property |
 | `"d" reloads the app` | reload the page |
 | `"d" puts the cursor on the line "text"` | click into that line of the editor |
 | `the editor on "d" shows "t" as a heading without "#"` | Live Preview heading |

@@ -13,3 +13,15 @@ When('{string} moves {string} to the {string} column', async ({ world }, d: stri
   const page = appDevice(world, d).page;
   await page.getByRole('combobox', { name: `Move ${title} to` }).selectOption({ label: column });
 });
+
+When('{string} moves {string} to a new column {string}', async ({ world }, d: string, title: string, column: string) => {
+  const page = appDevice(world, d).page;
+  await page.getByRole('combobox', { name: `Move ${title} to` }).selectOption({ label: 'New column…' });
+  const input = page.getByRole('textbox', { name: `New column for ${title}` });
+  await input.fill(column);
+  await input.press('Enter');
+});
+
+When('{string} groups the board by {string}', async ({ world }, d: string, key: string) => {
+  await appDevice(world, d).page.getByRole('combobox', { name: 'Group by' }).selectOption(key);
+});
