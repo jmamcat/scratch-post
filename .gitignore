@@ -139,3 +139,7 @@ references/*/product/visuals/captures/
 
 # Quire runtime data
 quire/.data/
+quire/.e2e-data/
+quire/e2e/test-results/
+quire/test-results/
+quire/playwright-report/
