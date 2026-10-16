@@ -24,6 +24,8 @@ is defined by comparison with others), demo (recommended).
 5. **Verify**: the full scenario suite, including at least one scenario per headline scenario
    from the proposal.
 6. **Fold back**: run report, archive. The first archived change makes the living specs.
+   Before calling the system production ready, run the readiness review in
+   `modules/hardening` and carry its gaps as the next change.
 
 ## Typical packets
 

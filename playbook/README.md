@@ -23,9 +23,11 @@ Version: see `VERSION`. Changes: `CHANGELOG.md`.
 | [`modules/structure`](modules/structure/) | The code structure standard: capability-shaped modules, public APIs, dependency rules a CI step enforces. | when code changes |
 | [`modules/references`](modules/references/) | A reference set: products or systems you learn from or must stay compatible with, kept beside the target. | optional |
 | [`modules/demo`](modules/demo/) | Making each change demo-able: seed data, one command to run, a walkthrough. | optional |
+| [`modules/hardening`](modules/hardening/) | The production-readiness review: access, secrets, data safety, offline, observability, deployment, load, budgets; each item becomes a requirement with a scenario. | before production |
+| [`modules/ux`](modules/ux/) | A 0-100 readability and UX scorer with hard checks, floors and a baseline ratchet, so UI changes carry evidence. | when there is a UI |
 | [`modules/usage`](modules/usage/) | A ledger of tokens, credits and time per slice, mapped to harness and model, so builds and pull requests can be benchmarked. | optional |
 | [`amendments/`](amendments/) | How the playbook changes itself, only with evidence that the change is better. | always applies |
-| [`adapters/`](adapters/) | Notes for specific harnesses and model tiers. Never required. | optional |
+| [`adapters/`](adapters/) | Notes for specific harnesses, model tiers and environments (uv, Docker, Compose). Never required. | optional |
 | [`bin/`](bin/) | Small scripts (bash and Python 3, no dependencies): `gate.sh`, `spec-scenarios.py`, `check-structure.py`, `packet-prompt.sh`, `run-lanes.sh`, `refs.sh`, `usage.py`, `archive-change.py`. | optional |
 | [`templates/`](templates/) | Proposal, packet and run report templates. | always |
 

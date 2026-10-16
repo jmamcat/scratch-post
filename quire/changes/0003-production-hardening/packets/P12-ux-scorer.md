@@ -1,0 +1,79 @@
+---
+id: 0003-production-hardening/P12
+title: UX scorer tooling, playbook module, contrast fixes
+lane: H
+depends_on: [P00]
+owns:
+  - quire/scenarios/ux/**
+  - quire/scenarios/steps/ux.steps.ts
+  - playbook/modules/ux/**
+borrows:
+  - quire/package.json  # scripts: ux, ux:approve
+  - quire/apps/web/src/platforms/themes/*.css  # colour changes for contrast only
+  - quire/apps/web/src/styles.css  # colour variables for contrast only
+  - .gitignore  # the UX report output
+reads:
+  - quire/changes/0003-production-hardening/research-ux-scorer.md
+  - quire/changes/0003-production-hardening/**
+  - quire/spec/**
+  - quire/apps/web/**
+  - quire/scenarios/**
+  - quire/demo/**
+  - playbook/**
+size: M
+revision: 1
+status: todo
+---
+
+# UX scorer
+
+## Context
+
+The owner asked for common tooling that judges readability and UX, so agents can measure and
+improve with evidence. Research is done: `research-ux-scorer.md` in this change (categories
+A to G, the formula, the gate, the baseline ratchet, dependencies, pitfalls, sources). Build
+it in two parts: a **project-agnostic playbook module** that describes the method so any
+project can adopt it, and **Quire's runner** that implements it with Playwright. Then fix
+colour contrast in every theme (the Default dark primary button is 3.3:1, D-P05-6 of 0002).
+P00 added the dependencies to `quire/scenarios/package.json`: `@axe-core/playwright` 4.13.0,
+`colorjs.io` 0.7.1, `syllable` 5.0.1, `pngjs` 7.0.0, `pixelmatch` 7.2.0.
+
+R-PLT-08 (the full gate over every screen) is the last packet's job (P14, after every screen
+exists); this packet makes the tool, the baseline and contrast.
+
+## Contract
+
+- `playbook/modules/ux/README.md` (the method: states, categories and weights, metric
+  ramps, score formula, hard checks, floors, the baseline ratchet, what counts as evidence
+  for an amendment, how to approve a new baseline, pitfalls) and `sources.md` (the research
+  sources, with what each supports). Project-agnostic: no Quire paths in the README except
+  as an example.
+- `quire/scenarios/ux/`: a library `scoreState(page, state) -> StateScore` and
+  `scoreApp(...)`, one file per category, a runner script (`pnpm -C quire ux`: start a cloud
+  server with the demo seed, open the standard screens that exist (editor, reading view,
+  sidebar views Folders/Tags/Board, graph, settings, review inbox, vault history when
+  present) in every theme, light and dark, at 1280x800 and 390x844, plus the 320 px reflow
+  check; write `quire/scenarios/ux/report.md` (gitignored) and compare with
+  `quire/scenarios/ux/baseline.json` (committed)), and `pnpm -C quire ux:approve` to write the
+  baseline. Per the research: gate on WCAG 2.x contrast, APCA advisory only.
+- `quire/scenarios/steps/ux.steps.ts`: `device "d" with the demo notes` and `in every theme the
+  standard screens on "d" pass the UX gate` (raise the test timeout inside the step; run the
+  same library as the runner).
+- Contrast: after this packet, the WCAG contrast hard check passes in every theme, light and
+  dark, on every screen the runner covers. Change colour values only.
+
+## Acceptance
+
+```sh
+export QUIRE_WEB_DIST=/tmp/quire-web-P12
+pnpm -C quire --filter @quire/web exec vite build --outDir "$QUIRE_WEB_DIST" --emptyOutDir
+playbook/bin/gate.sh check
+playbook/bin/gate.sh ux
+playbook/bin/gate.sh scenarios "@R-PLT-05"
+```
+
+`gate.sh ux` produces a report, shows contrast at 100% in every state, and the baseline is
+written. Paste the report's summary table (per screen and theme totals, lowest state) under
+Acceptance. R-PLT-08 may still fail on other hard checks; list what fails.
+
+## Decisions log
