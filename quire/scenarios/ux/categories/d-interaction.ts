@@ -119,8 +119,17 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
     }, app.tabEscapes);
     if (escape) await page.keyboard.press(escape);
     await page.keyboard.press('Tab');
-    // Let focus handlers and the next paint (an editor's own cursor, transitions) run first.
-    await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+    // Let focus handlers and the next paint run first. Text fields and editors draw their caret
+    // late (an editor measures, then draws its own cursor layer), so they get longer.
+    await page.evaluate(async () => {
+      const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      await frames();
+      const a = document.activeElement;
+      if (a instanceof HTMLElement && (a.isContentEditable || a.matches('input, textarea'))) {
+        await new Promise((r) => setTimeout(r, 150));
+        await frames();
+      }
+    });
     const f: Focused | null = await page.evaluate(() => {
       const a = document.activeElement;
       if (!a || a === document.body || a === document.documentElement) return null;

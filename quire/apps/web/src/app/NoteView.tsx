@@ -1,10 +1,9 @@
 import { toggleTask } from '@quire/render';
-import type { Extension } from '@codemirror/state';
-import { type ComponentProps, type RefObject, useCallback } from 'react';
+import { type ComponentProps, type RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Reader } from '../render/index.ts';
 import { NoteBanner } from '../review/index.ts';
 import type { Workspace } from '../sync/index.ts';
-import { type Attachments, type EditorHandle, type EditorMode, InlineTitle, NoteEditor, toNotePath } from '../vault/index.ts';
+import { type Attachments, type EditorHandle, type EditorMode, InlineTitle, NoteEditor, toNotePath, useAttachments } from '../vault/index.ts';
 
 interface Props {
   ws: Workspace;
@@ -16,8 +15,8 @@ interface Props {
   mode: EditorMode;
   titleFocus: number;
   conflict: ComponentProps<typeof NoteBanner>['conflict'] | undefined;
-  attachments: Attachments;
-  attachmentExtension: Extension;
+  /** Receives the attachments API (R-VLT-12) for the "Insert attachment" command. */
+  attachmentsRef: RefObject<Attachments | null>;
   editor: RefObject<EditorHandle | null>;
   onHandle: (h: EditorHandle | null) => void;
   onReview: (id: string) => void;
@@ -30,8 +29,16 @@ interface Props {
 }
 
 /** The open note: banner, inline title, editor and (when reading) the rendered note. */
-export function NoteView(p: Props) {
+export default function NoteView(p: Props) {
   const { ws, path, text, reading } = p;
+  // Attachments (R-VLT-12): the editor extension reads the open path through a ref.
+  const attachments = useAttachments(ws);
+  useEffect(() => {
+    p.attachmentsRef.current = attachments;
+  }, [attachments]);
+  const pathNow = useRef(path);
+  pathNow.current = path;
+  const attachmentExtension = useMemo(() => attachments.editorExtension(() => pathNow.current), [attachments]);
   const resolve = useCallback((t: string) => ws.links.resolve(t, path), [ws, path, p.paths]);
   return (
     <div className="view-content">
@@ -45,7 +52,7 @@ export function NoteView(p: Props) {
         onOpenLink={p.onOpenLink}
         onHandle={p.onHandle}
         isLive={() => ws.client.isLive(path)}
-        extensions={p.attachmentExtension}
+        extensions={attachmentExtension}
       />
       {reading && (
         <div className="reader-scroll">
@@ -59,7 +66,7 @@ export function NoteView(p: Props) {
             }}
             onTag={p.onTag}
             onToggleTask={(line) => p.onEditText(path, toggleTask(text, line))}
-            imageSrc={p.attachments.imageSrc}
+            imageSrc={attachments.imageSrc}
           />
         </div>
       )}

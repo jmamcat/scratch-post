@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppDialogs } from './app/AppDialogs.tsx';
 import { EmptyState } from './app/EmptyState.tsx';
-import { LazyGraphView, LazyRightPane } from './app/lazy-views.tsx';
-import { NoteView } from './app/NoteView.tsx';
+import { LazyGraphView, LazyLiveStatus, LazyNoteView, LazyRightPane } from './app/lazy-views.tsx';
 import { ViewHeader } from './app/ViewHeader.tsx';
 import type { Dialog, DrawerState } from './app/dialog-state.ts';
 import { useLayoutState } from './app/layout-state.ts';
 import { useCommands } from './app/use-commands.ts';
 import { useNavigation } from './app/use-navigation.ts';
-import { useLive, LiveIndicator } from './live/index.ts';
 import { ConflictBadge, ConflictStore } from './review/index.ts';
-import { PropertiesEditor, useAttachments, type EditorHandle } from './vault/index.ts';
+import type { Attachments, EditorHandle } from './vault/index.ts';
 import { Sidebar } from './Sidebar.tsx';
 import { useRoute } from './shared/router.ts';
 import { StatusBar, type Workspace } from './sync/index.ts';
@@ -31,20 +29,15 @@ export function App({ ws }: { ws: Workspace }) {
   const editor = useRef<EditorHandle | null>(null);
   const [handle, setHandle] = useState<EditorHandle | null>(null);
 
-  // Attachments (R-VLT-12): the editor extension reads the open path through a ref.
-  const attachments = useAttachments(ws);
-  const pathNow = useRef(path);
-  pathNow.current = path;
-  const attachmentExtension = useMemo(() => attachments.editorExtension(() => pathNow.current ?? ''), [attachments]);
+  const attachmentsRef = useRef<Attachments | null>(null);
 
-  // Review inbox data (P08), live session for the open note (P08).
+  // Review inbox data (P08).
   const [conflicts] = useState(() => new ConflictStore(ws));
   useEffect(() => {
     conflicts.start();
     return () => conflicts.stop();
   }, [conflicts]);
   const conflictSnap = useSyncExternalStore(conflicts.subscribe, conflicts.getSnapshot);
-  const live = useLive(ws, handle);
 
   const nav = useNavigation({ ws, route, path, paths: snap.paths, layout, editor, focusTitle });
   const { open, createAndOpen, newNote, dailyNote } = nav;
@@ -57,7 +50,7 @@ export function App({ ws }: { ws: Workspace }) {
     ws.syncSoon(300);
   };
 
-  const commands = useCommands({ ws, path, exists, layout, dialog, setDialog, setDrawer, focusTitle, newNote, dailyNote, editor, attachments, pathNow });
+  const commands = useCommands({ ws, path, exists, layout, dialog, setDialog, setDrawer, focusTitle, newNote, dailyNote, editor, attachmentsRef });
   const openReview = (focus: string | null) => setDrawer({ kind: 'review', focus });
   const openDeleteDialog = () => path && setDialog({ kind: 'confirm-delete', path });
 
@@ -107,7 +100,7 @@ export function App({ ws }: { ws: Workspace }) {
             <LazyGraphView ws={ws} version={snap.version} onOpen={(p) => open(p)} />
           </div>
         ) : exists && path ? (
-          <NoteView
+          <LazyNoteView
             ws={ws}
             path={path}
             text={text}
@@ -116,8 +109,7 @@ export function App({ ws }: { ws: Workspace }) {
             mode={editorMode}
             titleFocus={titleFocus}
             conflict={conflictSnap.open.find((c) => c.path === path)}
-            attachments={attachments}
-            attachmentExtension={attachmentExtension}
+            attachmentsRef={attachmentsRef}
             editor={editor}
             onHandle={(h) => {
               editor.current = h;
@@ -153,7 +145,7 @@ export function App({ ws }: { ws: Workspace }) {
           onOpen={(p) => open(p)}
           onOpenLink={nav.openLink}
           onTag={nav.showTag}
-          properties={(t) => <PropertiesEditor text={t} onChange={(next) => path && editText(path, next)} />}
+          onEditText={editText}
           onHeading={(line, slug) => {
             if (reading) document.getElementById(slug)?.scrollIntoView({ block: 'start' });
             else editor.current?.scrollToLine(line);
@@ -162,7 +154,7 @@ export function App({ ws }: { ws: Workspace }) {
       )}
 
       <StatusBar status={snap.status} loaded={snap.loaded} device={ws.device} onSync={() => void ws.syncNow()}>
-        <LiveIndicator info={live} />
+        <LazyLiveStatus ws={ws} editor={handle} />
         <ConflictBadge store={conflicts} onOpen={() => openReview(null)} />
       </StatusBar>
 

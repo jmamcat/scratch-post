@@ -103,8 +103,8 @@ A score alone is never evidence that a threshold is right.
 - **Flakiness.** Fixed viewport, scale, locale, time zone and seed data; wait for the app's
   ready signal, fonts and a quiet DOM; disable animations and hide the caret in screenshots;
   wait two frames after each Tab before taking the focused picture. Everything else is
-  deterministic for a given DOM. CLS is a single run here; take the median of three where
-  load timing varies.
+  deterministic for a given DOM. CLS from a single load is noisy on a busy machine; take the
+  median of three loads when the ratchet trips on it.
 - **Dynamic content.** Virtualised lists and editors only render what is visible: measure
   line length on rendered blocks, and score menus and dialogs as their own states.
 - **Widgets that keep Tab** (code editors): the runner presses the widget's documented way

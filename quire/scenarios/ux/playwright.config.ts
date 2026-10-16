@@ -1,6 +1,6 @@
-// The UX runner (`pnpm -C quire ux`, `pnpm -C quire ux:approve`): one cloud server with the
-// demo seed, one test per theme and colour scheme, then a report test that writes report.md and
-// checks the ratchet against baseline.json.
+// The UX runner (`pnpm -C quire ux`, `pnpm -C quire ux:approve`): one test per theme and colour
+// scheme, each on its own cloud server with the demo seed, then a report test that writes
+// report.md and checks the ratchet against baseline.json.
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({

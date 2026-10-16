@@ -19,8 +19,7 @@ interface Inputs {
   newNote: () => void;
   dailyNote: () => void;
   editor: RefObject<EditorHandle | null>;
-  attachments: Attachments;
-  pathNow: RefObject<string | null>;
+  attachmentsRef: RefObject<Attachments | null>;
 }
 
 /** The command list (palette and hotkeys) and the global key handler that runs it. */
@@ -62,7 +61,7 @@ export function useCommands(i: Inputs): Command[] {
       {
         id: 'attach',
         name: 'Insert attachment',
-        run: () => i.editor.current && i.attachments.insert(i.editor.current.view, () => i.pathNow.current ?? ''),
+        run: () => i.editor.current && i.attachmentsRef.current?.insert(i.editor.current.view, () => i.editor.current?.path ?? ''),
         enabled: () => exists && !reading,
       },
     ],

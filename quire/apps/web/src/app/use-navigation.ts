@@ -1,6 +1,4 @@
-import { extractHeadings } from '@quire/render';
 import { useCallback, useEffect, type RefObject } from 'react';
-import { headingSlug } from '../render/index.ts';
 import { navigate, noteHash, type Route } from '../shared/router.ts';
 import type { Workspace } from '../sync/index.ts';
 import { dailyNotePath, type EditorHandle, folderOf, joinPath, toNotePath, untitledPath } from '../vault/index.ts';
@@ -73,7 +71,9 @@ export function useNavigation({ ws, route, path, paths, layout, editor, focusTit
     setRecent((r) => [route.path, ...r.filter((p) => p !== route.path)].slice(0, 20));
     if (!route.heading) return;
     const heading = route.heading;
-    requestAnimationFrame(() => {
+    // The markdown parser is not in the first-load bundle (R-PLT-07): fetch it for the jump.
+    requestAnimationFrame(async () => {
+      const [{ extractHeadings }, { headingSlug }] = await Promise.all([import('@quire/render'), import('../render/index.ts')]);
       const t = ws.read(route.path) ?? '';
       const slug = headingSlug(t, heading);
       if (!slug) return;
