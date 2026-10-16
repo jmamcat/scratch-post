@@ -107,7 +107,10 @@ def parse_spec(path: Path, root: Path) -> list[Requirement]:
             section = m.group(1).upper()
             continue
         if m := REQ_RE.match(line):
-            req = Requirement(m.group(1), m.group(2).strip(), capability, str(path.relative_to(root)), removed=section == "REMOVED")
+            title = m.group(2).strip()
+            # A tombstone left by an archived REMOVED delta: `### Requirement R-X-NN: (removed in <change>)`.
+            tombstone = title.startswith("(removed in ")
+            req = Requirement(m.group(1), title, capability, str(path.relative_to(root)), removed=section == "REMOVED" or tombstone)
             reqs.append(req)
             scn = None
             continue

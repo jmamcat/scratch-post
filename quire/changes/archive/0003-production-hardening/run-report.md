@@ -133,6 +133,13 @@ Coordinator decisions (D-C):
   server cost under load).
 - **D-C-6** (med): `apps/web/src/app/` (the web shell) is allowed beside `shared` in
   `structure_allow`; the packet named it, the structure rules refused it.
+- **D-C-9** (high): a real defect in live editing, found by repeated runs. When a note opened,
+  the live room joined after a sync; the merge base for text typed during the join was the
+  editor text after the sync, but the room was seeded from the server head, which could be
+  older. Typing that landed between the push and the room connecting therefore equalled the
+  base and was replaced by the older head: the text vanished. P09's lazy loading of the live
+  libraries widened the window. The base is now the server text the sync agreed on
+  (`apps/web/src/live/live.ts`), which is correct whatever the timing.
 - **D-C-8** (high): file tree Rename action (F2 or the pencil button) and the "Insert
   attachment" command; `GET /api/docs?kind=file` lists attachment heads; file conflicts are
   announced as events.
@@ -154,12 +161,19 @@ Known gaps carried forward (not regressions):
 
 ## Verification
 
-Final runs on the merged tree, machine otherwise idle (`playbook/bin/gate.sh`):
+Final runs on the merged tree, no workers running (`playbook/bin/gate.sh`):
 
-- `check`: see the verification note appended below.
-- `scenarios`: see below.
-- `deploy`: see below.
-- `ux`: see below.
+- `check`: green (types, dependency rules, structure: 0 violations, 5 soft size warnings).
+- `scenarios`: 129 of 129 (2.8 min); 131 scenarios exist, the other two run in `deploy` and
+  `ux`.
+- `deploy`: 1 of 1 (image build, Compose up, healthy, non-root, data survives a restart).
+- `ux`: R-PLT-08 passes (6.0 min); the full matrix, 180 states, passes with no regression
+  against the approved baseline (10.0 min).
+- The first full run had one failure (R-PLT-03), and a repeated run of every browser
+  scenario under load (4 workers, twice) reproduced the same symptom elsewhere about once in
+  100 runs: text typed into a note right after it was created vanished. Root cause in
+  D-C-9; after the fix, every browser and live scenario passed 228 of 228 (two repeated
+  runs), then `scenarios` 129 of 129 again.
 
 ## Playbook friction
 

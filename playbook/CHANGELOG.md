@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.1 (2026-10-16)
+
+- `bin/spec-scenarios.py` treats a removed requirement's tombstone as removed, so archiving a
+  REMOVED delta no longer reports it as a requirement without scenarios.
+
 ## 1.8.0 (2026-10-16)
 
 - Amendment 0008: `modules/hardening` (the production-readiness review), `modules/ux` (a

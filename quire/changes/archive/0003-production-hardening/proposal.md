@@ -1,7 +1,7 @@
 ---
 id: 0003-production-hardening
 play: add-feature
-status: in-progress
+status: archived
 created: 2026-10-16
 references: [obsidian, joplin]
 capabilities: [access, backup, ops, vault, platforms]

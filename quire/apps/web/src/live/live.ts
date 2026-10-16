@@ -111,8 +111,10 @@ export class LiveSession {
       return;
     }
 
-    // Taken before waiting for the libraries: text typed meanwhile is carried into the room by `bind`.
-    const joinText = this.view.state.doc.toString();
+    // The merge base for `bind` is the server text the room is seeded from (the head this sync
+    // agreed on), not the editor text: typing that lands after the push but before the room
+    // connects is then carried into the room instead of being replaced by the older head.
+    const joinText = (await this.ws.client.store.get(this.path))?.baseText ?? this.view.state.doc.toString();
     let libs: LiveLibs;
     try {
       libs = await libsLoading;
