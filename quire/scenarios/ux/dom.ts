@@ -152,3 +152,26 @@ export function installHelpers(): void {
 export async function ensureHelpers(page: Page): Promise<void> {
   await page.evaluate(installHelpers);
 }
+
+/** Resolves once the DOM has not changed for `quietMs` (or after `maxMs`): late renders land first. */
+export async function waitForQuiet(page: Page, quietMs = 400, maxMs = 5_000): Promise<void> {
+  await page.evaluate(
+    ([quietMs, maxMs]) =>
+      new Promise<void>((resolve) => {
+        let timer = setTimeout(done, quietMs);
+        const cap = setTimeout(done, maxMs);
+        const mo = new MutationObserver(() => {
+          clearTimeout(timer);
+          timer = setTimeout(done, quietMs);
+        });
+        mo.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true });
+        function done() {
+          mo.disconnect();
+          clearTimeout(timer);
+          clearTimeout(cap);
+          resolve();
+        }
+      }),
+    [quietMs, maxMs] as const,
+  );
+}

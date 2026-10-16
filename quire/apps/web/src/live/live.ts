@@ -1,9 +1,8 @@
 import { merge3 } from '@quire/merge';
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
-import { yCollab } from 'y-codemirror.next';
-import { WebsocketProvider } from 'y-websocket';
-import * as Y from 'yjs';
+import type { WebsocketProvider } from 'y-websocket';
+import type * as Y from 'yjs';
 import { collabSlot } from '../vault/index.ts';
 import { minimalChange } from '../vault/index.ts';
 import type { Workspace } from '../sync/index.ts';
@@ -15,6 +14,14 @@ export interface LiveInfo {
   /** Other people in the room (awareness states minus this one). */
   peers: string[];
 }
+
+/** Yjs and its bindings stay out of the first-load bundle (R-PLT-07): fetched when a note first joins a room. */
+async function loadLiveLibs() {
+  const [yjs, ycm, ysock] = await Promise.all([import('yjs'), import('y-codemirror.next'), import('y-websocket')]);
+  return { Y: yjs, yCollab: ycm.yCollab, WebsocketProvider: ysock.WebsocketProvider };
+}
+
+type LiveLibs = Awaited<ReturnType<typeof loadLiveLibs>>;
 
 const COLORS = ['#e8590c', '#2b8a3e', '#1971c2', '#c2255c', '#6741d9', '#0c8599', '#e67700', '#5c940d'];
 
@@ -91,6 +98,8 @@ export class LiveSession {
   private async join(): Promise<void> {
     if (this.stopped || this.provider) return;
     this.set('connecting');
+    const libsLoading = loadLiveLibs();
+    libsLoading.catch(() => undefined); // reported below, once the join gets that far
     // Sync first: local edits must be in the head the room is seeded from.
     await this.ws.flush();
     const report = await this.ws.syncNow();
@@ -102,8 +111,19 @@ export class LiveSession {
       return;
     }
 
+    let libs: LiveLibs;
+    try {
+      libs = await libsLoading;
+    } catch {
+      // The chunk could not be fetched (offline, flaky network): try again later.
+      this.set('off');
+      this.retryLater();
+      return;
+    }
+    if (this.stopped || this.provider) return;
+
     const joinText = this.view.state.doc.toString();
-    const doc = new Y.Doc();
+    const doc = new libs.Y.Doc();
     let auth: Record<string, string>;
     try {
       auth = await this.ws.transport.streamParams();
@@ -113,7 +133,7 @@ export class LiveSession {
       return;
     }
     if (this.stopped || this.provider) return;
-    const provider = new WebsocketProvider(`${wsBase(this.ws.settings.serverUrl)}/live`, '', doc, {
+    const provider = new libs.WebsocketProvider(`${wsBase(this.ws.settings.serverUrl)}/live`, '', doc, {
       params: { path: this.path, device: this.ws.device, ...auth },
       disableBc: true,
       maxBackoffTime: 5000,
@@ -144,11 +164,11 @@ export class LiveSession {
       this.retryLater();
     });
     provider.on('sync', (synced: boolean) => {
-      if (synced && !this.bound && this.provider === provider) this.bind(doc, provider, joinText);
+      if (synced && !this.bound && this.provider === provider) this.bind(libs, doc, provider, joinText);
     });
   }
 
-  private bind(doc: Y.Doc, provider: WebsocketProvider, joinText: string): void {
+  private bind(libs: LiveLibs, doc: Y.Doc, provider: WebsocketProvider, joinText: string): void {
     const ytext = doc.getText('content');
     const typed = this.view.state.doc.toString();
     // Typing during the handshake: carry it into the room instead of dropping it.
@@ -165,8 +185,8 @@ export class LiveSession {
     // Adopt the room text (a normal edit, so it reaches the local copy), then bind.
     const change = minimalChange(this.view.state.doc.toString(), ytext.toString());
     if (change) this.view.dispatch({ changes: change });
-    const undoManager = new Y.UndoManager(ytext);
-    this.view.dispatch({ effects: collabSlot.reconfigure(Prec.high(yCollab(ytext, provider.awareness, { undoManager }))) });
+    const undoManager = new libs.Y.UndoManager(ytext);
+    this.view.dispatch({ effects: collabSlot.reconfigure(Prec.high(libs.yCollab(ytext, provider.awareness, { undoManager }))) });
     this.bound = true;
     this.retryDelay = 1000;
     this.ws.setLive(this.path, true);

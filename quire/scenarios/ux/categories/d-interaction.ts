@@ -119,6 +119,8 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
     }, app.tabEscapes);
     if (escape) await page.keyboard.press(escape);
     await page.keyboard.press('Tab');
+    // Let focus handlers and the next paint (an editor's own cursor, transitions) run first.
+    await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
     const f: Focused | null = await page.evaluate(() => {
       const a = document.activeElement;
       if (!a || a === document.body || a === document.documentElement) return null;

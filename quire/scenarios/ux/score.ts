@@ -10,7 +10,7 @@ import { scoreInteraction, shoot } from './categories/d-interaction.ts';
 import { scoreStructure } from './categories/e-structure.ts';
 import { measureCls, measureReflow, measureStability } from './categories/f-stability.ts';
 import { scoreConsistency } from './categories/g-consistency.ts';
-import { ensureHelpers, recordLayoutShifts } from './dom.ts';
+import { ensureHelpers, recordLayoutShifts, waitForQuiet } from './dom.ts';
 import { category, stateTotal } from './metrics.ts';
 import type { CategoryId, CategoryScore, Engines, HardCheck, HardCheckId, Scheme, StateKey, StateScore, UxApp, Viewport } from './types.ts';
 
@@ -117,6 +117,7 @@ export async function scoreApp(page: Page, app: UxApp, run: AppRun = {}): Promis
             continue;
           }
           await page.waitForTimeout(run.settleMs ?? 1000);
+          await waitForQuiet(page);
           const key: StateKey = { screen: screen.id, viewport: viewport.name, theme, scheme };
           const s = await scoreState(page, { key, app, viewport, reflow: viewport.name === app.reflowFrom });
           axeVersion = s.engine;

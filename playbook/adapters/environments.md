@@ -38,3 +38,9 @@ Cloud agent containers often lack a running Docker daemon or hit registry rate l
 Packets that need Docker say how to start the daemon (`dockerd` in the background) and which
 mirror works (for Docker Hub's official images, `mirror.gcr.io/library/<image>` was
 reliable when this was written). Record such workarounds in the packet's decisions log.
+
+Agent sandboxes often inspect TLS with their own certificate authority, so package managers
+inside a `docker build` fail with `SELF_SIGNED_CERT_IN_CHAIN`. Pass the authority as an
+optional BuildKit secret (`RUN --mount=type=secret,id=extra_ca ...` with
+`NODE_EXTRA_CA_CERTS` pointing at it for that step only), never as a file copied into the
+image; default the secret to `/dev/null` so normal builds ignore it.
