@@ -13,9 +13,9 @@ import { LazyHistoryDrawer, LazyReviewDrawer, LazySettingsDialog, LazyVaultHisto
 interface Props {
   ws: Workspace;
   conflicts: ConflictStore;
-  /** The open note, or null when none exists. */
+  /** The note in the route, and whether the workspace has it. */
   path: string | null;
-  openPath: string | null;
+  exists: boolean;
   paths: readonly string[];
   online: boolean;
   pending: number;
@@ -48,7 +48,7 @@ export function AppDialogs(p: Props) {
       {drawer?.kind === 'review' && (
         <LazyReviewDrawer store={p.conflicts} online={p.online} focusId={drawer.focus} onOpenNote={p.onOpen} onClose={closeDrawer} />
       )}
-      {drawer?.kind === 'history' && path && (
+      {drawer?.kind === 'history' && p.exists && path && (
         <LazyHistoryDrawer ws={ws} path={path} onRestore={(t) => p.onEditText(path, t)} onClose={closeDrawer} />
       )}
       {dialog?.kind === 'switcher' && <QuickSwitcher paths={p.paths} recent={p.recent} onOpen={p.onOpen} onCreate={p.onCreate} onClose={closeDialog} />}
@@ -78,7 +78,7 @@ export function AppDialogs(p: Props) {
           danger
           onConfirm={() => {
             void ws.remove(dialog.path);
-            if (dialog.path === p.openPath) clearRoute();
+            if (dialog.path === path) clearRoute();
           }}
           onClose={closeDialog}
         />

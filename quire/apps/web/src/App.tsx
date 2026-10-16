@@ -1,44 +1,19 @@
-import { extractHeadings, toggleTask } from '@quire/render';
-import { titleOf } from '@quire/vault';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { type Command, formatHotkey, matchesHotkey } from './navigate/index.ts';
-import { CommandPalette } from './navigate/index.ts';
-import { type EditorHandle, type EditorMode, NoteEditor, PropertiesEditor } from './vault/index.ts';
-import { Icon } from './shared/Icon.tsx';
-import { InlineTitle } from './vault/index.ts';
-import { ConfirmDialog, PromptDialog } from './shared/Modal.tsx';
-import { QuickSwitcher } from './navigate/index.ts';
-import { headingSlug, Reader } from './render/index.ts';
-import { RightPane, type RightTab } from './navigate/index.ts';
-import { GraphView } from './navigate/index.ts';
-import { SIDEBAR_VIEWS, Sidebar, type SidebarView } from './Sidebar.tsx';
-import { SettingsDialog } from './platforms/index.ts';
-import { StatusBar } from './sync/index.ts';
-import { dailyNotePath, folderOf, joinPath, toFolderPath, toNotePath, untitledPath } from './vault/index.ts';
-import { usePref } from './shared/use-pref.ts';
-import { GRAPH_HASH, clearRoute, navigate, noteHash, useRoute } from './shared/router.ts';
-import { saveSettings, type Settings } from './platforms/index.ts';
-import { loadPref, savePref } from './shared/use-pref.ts';
-import type { Workspace } from './sync/index.ts';
-import { HistoryDrawer, useAttachments } from './vault/index.ts';
-import { VaultHistory } from './backup/index.ts';
-import { UpdatePrompt } from './platforms/index.ts';
-import { LiveIndicator } from './live/index.ts';
-import { useLive } from './live/index.ts';
-import { ConflictBadge } from './review/index.ts';
-import { ConflictStore } from './review/index.ts';
-import { NoteBanner } from './review/index.ts';
-import { ReviewDrawer } from './review/index.ts';
-
-type Dialog =
-  | { kind: 'switcher' }
-  | { kind: 'palette' }
-  | { kind: 'settings' }
-  | { kind: 'confirm-delete'; path: string }
-  | { kind: 'new-folder' };
-
-const narrowQuery = '(max-width: 800px)';
-const isNarrow = () => typeof matchMedia !== 'undefined' && matchMedia(narrowQuery).matches;
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { AppDialogs } from './app/AppDialogs.tsx';
+import { EmptyState } from './app/EmptyState.tsx';
+import { LazyGraphView, LazyRightPane } from './app/lazy-views.tsx';
+import { NoteView } from './app/NoteView.tsx';
+import { ViewHeader } from './app/ViewHeader.tsx';
+import type { Dialog, DrawerState } from './app/dialog-state.ts';
+import { useLayoutState } from './app/layout-state.ts';
+import { useCommands } from './app/use-commands.ts';
+import { useNavigation } from './app/use-navigation.ts';
+import { useLive, LiveIndicator } from './live/index.ts';
+import { ConflictBadge, ConflictStore } from './review/index.ts';
+import { PropertiesEditor, useAttachments, type EditorHandle } from './vault/index.ts';
+import { Sidebar } from './Sidebar.tsx';
+import { useRoute } from './shared/router.ts';
+import { StatusBar, type Workspace } from './sync/index.ts';
 
 export function App({ ws }: { ws: Workspace }) {
   const snap = useSyncExternalStore(ws.subscribe, ws.getSnapshot);
@@ -46,26 +21,21 @@ export function App({ ws }: { ws: Workspace }) {
   const path = route.kind === 'note' ? route.path : null;
   const text = path === null ? undefined : ws.read(path);
   const exists = text !== undefined;
+  const layout = useLayoutState();
+  const { reading, leftOpen, setLeftOpen, rightOpen, setRightOpen, leftView, setLeftView, editorMode, query, setQuery, rightTab, setRightTab, recent } = layout;
 
-  const [reading, setReading] = usePref('reading', false);
-  // On narrow screens the sidebars start closed and their state is not remembered.
-  const [leftOpen, setLeftOpen] = useState(() => !isNarrow() && loadPref('leftOpen', true));
-  const [rightOpen, setRightOpen] = useState(() => !isNarrow() && loadPref('rightOpen', true));
-  const [leftView, setLeftView] = usePref<SidebarView>('leftView', 'files');
-  const [editorMode, setEditorMode] = usePref<EditorMode>('editorMode', 'live');
-  const [query, setQuery] = useState('');
-  const [rightTab, setRightTab] = usePref<RightTab>('rightTab', 'backlinks');
-  const [recent, setRecent] = usePref<string[]>('recent', []);
   const [dialog, setDialog] = useState<Dialog | null>(null);
+  const [drawer, setDrawer] = useState<DrawerState>(null);
   const [titleFocus, setTitleFocus] = useState(0);
+  const focusTitle = useRef(() => setTitleFocus((n) => n + 1)).current;
   const editor = useRef<EditorHandle | null>(null);
+  const [handle, setHandle] = useState<EditorHandle | null>(null);
+
   // Attachments (R-VLT-12): the editor extension reads the open path through a ref.
   const attachments = useAttachments(ws);
   const pathNow = useRef(path);
   pathNow.current = path;
   const attachmentExtension = useMemo(() => attachments.editorExtension(() => pathNow.current ?? ''), [attachments]);
-  const [handle, setHandle] = useState<EditorHandle | null>(null);
-  const [drawer, setDrawer] = useState<{ kind: 'review'; focus: string | null } | { kind: 'history' } | { kind: 'vault-history' } | null>(null);
 
   // Review inbox data (P08), live session for the open note (P08).
   const [conflicts] = useState(() => new ConflictStore(ws));
@@ -75,173 +45,22 @@ export function App({ ws }: { ws: Workspace }) {
   }, [conflicts]);
   const conflictSnap = useSyncExternalStore(conflicts.subscribe, conflicts.getSnapshot);
   const live = useLive(ws, handle);
-  const readerBox = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!isNarrow()) savePref('leftOpen', leftOpen);
-  }, [leftOpen]);
-  useEffect(() => {
-    if (!isNarrow()) savePref('rightOpen', rightOpen);
-  }, [rightOpen]);
-
-  // ---- navigation ----------------------------------------------------------------
-
-  const open = useCallback((p: string, heading?: string) => {
-    navigate(p, heading);
-    if (isNarrow()) setLeftOpen(false);
-  }, []);
-
-  const createAndOpen = useCallback(
-    (p: string, focusTitle = false) => {
-      ws.create(p);
-      open(p);
-      if (focusTitle) setTimeout(() => setTitleFocus((n) => n + 1), 0);
-    },
-    [ws, open],
-  );
-
-  /** Follows a link; an unresolved one creates the note (OBS-UX-04). */
-  const openLink = useCallback(
-    (target: string, from: string, heading?: string) => {
-      if (target === '') {
-        if (heading) open(from, heading);
-        return;
-      }
-      const resolved = ws.links.resolve(target, from);
-      if (resolved) return open(resolved, heading);
-      const p = toNotePath(target);
-      if (p) createAndOpen(p);
-    },
-    [ws, open, createAndOpen],
-  );
-
-  const showTag = useCallback((tag: string) => {
-    setLeftOpen(true);
-    setLeftView('search');
-    setQuery(`tag:${tag}`);
-  }, [setLeftView]);
-
-  useEffect(() => {
-    if (route.kind === 'tag') showTag(route.tag);
-  }, [route, showTag]);
-
-  // Remember recent notes and scroll to a linked heading.
-  useEffect(() => {
-    if (route.kind !== 'note' || !ws.has(route.path)) return;
-    setRecent((r) => [route.path, ...r.filter((p) => p !== route.path)].slice(0, 20));
-    if (!route.heading) return;
-    const heading = route.heading;
-    requestAnimationFrame(() => {
-      const t = ws.read(route.path) ?? '';
-      const slug = headingSlug(t, heading);
-      if (!slug) return;
-      if (reading) document.getElementById(slug)?.scrollIntoView({ block: 'start' });
-      else {
-        const h = extractHeadings(t).find((x) => x.slug === slug);
-        if (h) editor.current?.scrollToLine(h.line);
-      }
-    });
-  }, [route]);
-
-  // ---- actions -------------------------------------------------------------------
-
-  const newNote = useCallback((folder = '') => createAndOpen(untitledPath(snap.paths, folder), true), [createAndOpen, snap.paths]);
-  const dailyNote = useCallback(() => createAndOpen(dailyNotePath()), [createAndOpen]);
-
-  const rename = (name: string): string | null => {
-    if (!path) return 'No note open.';
-    const next = toNotePath(joinPath(folderOf(path), name));
-    if (!next || name.includes('/')) return 'Names cannot contain / or start with a dot.';
-    if (next === path) return null;
-    if (ws.has(next)) return `"${titleOf(next)}" already exists.`;
-    // Switch the route first so the editor moves to the new path in the same render.
-    history.replaceState(null, '', noteHash(next));
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
-    void ws.rename(path, next);
-    return null;
-  };
+  const nav = useNavigation({ ws, route, path, paths: snap.paths, layout, editor, focusTitle });
+  const { open, createAndOpen, newNote, dailyNote } = nav;
 
   /** Every edit made outside the editor (restore, properties, board, task clicks) goes
    *  through the editor when the note is open, so a live room sees it too. */
-  const editText = useCallback(
-    (p: string, t: string) => {
-      if (editor.current && editor.current.path === p) editor.current.replaceText(t);
-      else ws.write(p, t);
-      ws.syncSoon(300);
-    },
-    [ws],
-  );
-
-  const saveAndReload = (s: Settings) => {
-    saveSettings(s);
-    void ws.flush().then(() => location.reload());
+  const editText = (p: string, t: string) => {
+    if (editor.current && editor.current.path === p) editor.current.replaceText(t);
+    else ws.write(p, t);
+    ws.syncSoon(300);
   };
 
-  const commands: Command[] = useMemo(
-    () => [
-      { id: 'switcher', name: 'Open quick switcher', hotkeys: ['Mod+O'], run: () => setDialog({ kind: 'switcher' }) },
-      { id: 'palette', name: 'Open command palette', hotkeys: ['Mod+P'], run: () => setDialog({ kind: 'palette' }) },
-      { id: 'new-note', name: 'New note', hotkeys: ['Mod+N', 'Alt+N'], run: () => newNote() },
-      { id: 'new-folder', name: 'New folder', run: () => setDialog({ kind: 'new-folder' }) },
-      { id: 'daily', name: "Open today's daily note", run: dailyNote },
-      { id: 'reading', name: 'Toggle reading view', hotkeys: ['Mod+E'], run: () => setReading((r) => !r), enabled: () => exists },
-      { id: 'rename', name: 'Rename note', run: () => setTitleFocus((n) => n + 1), enabled: () => exists },
-      { id: 'delete', name: 'Delete note', run: () => path && setDialog({ kind: 'confirm-delete', path }), enabled: () => exists },
-      {
-        id: 'search',
-        name: 'Search all notes',
-        hotkeys: ['Mod+Shift+F'],
-        run: () => {
-          setLeftOpen(true);
-          setLeftView('search');
-        },
-      },
-      { id: 'graph', name: 'Open graph view', hotkeys: ['Mod+G'], run: () => (location.hash = GRAPH_HASH) },
-      { id: 'mode', name: 'Toggle Live Preview/Source mode', run: () => setEditorMode((m) => (m === 'live' ? 'source' : 'live')) },
-      { id: 'theme', name: 'Change theme', run: () => setDialog({ kind: 'settings' }) },
-      ...SIDEBAR_VIEWS.map((v) => ({ id: `view-${v.id}`, name: `Show ${v.label} in sidebar`, run: () => (setLeftOpen(true), setLeftView(v.id)) })),
-      { id: 'sync', name: 'Sync now', run: () => void ws.syncNow() },
-      { id: 'settings', name: 'Open settings', hotkeys: ['Mod+,'], run: () => setDialog({ kind: 'settings' }) },
-      { id: 'left', name: 'Toggle left sidebar', run: () => setLeftOpen((v) => !v) },
-      { id: 'right', name: 'Toggle right sidebar', run: () => setRightOpen((v) => !v) },
-      { id: 'review', name: 'Open review inbox', run: () => setDrawer({ kind: 'review', focus: null }) },
-      { id: 'history', name: 'Show version history', run: () => setDrawer({ kind: 'history' }), enabled: () => exists },
-      { id: 'vault-history', name: 'Open vault history', run: () => setDrawer({ kind: 'vault-history' }) },
-      {
-        id: 'attach',
-        name: 'Insert attachment',
-        run: () => editor.current && attachments.insert(editor.current.view, () => pathNow.current ?? ''),
-        enabled: () => exists && !reading,
-      },
-    ],
-    [ws, newNote, dailyNote, exists, path, setReading, setLeftView, setEditorMode],
-  );
+  const commands = useCommands({ ws, path, exists, layout, dialog, setDialog, setDrawer, focusTitle, newNote, dailyNote, editor, attachments, pathNow });
+  const openReview = (focus: string | null) => setDrawer({ kind: 'review', focus });
+  const openDeleteDialog = () => path && setDialog({ kind: 'confirm-delete', path });
 
-  const commandsRef = useRef(commands);
-  commandsRef.current = commands;
-  const dialogRef = useRef(dialog);
-  dialogRef.current = dialog;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (dialogRef.current) return;
-      for (const c of commandsRef.current) {
-        if (!c.hotkeys?.some((h) => matchesHotkey(e, h))) continue;
-        if (c.enabled && !c.enabled()) return;
-        e.preventDefault();
-        e.stopPropagation();
-        c.run();
-        return;
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, []);
-
-  const resolveFromCurrent = useCallback((t: string) => (path ? ws.links.resolve(t, path) : null), [ws, path, snap.paths]);
-
-  // ---- layout --------------------------------------------------------------------
-
-  const folder = path ? folderOf(path) : '';
   return (
     <div className={`app ${leftOpen ? 'left-open' : ''} ${rightOpen ? 'right-open' : ''}`}>
       <Sidebar
@@ -259,11 +78,11 @@ export function App({ ws }: { ws: Workspace }) {
         onRename={(p) => {
           // Open the note, then put the cursor in its inline title (R-VLT-10).
           open(p);
-          setTimeout(() => setTitleFocus((n) => n + 1), 0);
+          setTimeout(focusTitle, 0);
         }}
         onNewFolder={() => setDialog({ kind: 'new-folder' })}
         onDaily={dailyNote}
-        onTag={showTag}
+        onTag={nav.showTag}
         onEdit={editText}
         onSettings={() => setDialog({ kind: 'settings' })}
         onPalette={() => setDialog({ kind: 'palette' })}
@@ -271,77 +90,47 @@ export function App({ ws }: { ws: Workspace }) {
       {leftOpen && <div className="scrim" onClick={() => setLeftOpen(false)} aria-hidden="true" />}
 
       <main className="main">
-        <header className="view-header">
-          <button type="button" className="icon-button" aria-label="Toggle left sidebar" title="Toggle left sidebar" aria-pressed={leftOpen} onClick={() => setLeftOpen((v) => !v)}>
-            <Icon name="sidebar" />
-          </button>
-          <div className="breadcrumb" title={path ?? ''}>
-            {exists && path ? (
-              <>
-                {folder && <span className="crumb-folder">{folder.split('/').join(' / ')} / </span>}
-                <span className="crumb-title">{titleOf(path)}</span>
-              </>
-            ) : null}
-          </div>
-          {exists && (
-            <>
-              <button
-                type="button"
-                className="icon-button"
-                aria-label={reading ? 'Switch to editing view' : 'Switch to reading view'}
-                title={reading ? 'Editing view (Ctrl/Cmd+E)' : 'Reading view (Ctrl/Cmd+E)'}
-                onClick={() => setReading((r) => !r)}
-              >
-                <Icon name={reading ? 'pencil' : 'book'} />
-              </button>
-              <button type="button" className="icon-button" aria-label="Version history" title="Version history" onClick={() => setDrawer({ kind: 'history' })}>
-                <Icon name="history" />
-              </button>
-              <button type="button" className="icon-button" aria-label="Delete note" title="Delete note" onClick={() => path && setDialog({ kind: 'confirm-delete', path })}>
-                <Icon name="trash" />
-              </button>
-            </>
-          )}
-          <button type="button" className="icon-button" aria-label="Toggle right sidebar" title="Toggle right sidebar" aria-pressed={rightOpen} onClick={() => setRightOpen((v) => !v)}>
-            <Icon name="sidebarRight" />
-          </button>
-        </header>
+        <ViewHeader
+          path={exists ? path : null}
+          leftOpen={leftOpen}
+          rightOpen={rightOpen}
+          reading={reading}
+          onToggleLeft={() => setLeftOpen((v) => !v)}
+          onToggleRight={() => setRightOpen((v) => !v)}
+          onToggleReading={() => layout.setReading((r) => !r)}
+          onHistory={() => setDrawer({ kind: 'history' })}
+          onDelete={openDeleteDialog}
+        />
 
         {route.kind === 'graph' ? (
           <div className="view-content graph-content">
-            <GraphView ws={ws} version={snap.version} onOpen={(p) => open(p)} />
+            <LazyGraphView ws={ws} version={snap.version} onOpen={(p) => open(p)} />
           </div>
         ) : exists && path ? (
-          <div className="view-content">
-            {(() => {
-              const open = conflictSnap.open.find((c) => c.path === path);
-              return open ? <NoteBanner conflict={open} onReview={(id) => setDrawer({ kind: 'review', focus: id })} /> : null;
-            })()}
-            <InlineTitle path={path} focusSignal={titleFocus} onRename={rename} onDone={() => setTimeout(() => editor.current?.view.focus(), 0)} />
-            <NoteEditor ws={ws} path={path} hidden={reading} mode={editorMode} onOpenLink={openLink} onHandle={(h) => {
-                editor.current = h;
-                setHandle(h);
-              }}
-              isLive={() => ws.client.isLive(path)}
-              extensions={attachmentExtension}
-            />
-            {reading && (
-              <div className="reader-scroll" ref={readerBox}>
-                <Reader
-                  text={text}
-                  resolve={resolveFromCurrent}
-                  onInternalLink={(p, resolved, sub) => {
-                    if (resolved) return open(p, sub);
-                    const np = toNotePath(p);
-                    if (np) createAndOpen(np);
-                  }}
-                  onTag={showTag}
-                  onToggleTask={(line) => editText(path, toggleTask(text ?? '', line))}
-                  imageSrc={attachments.imageSrc}
-                />
-              </div>
-            )}
-          </div>
+          <NoteView
+            ws={ws}
+            path={path}
+            text={text}
+            paths={snap.paths}
+            reading={reading}
+            mode={editorMode}
+            titleFocus={titleFocus}
+            conflict={conflictSnap.open.find((c) => c.path === path)}
+            attachments={attachments}
+            attachmentExtension={attachmentExtension}
+            editor={editor}
+            onHandle={(h) => {
+              editor.current = h;
+              setHandle(h);
+            }}
+            onReview={openReview}
+            onRename={nav.rename}
+            onOpen={open}
+            onCreate={createAndOpen}
+            onOpenLink={nav.openLink}
+            onTag={nav.showTag}
+            onEditText={editText}
+          />
         ) : (
           <EmptyState
             loaded={snap.loaded}
@@ -355,15 +144,15 @@ export function App({ ws }: { ws: Workspace }) {
       </main>
 
       {rightOpen && (
-        <RightPane
+        <LazyRightPane
           ws={ws}
           version={snap.version}
           path={exists ? path : null}
           tab={rightTab}
           onTab={setRightTab}
           onOpen={(p) => open(p)}
-          onOpenLink={openLink}
-          onTag={showTag}
+          onOpenLink={nav.openLink}
+          onTag={nav.showTag}
           properties={(t) => <PropertiesEditor text={t} onChange={(next) => path && editText(path, next)} />}
           onHeading={(line, slug) => {
             if (reading) document.getElementById(slug)?.scrollIntoView({ block: 'start' });
@@ -374,88 +163,28 @@ export function App({ ws }: { ws: Workspace }) {
 
       <StatusBar status={snap.status} loaded={snap.loaded} device={ws.device} onSync={() => void ws.syncNow()}>
         <LiveIndicator info={live} />
-        <ConflictBadge store={conflicts} onOpen={() => setDrawer({ kind: 'review', focus: null })} />
+        <ConflictBadge store={conflicts} onOpen={() => openReview(null)} />
       </StatusBar>
 
-      {drawer?.kind === 'vault-history' && <VaultHistory ws={ws} onClose={() => setDrawer(null)} />}
-      <UpdatePrompt />
-      {drawer?.kind === 'review' && (
-        <ReviewDrawer store={conflicts} online={snap.status.online} focusId={drawer.focus} onOpenNote={(p) => open(p)} onClose={() => setDrawer(null)} />
-      )}
-      {drawer?.kind === 'history' && exists && path && (
-        <HistoryDrawer
-          ws={ws}
-          path={path}
-          onRestore={(t) => editText(path, t)}
-          onClose={() => setDrawer(null)}
-        />
-      )}
-      {dialog?.kind === 'switcher' && <QuickSwitcher paths={snap.paths} recent={recent} onOpen={(p) => open(p)} onCreate={(p) => createAndOpen(p)} onClose={() => setDialog(null)} />}
-      {dialog?.kind === 'palette' && <CommandPalette commands={commands} onClose={() => setDialog(null)} />}
-      {dialog?.kind === 'settings' && <SettingsDialog settings={ws.settings} pending={snap.status.pending} onSave={saveAndReload} onClose={() => setDialog(null)} />}
-      {dialog?.kind === 'new-folder' && (
-        <PromptDialog
-          title="New folder"
-          label="Folder name (use / for nested folders)"
-          confirm="Create"
-          validate={(v) => (toFolderPath(v) ? null : 'Enter a folder name without dots at the start.')}
-          onSubmit={(v) => newNote(toFolderPath(v)!)}
-          onClose={() => setDialog(null)}
-        />
-      )}
-      {dialog?.kind === 'confirm-delete' && (
-        <ConfirmDialog
-          title="Delete note"
-          message={
-            <p>
-              Delete <strong>{titleOf(dialog.path)}</strong>? It is removed from every device after the next sync.
-            </p>
-          }
-          confirm="Delete"
-          danger
-          onConfirm={() => {
-            void ws.remove(dialog.path);
-            if (dialog.path === path) clearRoute();
-          }}
-          onClose={() => setDialog(null)}
-        />
-      )}
-    </div>
-  );
-}
-
-function EmptyState(props: { loaded: boolean; missing: string | null; onNew: () => void; onCreate: (p: string) => void; onSwitcher: () => void; onDaily: () => void }) {
-  if (!props.loaded) return <div className="empty-state" />;
-  if (props.missing) {
-    return (
-      <div className="empty-state">
-        <h2>{titleOf(props.missing)}</h2>
-        <p className="muted">This note does not exist (it may have been deleted or renamed).</p>
-        <div className="empty-actions">
-          <button type="button" className="primary" onClick={() => props.onCreate(props.missing!)}>
-            Create it
-          </button>
-          <button type="button" onClick={props.onSwitcher}>
-            Go to file
-          </button>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="empty-state">
-      <h2>No file is open</h2>
-      <div className="empty-actions column">
-        <button type="button" className="link-button" onClick={props.onNew}>
-          Create new note <kbd>{formatHotkey('Mod+N')}</kbd>
-        </button>
-        <button type="button" className="link-button" onClick={props.onSwitcher}>
-          Go to file <kbd>{formatHotkey('Mod+O')}</kbd>
-        </button>
-        <button type="button" className="link-button" onClick={props.onDaily}>
-          Open today's daily note
-        </button>
-      </div>
+      <AppDialogs
+        ws={ws}
+        conflicts={conflicts}
+        path={path}
+        exists={exists}
+        paths={snap.paths}
+        online={snap.status.online}
+        pending={snap.status.pending}
+        recent={recent}
+        commands={commands}
+        dialog={dialog}
+        drawer={drawer}
+        setDialog={setDialog}
+        setDrawer={setDrawer}
+        onOpen={(p) => open(p)}
+        onCreate={(p) => createAndOpen(p)}
+        onNewNote={newNote}
+        onEditText={editText}
+      />
     </div>
   );
 }
