@@ -1,0 +1,92 @@
+/* Live Preview (vault/live-preview). Selectors stay low in specificity so themes
+   (platforms/themes) can restyle headings with `.cm-editor .cm-line.cm-lp-hN`. */
+
+.cm-lp-hidden .cm-lp-source,
+.cm-lp-task .cm-lp-source {
+  display: none;
+}
+
+.cm-line.cm-lp-h1,
+.cm-line.cm-lp-h2,
+.cm-line.cm-lp-h3,
+.cm-line.cm-lp-h4,
+.cm-line.cm-lp-h5,
+.cm-line.cm-lp-h6 {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.cm-line.cm-lp-h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+  padding-top: 0.5em;
+}
+.cm-line.cm-lp-h2 {
+  font-size: 1.5em;
+  padding-top: 0.45em;
+}
+.cm-line.cm-lp-h3 {
+  font-size: 1.25em;
+  padding-top: 0.4em;
+}
+.cm-line.cm-lp-h4 {
+  font-size: 1.1em;
+  padding-top: 0.3em;
+}
+.cm-line.cm-lp-h5 {
+  font-size: 1em;
+}
+.cm-line.cm-lp-h6 {
+  font-size: 0.95em;
+  color: var(--text-muted);
+}
+
+.cm-lp-strong {
+  font-weight: 700;
+}
+.cm-lp-em {
+  font-style: italic;
+}
+.cm-lp-del {
+  text-decoration: line-through;
+}
+.cm-lp-mark {
+  background-color: var(--mark);
+  border-radius: 2px;
+}
+.cm-lp-code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background-color: var(--code-bg);
+  border-radius: 3px;
+  padding: 0.1em 0.25em;
+}
+
+.cm-lp-link {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--link) 40%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.cm-lp-link:hover {
+  text-decoration-color: var(--link);
+}
+
+.cm-lp-task input {
+  margin: 0 0.4em 0 0;
+  vertical-align: -0.1em;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.cm-line.cm-lp-callout {
+  border-left: 3px solid var(--accent);
+  background-color: var(--accent-soft);
+  font-weight: 600;
+}
+
+.cm-line.cm-lp-frontmatter {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}

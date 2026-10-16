@@ -17,7 +17,8 @@ reads:
   - quire/scenarios/steps/sidebar.steps.ts
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-B
 ---
 
 # Sidebar views

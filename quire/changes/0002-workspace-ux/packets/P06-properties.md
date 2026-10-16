@@ -17,7 +17,8 @@ reads:
   - quire/scenarios/steps/app.steps.ts
 size: S
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-C
 ---
 
 # Editable properties

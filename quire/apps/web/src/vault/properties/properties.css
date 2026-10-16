@@ -1,0 +1,97 @@
+/* Editable properties pane (R-VLT-07). Uses the design tokens from styles.css. */
+.props-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.prop-row {
+  display: grid;
+  grid-template-columns: minmax(64px, 110px) 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 13px;
+}
+.prop-row dt {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prop-row dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.prop-row input[type='text'],
+.prop-row input[type='number'],
+.prop-row input[type='date'],
+.prop-add input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--text);
+}
+.prop-row input[type='checkbox'] {
+  margin: 0;
+}
+.prop-remove {
+  border: 0;
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 16px;
+  line-height: 1;
+}
+.prop-remove:hover,
+.prop-remove:focus-visible {
+  color: var(--danger);
+}
+.props-readonly {
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.prop-add {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 8px;
+}
+.prop-add-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.prop-add-actions button,
+.prop-add-toggle {
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg-alt);
+  color: var(--text);
+  cursor: pointer;
+}
+.prop-add-toggle {
+  align-self: flex-start;
+  margin: 0 8px;
+}
+.prop-add-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.props-error {
+  margin: 0 8px;
+  font-size: 12px;
+  color: var(--danger);
+}
