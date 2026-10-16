@@ -18,7 +18,7 @@ reads:
   - quire/scenarios/**
 size: M
 revision: 1
-status: doing
+status: done
 claimed_by: claude-code/tier-A
 ---
 
@@ -51,6 +51,21 @@ playbook/bin/gate.sh scenarios "@R-OPS-05|@cap-sync|@cap-live"
 ```
 
 Run R-OPS-05 three times; all three pass. Paste the three summaries under Acceptance.
+
+Results (2026-10-16):
+
+- `gate.sh check`: exit 0 (types, 0 dependency violations, structure 0 violations, 6 soft-limit
+  warnings, none in this packet's files).
+- `gate.sh scenarios "@R-OPS-05|@cap-sync|@cap-live"`: 21 passed (R-SYN-01..10, R-LIV-01..05,
+  R-OPS-05), 0 failed; run at load average 10 alongside other workers. R-OPS-05 inside that
+  run: 641 pushes, p50 91.8 ms, p95 346.7 ms, p99 1147.8 ms, max 1275.2 ms, 0 errors, wall 33.4 s.
+- R-OPS-05 alone, three times, each started once the 1-minute load average was 3 or lower:
+
+| Run | Load before (1/5/15 min) | Summary | Result |
+| --- | --- | --- | --- |
+| 1 | 2.79 / 5.70 / 6.55 | 641 pushes, p50 66.0 ms, p95 202.5 ms, p99 258.6 ms, max 349.3 ms, 0 errors, 2418 live keystrokes, wall 21.2 s | passed (25.5 s) |
+| 2 | 3.00 / 5.49 / 6.45 | 641 pushes, p50 67.4 ms, p95 233.7 ms, p99 401.8 ms, max 444.8 ms, 0 errors, 2291 live keystrokes, wall 21.4 s | passed (25.6 s) |
+| 3 | 2.17 / 4.49 / 5.65 | 641 pushes, p50 50.8 ms, p95 127.9 ms, p99 216.2 ms, max 243.9 ms, 0 errors, 1755 live keystrokes, wall 15.4 s | passed (18.9 s) |
 
 ## Decisions log
 

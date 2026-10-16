@@ -18,7 +18,9 @@ Given('{int} devices', async ({ world }, count: number) => {
 
 When(
   'every device makes {int} edits across {int} shared notes while {int} of them type in {string}, with seed {int}',
-  async ({ world }, edits: number, notes: number, liveCount: number, livePath: string, seed: number) => {
+  async ({ world, $testInfo }, edits: number, notes: number, liveCount: number, livePath: string, seed: number) => {
+    // The latency bound is the assertion; wall time on a busy machine must not fail the run.
+    $testInfo.setTimeout(180_000);
     const devices = [...world.devices.keys()].map((name) => world.systemDevice(name));
     const observer = world.observer();
     const result = await runLoad(devices, observer, { edits, notes: sharedNotes(notes), livePath, liveCount, seed });

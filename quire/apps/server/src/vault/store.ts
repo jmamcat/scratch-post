@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync, type StatementSync } from 'node:sqlite';
 import type { CommitExtra, Conflict, ConflictStatus, DocMeta, RevisionStore } from '@quire/sync';
 import { type MigrateOptions, migrate } from './schema.ts';
 
@@ -44,6 +44,18 @@ export class SqliteRevisionStore implements RevisionStore {
     migrate(this.db, opts);
   }
 
+  private readonly statements = new Map<string, StatementSync>();
+
+  /** Prepared once per SQL text: preparing on every call was the main cost under load (D-P13-6). */
+  private stmt(sql: string): StatementSync {
+    let st = this.statements.get(sql);
+    if (!st) {
+      st = this.db.prepare(sql);
+      this.statements.set(sql, st);
+    }
+    return st;
+  }
+
   head(path: string): DocMeta | null {
     const row = this.db
       .prepare(`SELECT ${META_COLS} FROM heads h JOIN revisions r ON r.rev = h.rev WHERE h.path = ?`)
@@ -52,12 +64,12 @@ export class SqliteRevisionStore implements RevisionStore {
   }
 
   text(rev: number): string | null {
-    const row = this.db.prepare('SELECT text FROM revisions WHERE rev = ?').get(rev) as { text: string | null } | undefined;
+    const row = this.stmt('SELECT text FROM revisions WHERE rev = ?').get(rev) as { text: string | null } | undefined;
     return row?.text ?? null;
   }
 
   revision(rev: number): DocMeta | null {
-    const row = this.db.prepare(`SELECT ${META_COLS} FROM revisions r WHERE r.rev = ?`).get(rev) as RevRow | undefined;
+    const row = this.stmt(`SELECT ${META_COLS} FROM revisions r WHERE r.rev = ?`).get(rev) as RevRow | undefined;
     return row ? toMeta(row) : null;
   }
 
@@ -72,7 +84,7 @@ export class SqliteRevisionStore implements RevisionStore {
         )
         .run(path, hash, text, deleted ? 1 : 0, device, createdAt, extra.kind ?? 'note', extra.blob ?? null, extra.size ?? null, extra.renamedFrom ?? null);
       const rev = Number(res.lastInsertRowid);
-      this.db.prepare('INSERT INTO heads (path, rev) VALUES (?, ?) ON CONFLICT(path) DO UPDATE SET rev = excluded.rev').run(path, rev);
+      this.stmt('INSERT INTO heads (path, rev) VALUES (?, ?) ON CONFLICT(path) DO UPDATE SET rev = excluded.rev').run(path, rev);
       this.db.exec('COMMIT');
       return { path, rev, hash, deleted, device, createdAt, ...extra };
     } catch (e) {
@@ -89,7 +101,7 @@ export class SqliteRevisionStore implements RevisionStore {
   }
 
   headRev(): number {
-    const row = this.db.prepare('SELECT MAX(rev) AS rev FROM revisions').get() as { rev: number | null };
+    const row = this.stmt('SELECT MAX(rev) AS rev FROM revisions').get() as { rev: number | null };
     return row.rev ?? 0;
   }
 
@@ -128,7 +140,7 @@ export class SqliteRevisionStore implements RevisionStore {
 
   /** The newest name of the note `path` was renamed away from after `afterRev` (R-VLT-09). */
   renamedTo(path: string, afterRev: number): string | null {
-    const step = this.db.prepare('SELECT path, rev FROM revisions WHERE renamed_from = ? AND rev > ? ORDER BY rev LIMIT 1');
+    const step = this.stmt('SELECT path, rev FROM revisions WHERE renamed_from = ? AND rev > ? ORDER BY rev LIMIT 1');
     // Each hop starts after the previous one, so a chain always ends.
     let current = path;
     let after = afterRev;
@@ -150,34 +162,34 @@ export class SqliteRevisionStore implements RevisionStore {
   }
 
   getConflict(id: string): Conflict | null {
-    const row = this.db.prepare('SELECT data FROM conflicts WHERE id = ?').get(id) as { data: string } | undefined;
+    const row = this.stmt('SELECT data FROM conflicts WHERE id = ?').get(id) as { data: string } | undefined;
     return row ? (JSON.parse(row.data) as Conflict) : null;
   }
 
   listConflicts(status?: ConflictStatus): Conflict[] {
     const rows = (
       status
-        ? this.db.prepare('SELECT data FROM conflicts WHERE status = ? ORDER BY created_at DESC').all(status)
-        : this.db.prepare('SELECT data FROM conflicts ORDER BY created_at DESC').all()
+        ? this.stmt('SELECT data FROM conflicts WHERE status = ? ORDER BY created_at DESC').all(status)
+        : this.stmt('SELECT data FROM conflicts ORDER BY created_at DESC').all()
     ) as { data: string }[];
     return rows.map((r) => JSON.parse(r.data) as Conflict);
   }
 
   getKv(key: string): string | null {
-    const row = this.db.prepare('SELECT value FROM kv WHERE key = ?').get(key) as { value: string } | undefined;
+    const row = this.stmt('SELECT value FROM kv WHERE key = ?').get(key) as { value: string } | undefined;
     return row?.value ?? null;
   }
 
   setKv(key: string, value: string): void {
-    this.db.prepare('INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, value);
+    this.stmt('INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, value);
   }
 
   deleteKv(key: string): void {
-    this.db.prepare('DELETE FROM kv WHERE key = ?').run(key);
+    this.stmt('DELETE FROM kv WHERE key = ?').run(key);
   }
 
   kvKeys(prefix: string): string[] {
-    const rows = this.db.prepare('SELECT key FROM kv WHERE substr(key, 1, ?) = ?').all(prefix.length, prefix) as { key: string }[];
+    const rows = this.stmt('SELECT key FROM kv WHERE substr(key, 1, ?) = ?').all(prefix.length, prefix) as { key: string }[];
     return rows.map((r) => r.key);
   }
 

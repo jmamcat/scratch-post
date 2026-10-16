@@ -1,83 +1,40 @@
-import { type ComponentProps, lazy, Suspense } from 'react';
+import { type ComponentProps, type ComponentType, createElement, lazy, type ReactNode, Suspense } from 'react';
+import type LiveStatusType from './LiveStatus.tsx';
+import type NoteViewType from './NoteView.tsx';
+import type RightPaneType from './RightPaneWithProperties.tsx';
 
-// Each view is its own chunk, fetched when it is first shown (R-PLT-07). Importing through
-// the capability's index keeps the dependency rules; the bundler splits at the component.
-const GraphView = lazy(() => import('../navigate/index.ts').then((m) => ({ default: m.GraphView })));
-const loadRightPane = () => import('./RightPaneWithProperties.tsx');
-const RightPane = lazy(loadRightPane);
-// The editor stack (CodeMirror, reading view) is the largest chunk. Fetch it at start-up,
-// beside the first render, so opening a note does not wait for a second round trip.
-const loadNoteView = () => import('./NoteView.tsx');
-const NoteView = lazy(loadNoteView);
-void loadNoteView();
-const LiveStatus = lazy(() => import('./LiveStatus.tsx'));
-const VaultHistory = lazy(() => import('../backup/index.ts').then((m) => ({ default: m.VaultHistory })));
-const ReviewDrawer = lazy(() => import('../review/index.ts').then((m) => ({ default: m.ReviewDrawer })));
-const HistoryDrawer = lazy(() => import('../vault/index.ts').then((m) => ({ default: m.HistoryDrawer })));
-const SettingsDialog = lazy(() => import('../platforms/index.ts').then((m) => ({ default: m.SettingsDialog })));
-
-export function LazyGraphView(props: ComponentProps<typeof GraphView>) {
-  return (
-    <Suspense fallback={null}>
-      <GraphView {...props} />
-    </Suspense>
-  );
+/**
+ * A view fetched when it is first shown (R-PLT-07), so it stays out of the first-load bundle.
+ * `prefetch` fetches it earlier; once it has arrived the view renders without suspending.
+ * Views are imported through the capability's index to keep the dependency rules; the
+ * bundler still splits at the component.
+ */
+function lazyView<C extends ComponentType<any>>(load: () => Promise<{ default: C }>, fallback: ReactNode = null) {
+  let loaded: C | null = null;
+  const fetching = () => load().then((m) => (loaded = m.default));
+  const Pending = lazy(() => fetching().then((c) => ({ default: c })));
+  const View = (props: ComponentProps<C>) => (loaded ? createElement(loaded, props) : <Suspense fallback={fallback}>{createElement(Pending, props)}</Suspense>);
+  return Object.assign(View, { prefetch: () => void fetching().catch(() => undefined) });
 }
 
-export function LazyNoteView(props: ComponentProps<typeof NoteView>) {
-  return (
-    <Suspense fallback={<div className="view-content" aria-busy="true" />}>
-      <NoteView {...props} />
-    </Suspense>
-  );
-}
-
-/** Live editing for the open note: the session, its libraries and the status chip. */
-export function LazyLiveStatus(props: ComponentProps<typeof LiveStatus>) {
-  return (
-    <Suspense fallback={null}>
-      <LiveStatus {...props} />
-    </Suspense>
-  );
-}
+export const LazyGraphView = lazyView(() => import('../navigate/index.ts').then((m) => ({ default: m.GraphView })));
+export const LazyVaultHistory = lazyView(() => import('../backup/index.ts').then((m) => ({ default: m.VaultHistory })));
+export const LazyReviewDrawer = lazyView(() => import('../review/index.ts').then((m) => ({ default: m.ReviewDrawer })));
+export const LazyHistoryDrawer = lazyView(() => import('../vault/index.ts').then((m) => ({ default: m.HistoryDrawer })));
+export const LazySettingsDialog = lazyView(() => import('../platforms/index.ts').then((m) => ({ default: m.SettingsDialog })));
 
 /** The placeholder keeps the pane's width while its chunk loads. */
-export function LazyRightPane(props: ComponentProps<typeof RightPane>) {
-  return (
-    <Suspense fallback={<aside className="right-pane" aria-label="Note details" aria-busy="true" />}>
-      <RightPane {...props} />
-    </Suspense>
-  );
-}
+export const LazyRightPane = lazyView<typeof RightPaneType>(
+  () => import('./RightPaneWithProperties.tsx'),
+  <aside className="right-pane" aria-label="Note details" aria-busy="true" />,
+);
 
-export function LazyVaultHistory(props: ComponentProps<typeof VaultHistory>) {
-  return (
-    <Suspense fallback={null}>
-      <VaultHistory {...props} />
-    </Suspense>
-  );
-}
+/** The editor stack (CodeMirror, reading view) is the largest chunk: fetched at start-up, beside the first render. */
+export const LazyNoteView = lazyView<typeof NoteViewType>(() => import('./NoteView.tsx'), <div className="view-content" aria-busy="true" />);
 
-export function LazyReviewDrawer(props: ComponentProps<typeof ReviewDrawer>) {
-  return (
-    <Suspense fallback={null}>
-      <ReviewDrawer {...props} />
-    </Suspense>
-  );
-}
+/** Live editing for the open note: the session, its libraries and the status chip. */
+export const LazyLiveStatus = lazyView<typeof LiveStatusType>(() => import('./LiveStatus.tsx'));
 
-export function LazyHistoryDrawer(props: ComponentProps<typeof HistoryDrawer>) {
-  return (
-    <Suspense fallback={null}>
-      <HistoryDrawer {...props} />
-    </Suspense>
-  );
-}
-
-export function LazySettingsDialog(props: ComponentProps<typeof SettingsDialog>) {
-  return (
-    <Suspense fallback={null}>
-      <SettingsDialog {...props} />
-    </Suspense>
-  );
-}
+LazyNoteView.prefetch();
+// Settings is where the theme is changed: have it ready before the first click.
+LazySettingsDialog.prefetch();

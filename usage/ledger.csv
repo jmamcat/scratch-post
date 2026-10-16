@@ -27,3 +27,4 @@ date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_rea
 2026-10-16,0003-production-hardening,P03,claude-code,m1,A,1,,,,,195756,,,17.2,"done, 29/30 (R-BAK-07 was P04's)",harness-subagent-report,50 tool uses
 2026-10-16,0003-production-hardening,P08,claude-code,m2,B,1,,,,,99828,,,24.1,"done, R-PLT-06 1/1",harness-subagent-report,27 tool uses
 2026-10-16,0003-production-hardening,P11,claude-code,m2,B,1,,,,,136750,,,11.2,"done, deploy 1/1, sync 15/15",harness-subagent-report,45 tool uses; 2 docker builds
+2026-10-16,0003-production-hardening,P13,claude-code,m1,A,1,,,,,143721,,,46.3,"done, 3/3 solo runs, p95 128-234 ms",harness-subagent-report,45 tool uses; mostly waiting for a quiet machine
