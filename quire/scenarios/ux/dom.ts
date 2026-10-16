@@ -175,3 +175,20 @@ export async function waitForQuiet(page: Page, quietMs = 400, maxMs = 5_000): Pr
     [quietMs, maxMs] as const,
   );
 }
+
+/**
+ * Stops CSS animations and transitions (a blinking cursor shows, a focus ring is at its end
+ * state) so screenshots compare like with like; cheaper than freezing them per screenshot.
+ */
+export async function freezeMotion(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const s = document.createElement('style');
+    s.id = '__ux-freeze';
+    s.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+    document.head.append(s);
+  });
+}
+
+export async function thawMotion(page: Page): Promise<void> {
+  await page.evaluate(() => document.getElementById('__ux-freeze')?.remove());
+}

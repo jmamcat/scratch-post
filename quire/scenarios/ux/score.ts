@@ -10,7 +10,7 @@ import { scoreInteraction, shoot } from './categories/d-interaction.ts';
 import { scoreStructure } from './categories/e-structure.ts';
 import { measureCls, measureReflow, measureStability } from './categories/f-stability.ts';
 import { scoreConsistency } from './categories/g-consistency.ts';
-import { ensureHelpers, recordLayoutShifts, waitForQuiet } from './dom.ts';
+import { ensureHelpers, freezeMotion, recordLayoutShifts, thawMotion, waitForQuiet } from './dom.ts';
 import { category, stateTotal } from './metrics.ts';
 import type { CategoryId, CategoryScore, Engines, HardCheck, HardCheckId, Scheme, StateKey, StateScore, UxApp, Viewport } from './types.ts';
 
@@ -45,9 +45,11 @@ export async function scoreState(page: Page, state: StateSpec): Promise<StateSco
   const f = await measureStability(page, cls);
 
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
+  await freezeMotion(page);
   const base = await shoot(page);
   const g = await scoreConsistency(page, base);
   const d = await scoreInteraction(page, axe, state.app, base);
+  await thawMotion(page);
 
   let reflow: HardCheck = null;
   const violations = [...violationsOf(axe), ...d.violations, ...f.violations];

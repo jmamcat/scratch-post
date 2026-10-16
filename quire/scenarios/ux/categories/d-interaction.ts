@@ -77,8 +77,9 @@ function clipOf(rect: Box, vw: number, vh: number): Box | null {
 
 const sameBox = (a: Box, b: Box) => Math.abs(a.x - b.x) < 0.5 && Math.abs(a.y - b.y) < 0.5 && Math.abs(a.w - b.w) < 0.5 && Math.abs(a.h - b.h) < 0.5;
 
+/** Animations are already frozen by freezeMotion (dom.ts) while the walk runs. */
 export async function shoot(page: Page, clip?: Box): Promise<PNG> {
-  return PNG.sync.read(await page.screenshot({ animations: 'disabled', caret: 'hide', scale: 'css', ...(clip ? { clip: { x: clip.x, y: clip.y, width: clip.w, height: clip.h } } : {}) }));
+  return PNG.sync.read(await page.screenshot({ animations: 'allow', caret: 'hide', scale: 'css', ...(clip ? { clip: { x: clip.x, y: clip.y, width: clip.w, height: clip.h } } : {}) }));
 }
 
 /** `base` is a screenshot of the viewport with nothing focused, taken right before. */
@@ -112,35 +113,35 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
   // Start where the app put focus; past the end of the page, Tab wraps to the top as it does
   // for a person (through the browser's own controls), until an element comes round again.
   let outside = 0;
+  const escapes = app.tabEscapes;
+  let escape = await page.evaluate(escapeKey, escapes);
   for (let presses = 0; reached.length < maxTabs && presses < maxTabs + 5; presses++) {
-    const escape = await page.evaluate((escapes) => {
-      const a = document.activeElement;
-      return a && a !== document.body ? (escapes.find((e) => a.closest(e.selector))?.key ?? null) : null;
-    }, app.tabEscapes);
     if (escape) await page.keyboard.press(escape);
     await page.keyboard.press('Tab');
-    // Let focus handlers and the next paint run first. Text fields and editors draw their caret
-    // late (an editor measures, then draws its own cursor layer), so they get longer.
-    await page.evaluate(async () => {
+    // One round trip per stop: let focus handlers and the next paint run (text fields and editors
+    // draw their caret late, so they get longer), then describe the focused element.
+    const step = await page.evaluate(async (escapes) => {
       const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
       await frames();
       const a = document.activeElement;
+      if (!a || a === document.body || a === document.documentElement) return { f: null, escape: null };
       if (a instanceof HTMLElement && (a.isContentEditable || a.matches('input, textarea'))) {
         await new Promise((r) => setTimeout(r, 150));
         await frames();
       }
-    });
-    const f: Focused | null = await page.evaluate(() => {
-      const a = document.activeElement;
-      if (!a || a === document.body || a === document.documentElement) return null;
       const r = a.getBoundingClientRect();
       const cx = r.left + r.width / 2;
       const cy = r.top + r.height / 2;
       const onScreen = cx >= 0 && cy >= 0 && cx < innerWidth && cy < innerHeight;
       const hit = onScreen ? document.elementFromPoint(cx, cy) : null;
       const covered = !hit || !(hit === a || a.contains(hit) || hit.contains(a));
-      return { id: window.__ux.id(a), selector: window.__ux.selector(a), rect: { x: r.left, y: r.top, w: r.width, h: r.height }, covered };
-    });
+      return {
+        f: { id: window.__ux.id(a), selector: window.__ux.selector(a), rect: { x: r.left, y: r.top, w: r.width, h: r.height }, covered },
+        escape: escapes.find((e) => a.closest(e.selector))?.key ?? null,
+      };
+    }, escapes);
+    const f: Focused | null = step.f;
+    escape = step.escape;
     if (!f) {
       if (++outside > 2) break;
       continue;
@@ -197,4 +198,9 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
     violations,
     reported: { 'tab-stops': n, ...(trapped ? { 'tab-trap': trapped } : {}) },
   };
+}
+
+function escapeKey(escapes: readonly { selector: string; key: string }[]): string | null {
+  const a = document.activeElement;
+  return a && a !== document.body ? (escapes.find((e) => a.closest(e.selector))?.key ?? null) : null;
 }
