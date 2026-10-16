@@ -32,7 +32,9 @@ export class World {
     this.token = token;
     const cloud = new ServerProcess({
       device: 'cloud',
-      env: { ...(token ? { QUIRE_TOKEN: token } : {}), ...env },
+      // Browser devices commit through live rooms, which flush 1.5 s after typing stops: a
+      // 1 s change-set gap would split one edit into two sets on @ui scenarios.
+      env: { ...(token ? { QUIRE_TOKEN: token } : {}), ...(this.layer === 'ui' ? { QUIRE_CHANGESET_GAP_MS: '3000' } : {}), ...env },
       ...(this.preparedDataDir ? { dataDir: this.preparedDataDir } : {}),
     });
     for (const [path, text] of this.preload) {

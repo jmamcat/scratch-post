@@ -51,33 +51,43 @@ export function installHelpers(): void {
     return r.width > 0 && r.height > 0;
   };
   const esc = (s: string) => CSS.escape(s);
-  const part = (el: Element): { text: string; anchor: boolean } => {
+  // Readable selectors that survive state changes: ids, labels and test ids anchor them; other
+  // steps keep the tag, the first class (the component's own; state classes come later) and,
+  // among same-tag siblings, the position.
+  const anchor = (el: Element): string | null => {
     const tag = el.tagName.toLowerCase();
-    if (el.id && !/\d{3,}/.test(el.id)) return { text: `#${esc(el.id)}`, anchor: true };
+    if (el.id && !/\d{3,}/.test(el.id)) return `#${esc(el.id)}`;
     const label = el.getAttribute('aria-label');
-    if (label) return { text: `${tag}[aria-label="${label.replace(/"/g, '\\"')}"]`, anchor: true };
+    if (label) return `${tag}[aria-label="${label.replace(/"/g, '\\"')}"]`;
     const testid = el.getAttribute('data-testid');
-    if (testid) return { text: `${tag}[data-testid="${testid}"]`, anchor: true };
-    const classes = [...el.classList].filter((c) => !/\d/.test(c) && c.length < 30).slice(0, 2);
-    let text = tag + classes.map((c) => `.${esc(c)}`).join('');
+    if (testid) return `${tag}[data-testid="${testid}"]`;
+    return null;
+  };
+  const step = (el: Element): string => {
+    const tag = el.tagName.toLowerCase();
+    const cls = [...el.classList].find((c) => !/\d/.test(c) && c.length < 30);
+    let text = tag + (cls ? `.${esc(cls)}` : '');
     const parent = el.parentElement;
     if (parent) {
       const same = [...parent.children].filter((c) => c.tagName === el.tagName);
       if (same.length > 1) text += `:nth-of-type(${same.indexOf(el) + 1})`;
     }
-    return { text, anchor: false };
+    return text;
   };
-  /** Up to four steps from the element to the nearest ancestor with an id, label or test id. */
+  /** Up to three steps from the element, then the nearest anchored ancestor for context. */
   const selector = (el: Element): string => {
-    const parts: string[] = [];
-    let cur: Element | null = el;
-    while (cur && cur !== document.documentElement && parts.length < 4) {
-      const p = part(cur);
-      parts.unshift(p.text);
-      if (p.anchor && cur !== el) break;
+    const own = anchor(el);
+    const parts: string[] = [own ?? step(el)];
+    let cur = el.parentElement;
+    let context: string | null = null;
+    while (cur && cur !== document.body && cur !== document.documentElement) {
+      context = anchor(cur);
+      if (context) break;
+      if (!own && parts.length < 3) parts.unshift(step(cur));
       cur = cur.parentElement;
     }
-    return parts.join(' > ');
+    const path = parts.join(' > ');
+    return context ? `${context} ${path}` : path;
   };
   const focusable =
     'a[href], area[href], button, input:not([type="hidden"]), select, textarea, summary, iframe, [tabindex], [contenteditable=""], [contenteditable="true"]';

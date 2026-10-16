@@ -109,7 +109,10 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
   const reached: { f: Focused; credit: number }[] = [];
   const seen = new Set<number>();
   let trapped = '';
-  for (let i = 0; i < maxTabs; i++) {
+  // Start where the app put focus; past the end of the page, Tab wraps to the top as it does
+  // for a person (through the browser's own controls), until an element comes round again.
+  let outside = 0;
+  for (let presses = 0; reached.length < maxTabs && presses < maxTabs + 5; presses++) {
     const escape = await page.evaluate((escapes) => {
       const a = document.activeElement;
       return a && a !== document.body ? (escapes.find((e) => a.closest(e.selector))?.key ?? null) : null;
@@ -127,7 +130,11 @@ export async function scoreInteraction(page: Page, run: AxeRun, app: UxApp, base
       const covered = !hit || !(hit === a || a.contains(hit) || hit.contains(a));
       return { id: window.__ux.id(a), selector: window.__ux.selector(a), rect: { x: r.left, y: r.top, w: r.width, h: r.height }, covered };
     });
-    if (!f) break;
+    if (!f) {
+      if (++outside > 2) break;
+      continue;
+    }
+    outside = 0;
     if (seen.has(f.id)) {
       if (reached.at(-1)?.f.id === f.id) trapped = f.selector;
       break;

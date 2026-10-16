@@ -14,7 +14,7 @@
   --border: #e0e0e4;
   --text: #222327;
   --text-muted: #6b6d75;
-  --text-faint: #9a9ca4;
+  --text-faint: #6c6e76;
   --accent: #6c5ce7;
   --accent-soft: rgba(108, 92, 231, 0.12);
   --accent-text: #ffffff;
@@ -47,9 +47,10 @@
     --border: #36363c;
     --text: #dcdce0;
     --text-muted: #9c9ca6;
-    --text-faint: #6f6f78;
+    --text-faint: #8e8e98;
     --accent: #8b7cf6;
     --accent-soft: rgba(139, 124, 246, 0.16);
+    --accent-text: #14161a;
     --link: #a597ff;
     --unresolved: #8c84c4;
     --selection: rgba(139, 124, 246, 0.3);
@@ -110,6 +111,9 @@ textarea,
 select {
   font: inherit;
   color: inherit;
+}
+select {
+  background-color: var(--bg);
 }
 
 button {

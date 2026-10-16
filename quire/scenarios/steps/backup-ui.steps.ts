@@ -6,7 +6,15 @@ import { Then, When, eventually } from '../support/world.ts';
 
 Then('the vault history on {string} lists {int} change sets', async ({ world }, d: string, n: number) => {
   const items = appDevice(world, d).page.locator('[data-changeset]');
-  await eventually(10, async () => (await items.count()) === n, `the vault history on ${d} lists ${n} change sets`);
+  await eventually(
+    10,
+    async () => {
+      const count = await items.count();
+      if (count !== n) throw new Error(`${count} listed`);
+      return true;
+    },
+    `the vault history on ${d} lists ${n} change sets`,
+  );
 });
 
 When('{string} restores the vault to change set {int} in the app', async ({ world }, d: string, n: number) => {

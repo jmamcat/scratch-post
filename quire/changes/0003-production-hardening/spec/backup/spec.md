@@ -9,7 +9,8 @@ Keeping every state of the vault recoverable: per-note history (vault capability
 history built from change sets, compaction that keeps what matters, and backup bundles that
 can rebuild a server from nothing. A change set is a group of consecutive commits by one
 device with less than the change-set gap (`QUIRE_CHANGESET_GAP_MS`, default 10 minutes)
-between them; scenario servers use a 1 second gap.
+between them; scenario servers use a 1 second gap (3 seconds on `@ui` scenarios, where browsers
+commit through live rooms).
 
 ## ADDED Requirements
 
@@ -199,7 +200,7 @@ Layer: ui
 - **GIVEN** a cloud server
 - **AND** device `pixel`
 - **AND** `pixel` has `a.md` reading `one`
-- **AND** 2 seconds pass
+- **AND** 4 seconds pass
 - **AND** `pixel` has `a.md` reading `two`
 - **WHEN** `pixel` runs the command `Open vault history`
 - **THEN** the vault history on `pixel` lists 2 change sets

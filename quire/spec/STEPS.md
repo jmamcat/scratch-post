@@ -132,7 +132,8 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 ## Production hardening (change 0003)
 
 Scenario servers run with `QUIRE_INSECURE_NO_AUTH=1` unless a step sets a token, and with a
-1 second change-set gap (`QUIRE_CHANGESET_GAP_MS=1000`).
+1 second change-set gap (`QUIRE_CHANGESET_GAP_MS=1000`; 3 seconds on `@ui` scenarios, because
+browser edits reach the server through live rooms that flush 1.5 s after typing stops).
 
 ### Access (`@system` unless noted)
 
