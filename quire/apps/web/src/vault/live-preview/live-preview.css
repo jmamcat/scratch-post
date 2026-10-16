@@ -72,7 +72,10 @@
   text-decoration-color: var(--link);
 }
 
+/* Undo the form-field defaults in styles.css (full width, padding) for this inline box. */
 .cm-lp-task input {
+  width: auto;
+  padding: 0;
   margin: 0 0.4em 0 0;
   vertical-align: -0.1em;
   accent-color: var(--accent);

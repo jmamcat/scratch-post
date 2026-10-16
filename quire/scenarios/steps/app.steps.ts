@@ -85,7 +85,10 @@ Then('the outline on {string} lists {string}', async ({ world }, d: string, head
 Then('the properties pane on {string} shows {string} as {string}', async ({ world }, d: string, key: string, value: string) => {
   const pane = await app(world, d).pane('Properties');
   await expect(pane).toContainText(key);
-  await expect(pane).toContainText(value);
+  // Editable properties (R-VLT-07) hold the value in an input named after the key.
+  const input = pane.getByLabel(key, { exact: true });
+  if (await input.count()) await expect(input).toHaveValue(value);
+  else await expect(pane).toContainText(value);
 });
 
 When('{string} searches for {string}', async ({ world }, d: string, query: string) => {

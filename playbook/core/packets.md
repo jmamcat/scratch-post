@@ -11,7 +11,9 @@ them and no overlapping owned paths, can run at the same time.
    packet verbatim, never "see design.md".
 2. **Owned paths.** `owns` lists globs the packet may create or edit. Nobody else edits them
    while it runs. Shared integration files (dependency manifests, lockfiles, workspace config,
-   root CI) belong to `P00`, owned by the coordinator. `borrows` lists specific paths outside
+   root CI) belong to `P00`, owned by the coordinator. When a change adds a package or module,
+   `P00` also declares it in the manifest of every consumer the packets name, so no worker
+   needs a manifest edit. `borrows` lists specific paths outside
    `owns` the packet must touch narrowly (wiring a feature into an existing file), each with
    a reason; a borrowed path is never owned or borrowed by a packet running at the same time.
 3. **Small.** `size: S` (under ~300 changed lines), `M` (under ~800), never `L`: split it.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0 (2026-10-16)
+
+- Amendment 0006: `P00` declares new packages in their consumers' manifests; workers stop
+  only their own processes, by process id.
+
 ## 1.5.0 (2026-10-16)
 
 - Amendment 0005: optional `modules/usage`, a ledger of tokens, credits and time per slice

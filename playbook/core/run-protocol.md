@@ -46,6 +46,8 @@ renamed command, a new structure rule), the coordinator re-issues every packet t
 packet whose revision changed before continuing.
 
 Decide without asking (`core/decisions.md`). Keep the structure rules (`modules/structure`).
+Workers share one machine: stop only processes you started, by their process id, never by a
+name pattern (`pkill -f`, `killall`).
 Write or update the scenarios the packet's requirements name before or with the code.
 
 ## 4. Verify

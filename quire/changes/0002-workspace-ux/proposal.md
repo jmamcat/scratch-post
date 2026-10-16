@@ -1,7 +1,7 @@
 ---
 id: 0002-workspace-ux
 play: add-feature
-status: in-progress
+status: done
 created: 2026-10-16
 references: [obsidian, notion, confluence, joplin, silverbullet]
 capabilities: [views, render, navigate, vault, platforms]
