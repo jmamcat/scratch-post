@@ -50,6 +50,8 @@ interface Room {
   committedText: string;
   idleTimer: NodeJS.Timeout | null;
   firstPendingAt: number | null;
+  /** Device of the last connection that edited, named in the next commit (R-VLT-08). */
+  lastDevice: string | null;
 }
 
 /** Yjs rooms speaking the y-websocket protocol (R-LIV-01..03). */
@@ -58,6 +60,7 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
   const maxMs = opts.maxMs ?? 10_000;
   const rooms = new Map<string, Room>();
   const wss = new WebSocketServer({ noServer: true });
+  const devices = new WeakMap<WebSocket, string>();
 
   function getRoom(path: string): Room {
     const existing = rooms.get(path);
@@ -77,6 +80,7 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
       committedText: initial,
       idleTimer: null,
       firstPendingAt: null,
+      lastDevice: null,
     };
     room.awareness.setLocalState(null);
 
@@ -85,7 +89,9 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
       encoding.writeVarUint(enc, MESSAGE_SYNC);
       syncProtocol.writeUpdate(enc, update);
       broadcast(room, encoding.toUint8Array(enc));
-      if (origin !== SERVER_ORIGIN) schedule(room);
+      if (origin === SERVER_ORIGIN) return;
+      room.lastDevice = devices.get(origin as WebSocket) ?? room.lastDevice;
+      schedule(room);
     });
 
     room.awareness.on('update', ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, conn: unknown) => {
@@ -139,7 +145,7 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
       const headText = head.deleted ? '' : (q.store.text(head.rev) ?? '');
       text = merge3(room.committedText, headText, live).text;
     }
-    const meta = q.store.commit(room.path, text, 'live', sha256(text));
+    const meta = q.store.commit(room.path, text, room.lastDevice ?? 'live', sha256(text));
     room.baseRev = meta.rev;
     room.committedText = text;
     if (text !== live) setRoomText(room, text);
@@ -179,7 +185,11 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
           socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
           return;
         }
-        wss.handleUpgrade(req, socket, head, (ws) => connect(ws, path));
+        const device = url.searchParams.get('device')?.trim().slice(0, 64) || null;
+        wss.handleUpgrade(req, socket, head, (ws) => {
+          if (device) devices.set(ws, device);
+          connect(ws, path);
+        });
       });
     },
 

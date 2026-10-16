@@ -18,7 +18,8 @@ reads:
   - references/confluence/product/**
 size: M
 revision: 1
-status: todo
+claimed_by: claude-code/tier-B
+status: done
 ---
 
 # Themes
@@ -82,4 +83,46 @@ Both theme scenarios pass. Also attach one screenshot per theme (light) of the d
 `Formatting` note in reading view, saved under `/tmp/quire-themes/` (not in git), and list
 the paths here.
 
+Results (all Acceptance commands run with `QUIRE_WEB_DIST=/tmp/quire-web-P05`):
+
+- Web build: ok. `@quire/web typecheck`: ok. `pnpm -C quire check`: types, dependency rules
+  and structure rules pass (0 violations; 5 existing S8 size warnings, none in my files).
+- `gate.sh scenarios "@R-PLT-05"`: 2 passed, 0 failed (`Pick a theme`, `Heading levels look
+  different in every theme`).
+- Contrast: light and dark body text, muted text, link and heading colours of all five themes
+  checked against `--bg` and `--bg-alt`: all at least 4.5:1 (lowest 4.77). Dark primary
+  buttons in the four new themes use a dark `--accent-text` (at least 6:1 on the accent).
+- Screenshots (light, `Formatting` note, reading view, demo seed), not in git:
+  - `/tmp/quire-themes/default-light.png`
+  - `/tmp/quire-themes/minimal-light.png`
+  - `/tmp/quire-themes/things-light.png`
+  - `/tmp/quire-themes/paper-light.png`
+  - `/tmp/quire-themes/atlas-light.png`
+
+Files: `apps/web/src/platforms/themes/{index.ts,default.css,minimal.css,things.css,paper.css,atlas.css,live-preview-headings.css}`,
+`quire/scenarios/steps/themes.steps.ts`, borrowed edit in `apps/web/src/styles.css` (heading rules
+and body line height read variables with Default fallbacks).
+
 ## Decisions log
+
+
+- D1 (confidence: high) Themes only set CSS variables (`--hN-size/weight/family/color/spacing/
+  margin-top/margin-bottom/pad-bottom/border`, plus `--text-line-height`, `--heading-line-height`);
+  `styles.css` and `live-preview-headings.css` read them with the Default values as fallbacks.
+  One place styles headings, so reading view and Live Preview cannot drift.
+- D2 (confidence: medium) Default now has H3 in the link colour and H2 at weight 600 (was all
+  bold, text colour), because the requirement needs levels to differ by more than size. The
+  rest of the Default look is unchanged.
+- D3 (confidence: medium) `live-preview-headings.css` styles `.cm-editor .cm-line.cm-lp-h1..h3`
+  (the P01 contract puts the class on the line) and uses padding-top (half the reading-view
+  margin) instead of margin so the editor can measure lines. Untested against the real P01
+  output, which was not merged when this ran. If P01 puts the class on a span, drop `.cm-line`
+  from the selectors.
+- D4 (confidence: medium) The scenario compares margin-top relative to font size, since margins
+  in em always change with the size and would otherwise count as a non-size difference.
+- D5 (confidence: low) Minimal, Things, Paper and Atlas also set their own palettes (warm
+  neutrals, blue tint, Atlassian-like blue) beyond the heading idea; the spec only requires
+  headings to differ, so these are cosmetic and easy to revert.
+- D6 (confidence: high) Dark Default primary buttons (white on `#8b7cf6`, 3.3:1) were already
+  below AA before this packet; left unchanged because Default must keep its look and
+  `styles.css` is borrowed only for heading variables. The four new themes avoid the problem.

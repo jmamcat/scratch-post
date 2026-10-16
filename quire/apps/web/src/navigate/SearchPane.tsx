@@ -1,6 +1,4 @@
 import { search } from '@quire/navigate';
-import { extractTags } from '@quire/render';
-import { titleOf } from '@quire/vault';
 import { useDeferredValue, useMemo } from 'react';
 import type { Workspace } from '../sync/index.ts';
 
@@ -12,20 +10,10 @@ interface Props {
   onOpen: (path: string) => void;
 }
 
-/** Offline full-text search over the local copy (R-NAV-04). `tag:x` lists notes tagged x. */
+/** Offline full-text search over the local copy (R-NAV-04, R-NAV-10). Operators are handled by `search()`. */
 export function SearchPane({ ws, version, query, onQuery, onOpen }: Props) {
   const q = useDeferredValue(query);
-  const hits = useMemo(() => {
-    const tag = /^tag:\s*#?(\S+)$/i.exec(q.trim());
-    if (tag) {
-      const want = tag[1]!.toLowerCase();
-      return [...ws.notes()]
-        .filter((d) => extractTags(d.text).some((t) => t.toLowerCase() === want || t.toLowerCase().startsWith(want + '/')))
-        .map((d) => ({ path: d.path, title: titleOf(d.path), snippet: d.path }))
-        .sort((a, b) => (a.path < b.path ? -1 : 1));
-    }
-    return search(ws.notes(), q, 100);
-  }, [q, version, ws]);
+  const hits = useMemo(() => search(ws.notes(), q, 100), [q, version, ws]);
 
   return (
     <div className="search-pane">
@@ -38,6 +26,7 @@ export function SearchPane({ ws, version, query, onQuery, onOpen }: Props) {
         autoFocus
         onChange={(e) => onQuery(e.target.value)}
       />
+      <p className="muted small">path:x · file:x · tag:x · &quot;phrase&quot; · -term</p>
       {q.trim() && (
         <p className="muted small" role="status">
           {hits.length === 0 ? 'No matches.' : `${hits.length} ${hits.length === 1 ? 'result' : 'results'}`}

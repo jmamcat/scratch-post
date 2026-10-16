@@ -21,7 +21,8 @@ reads:
   - quire/scenarios/steps/sidebar.steps.ts
 size: S
 revision: 1
-status: todo
+status: done
+claimed_by: claude-code/tier-C
 ---
 
 # Changes view and search operators
@@ -93,4 +94,55 @@ playbook/bin/gate.sh scenarios "@R-VLT-08|@R-NAV-10|@R-NAV-04"
 
 All pass (`@R-NAV-04` is the existing search scenario; it must still pass).
 
+**Result (claude-code/tier-C, 2026-10-16): not done, blocked.**
+
+- Web build to `/tmp/quire-web-P07`: pass. `@quire/web` typecheck: pass. `@quire/navigate` typecheck: pass.
+  Also pass: `@quire/scenarios` typecheck, `check-structure.py` (0 violations), `pnpm -C quire deps` (no violations).
+- `gate.sh scenarios "@R-VLT-08|@R-NAV-10|@R-NAV-04"`: 3 run, 2 passed, 1 failed.
+  - `@R-NAV-04 Title matches first, offline`: pass.
+  - `@R-NAV-10 Combined operators`: pass.
+  - `@R-VLT-08 Who changed what`: fails at `the sidebar on "pixel" shows "report" changed by "laptop"`.
+    The row renders `report`, `live · just now`, so the list works but the device is `live`, not `laptop`.
+    Cause: the server stamps every live-room commit with the constant device `live`
+    (`quire/apps/server/src/live/rooms.ts`, `flushRoom`, `q.store.commit(room.path, text, 'live', ...)`).
+    The browser device's `has ... reading` step types into the editor, which commits through the live room.
+    Fixing it needs the live join to carry the editing device name, which touches paths outside this packet's
+    `owns` and `borrows`. The scenario was not weakened. See D-P07-1.
+
+**Unblocked by the coordinator (2026-10-16), per D-P07-1's reverse note.** The web live client
+now sends `device` on join (`apps/web/src/live/live.ts`), and `apps/server/src/live/rooms.ts`
+commits with the device of the last connection that edited the room (`'live'` only when none
+is known). `gate.sh scenarios "@R-VLT-08|@R-NAV-10|@R-NAV-04|@R-LIV"`: 8 passed, 0 failed.
+The scenario was not changed.
+
 ## Decisions log
+- **D-P07-1** · confidence: high
+  - Question: the Changes scenario expects `changed by laptop`, but a browser device's edits are committed by the live room with device `live` (server constant). Where should the device name come from?
+  - Did: stopped. Did not edit `quire/apps/server/src/live/**` or the web live client, and did not change the scenario or the step's expectation.
+  - Why: the packet's step definition and R-VLT-08 both require the real editing device. The fix is outside P07's paths.
+  - Reverse / unblock: have the web live client send the device name on join (`quire/apps/web/src/live/live.ts`), have `rooms.ts` commit with that name instead of `'live'`, and add those paths to `borrows` (or give them to the live packet's owner). Then rerun the gate; the R-VLT-08 scenario should pass unchanged.
+- **D-P07-2** · confidence: med
+  - Question: `ChangesView` skips paths the workspace no longer has. Does "keep 50" apply before or after that skip?
+  - Did: skip first, then keep 50 (`filter(ws.has)` then `slice(0, 50)`).
+  - Why: R-VLT-08 says "the 50 most recently changed notes"; keeping 50 and then skipping would list fewer than 50 even when more notes exist.
+  - Reverse: move `.slice(0, LIMIT)` before `.filter(...)` in `vault/changelog/ChangesView.tsx`.
+- **D-P07-3** · confidence: med
+  - Question: the `only` step must check that the one hit "contains p without .md", but the hit's visible text is the note title and snippet, not the folder path (`Projects/alpha` would never be visible text).
+  - Did: the step checks the hit button's `title` attribute, which holds the full path, with a regex for the path without `.md`.
+  - Why: that is the only place the path appears in the hit, and it avoids changing `SearchPane` markup outside the packet's borrow.
+  - Reverse: show the path in the hit, or change the step to read the visible text.
+- **D-P07-4** · confidence: low
+  - Question: should `file:x` match the file name with or without `.md`?
+  - Did: with `.md` (substring match on the basename of the lower-case path).
+  - Why: "file name contains x"; `file:alpha` and `file:alpha.md` both match.
+  - Reverse: strip the extension before matching in `packages/navigate/src/search.ts`.
+- **D-P07-5** · confidence: low
+  - Question: should the operators also negate (`-tag:x`, `-path:x`), and should a query of only negated terms return hits?
+  - Did: negation applies to any operator. A query of only negated terms returns the notes that match none of them. A query with no terms returns no hits, as today.
+  - Why: the spec says `-term` combined with AND; a generic negation is the simplest consistent reading. The empty-query rule is unchanged.
+  - Reverse: in `parseQuery` and `search`, reject negation for non-text operators, or return no hits when there are no positive terms.
+- **D-P07-6** · confidence: low
+  - Question: where does the operator hint line go in `SearchPane`?
+  - Did: a `muted small` paragraph under the search input, reading `path:x · file:x · tag:x · "phrase" · -term`.
+  - Why: packet step 7 asks for a short hint line; placement is the simplest option.
+  - Reverse: move or drop the `<p>` in `apps/web/src/navigate/SearchPane.tsx`.

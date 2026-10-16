@@ -106,7 +106,7 @@ export class LiveSession {
     const doc = new Y.Doc();
     const { serverUrl, token } = this.ws.settings;
     const provider = new WebsocketProvider(`${wsBase(serverUrl)}/live`, '', doc, {
-      params: { path: this.path, ...(token ? { token } : {}) },
+      params: { path: this.path, device: this.ws.device, ...(token ? { token } : {}) },
       disableBc: true,
       maxBackoffTime: 5000,
     });

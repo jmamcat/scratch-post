@@ -13,7 +13,7 @@ reads:
   - quire/packages/**
 size: M
 revision: 1
-status: doing
+status: done
 claimed_by: claude-code/tier-B
 ---
 
@@ -95,4 +95,56 @@ pnpm -C quire deps
 Plus a throwaway check script (deleted afterwards) whose output you summarise here for
 each function. The behaviour gate is the scenarios of P03, P04 and P06.
 
+### Results
+
+- `@quire/views typecheck` and `@quire/vault typecheck`: clean. `pnpm deps`: no violations
+  (148 modules). `check-structure.py`: 0 violations (5 S8 warnings, none in these packages).
+- Check script (deleted): `domainOf` gave Money (folder and `domain: money`), Journal
+  (`2026-10-16.md`), Gamedev (`#gamedev/levels`), Game-dev (`tags: [game-dev]`), Unsorted
+  (loose root note). `groupByDomain` sorted by label with Unsorted last.
+  `tagTree` gave `idea` count 3 over `idea/raw` count 2 over `idea/raw/deep`, case-merged,
+  sorted by name. `groupByTime` gave Today (newest first), Yesterday, This week, This month,
+  Older (60 days, no date, bad date). `groupByProperty` merged `todo`/`Todo`, list value uses
+  first element, `No status` last. `linkGraph` dropped duplicates, unresolved, self and
+  non-note links; degrees correct. `neighbourhood` depth 1, 2, 0 and unknown focus correct.
+  `setProperty` met the three scenario strings exactly, and also: kept comments, quotes, blank
+  lines, inline lists and long lines; CRLF kept; empty block, trailing-space fence, missing
+  trailing newline all fine; throws on a non-map or invalid block.
+
 ## Decisions log
+
+- **D-P02-1** · confidence: med
+  - Question: what does "title case" mean for a domain label.
+  - Did: capitalise the first letter of each whitespace-separated word and lower-case the rest (`MONEY` gives `Money`, `home lab` gives `Home Lab`, `game-dev` gives `Game-dev`).
+  - Why: matches the contract examples and makes labels deterministic whatever the source casing.
+  - Reverse: `titleCase` in `packages/views/src/domains.ts`.
+- **D-P02-2** · confidence: med
+  - Question: what `TagNode.notes` holds, and how tags that differ only in case combine.
+  - Did: `notes` is the same set `count` counts (tag plus nested tags), sorted by title, so `count === notes.length`. Tags match case-insensitively; the first spelling seen names the node.
+  - Why: R-VIEW-03 opens a tag search, which includes nested tags; Obsidian treats tags case-insensitively.
+  - Reverse: `finish` and the `level.get(key)` lookup in `packages/views/src/tags.ts`.
+- **D-P02-3** · confidence: med
+  - Question: are board values `Todo` and `todo` one column, and are empty columns listed.
+  - Did: merged case-insensitively with the first spelling as label; values are trimmed; empty strings, null and objects count as missing; only non-empty groups are returned, with `No <key>` last. A new column named by the user (UI concern) is not produced here.
+  - Why: the contract says one group per distinct value and `key` is lower case, so a case-sensitive split would give duplicate keys.
+  - Reverse: `groupByProperty` in `packages/views/src/board.ts`.
+- **D-P02-4** · confidence: med
+  - Question: `degree` of nodes in a `neighbourhood` result.
+  - Did: recomputed over the kept edges only, so `degree` always equals the edges touching the node in that `GraphData`. An unknown `focus` returns an empty graph; `depth` 0 returns just the focus.
+  - Why: keeps the `GraphData` invariant. P04 can size nodes by full-graph degree by looking it up in the global graph.
+  - Reverse: `withDegrees` use in `neighbourhood`, `packages/views/src/graph.ts`.
+- **D-P02-5** · confidence: low
+  - Question: what `setProperty` does when the existing front matter is invalid YAML, duplicates a key, or is not a map.
+  - Did: throws `Error('front matter is not a valid YAML map')` and leaves the text alone.
+  - Why: silently returning the text loses the user's edit with no feedback; rewriting would destroy hand-written text. P06 should catch it and show the message.
+  - Reverse: the early `throw` in `packages/vault/src/properties.ts`.
+- **D-P02-6** · confidence: high
+  - Question: how to keep other keys' text unchanged.
+  - Did: only the text between the fences is replaced; scalars are mutated in place (quote style and trailing comments survive), inline lists stay inline, `lineWidth: 0` and `flowCollectionPadding: false` stop re-folding and `[ a, b ]` padding.
+  - Why: contract asks to keep other keys unchanged where possible.
+  - Reverse: `toString` options in `packages/vault/src/properties.ts`.
+- **D-P02-7** · confidence: high
+  - Question: where the shared types live.
+  - Did: moved the interfaces to `packages/views/src/types.ts` and re-exported them from `index.ts` (same public names), so the implementation files import them without a cycle (S6). Shared sort helpers are in `by-title.ts`.
+  - Why: structure rules S3 and S6.
+  - Reverse: none needed.

@@ -1,4 +1,11 @@
-// Stub for packet 0002/P05: fill in the CSS and keep these exports.
+// One CSS file per theme, each scoped to :root[data-quire-theme='<id>'] (R-PLT-05). They set the
+// variables styles.css and live-preview-headings.css read; no theme restyles components itself.
+import './live-preview-headings.css';
+import './default.css';
+import './minimal.css';
+import './things.css';
+import './paper.css';
+import './atlas.css';
 
 export interface Theme {
   id: string;
