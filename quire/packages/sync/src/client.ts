@@ -33,6 +33,13 @@ export function isDirty(d: LocalDoc): boolean {
   return d.baseText === null || d.text !== d.baseText;
 }
 
+/** Receives attachment heads from pulls (R-VLT-11); files never enter the note store. */
+export interface FileSink {
+  onRemote(meta: DocMeta): Promise<void>;
+  /** Upload files added or removed while offline; called at the start of every sync cycle. */
+  flush?(): Promise<void>;
+}
+
 export interface SyncReport {
   pushed: number;
   pulled: number;
@@ -50,6 +57,8 @@ export class SyncClient {
   private readonly listeners = new Set<(paths: string[]) => void>();
   private running: Promise<SyncReport> | null = null;
   private again = false;
+  /** Attachment handler; file heads are skipped when none is set. */
+  files: FileSink | null = null;
 
   constructor(opts: { store: LocalStore; transport: Transport; device: string }) {
     this.store = opts.store;
@@ -115,6 +124,7 @@ export class SyncClient {
     const report: SyncReport = { pushed: 0, pulled: 0, conflicts: [] };
     const changed: string[] = [];
     try {
+      await this.files?.flush?.();
       await this.pushDirty(report, changed);
       await this.pull(report, changed);
     } catch (e) {
@@ -159,6 +169,10 @@ export class SyncClient {
     const since = await this.store.getCursor();
     const feed = await this.transport.changes(since);
     for (const ch of feed.changes) {
+      if (ch.kind === 'file') {
+        await this.files?.onRemote(ch);
+        continue;
+      }
       const local = await this.store.get(ch.path);
       if (local && local.baseRev !== null && local.baseRev >= ch.rev) continue;
 

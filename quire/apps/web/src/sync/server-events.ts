@@ -1,8 +1,8 @@
 import type { ServerEvent } from '@quire/sync';
 
 export interface EventStreamOptions {
-  /** Full URL of `/api/events`, token included (see `HttpTransport.url`). */
-  url: string;
+  /** URL of `/api/events` with its credentials, or a function giving a fresh one per connection (tickets, R-ACC-03). */
+  url: string | (() => Promise<string>);
   onEvent: (e: ServerEvent) => void;
   /** Called with true when the stream opens (or the server says hello) and false when it drops. */
   onStatus?: (connected: boolean) => void;
@@ -56,9 +56,21 @@ export class EventStream {
   private open(): void {
     this.source?.close();
     const create = this.opts.createSource ?? ((u: string) => new EventSource(u));
+    const url = this.opts.url;
+    if (typeof url !== 'string') {
+      url().then(
+        (u) => !this.stopped && this.connect(create, u),
+        () => this.scheduleRetry(),
+      );
+      return;
+    }
+    this.connect(create, url);
+  }
+
+  private connect(create: (url: string) => EventSource, url: string): void {
     let es: EventSource;
     try {
-      es = create(this.opts.url);
+      es = create(url);
     } catch {
       this.scheduleRetry();
       return;

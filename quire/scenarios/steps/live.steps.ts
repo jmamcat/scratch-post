@@ -33,7 +33,7 @@ Given('{string} is listening to the event stream', async ({ world }, d: string) 
   const device = world.systemDevice(d);
   const events: ServerEvent[] = [];
   const ctrl = new AbortController();
-  const res = await fetch(device.transport.url('/api/events'), { signal: ctrl.signal });
+  const res = await fetch(await device.transport.streamUrl('/api/events'), { signal: ctrl.signal });
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
   let buf = '';

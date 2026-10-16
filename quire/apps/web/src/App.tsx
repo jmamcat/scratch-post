@@ -20,7 +20,9 @@ import { GRAPH_HASH, clearRoute, navigate, noteHash, useRoute } from './shared/r
 import { saveSettings, type Settings } from './platforms/index.ts';
 import { loadPref, savePref } from './shared/use-pref.ts';
 import type { Workspace } from './sync/index.ts';
-import { HistoryDrawer } from './vault/index.ts';
+import { HistoryDrawer, useAttachments } from './vault/index.ts';
+import { VaultHistory } from './backup/index.ts';
+import { UpdatePrompt } from './platforms/index.ts';
 import { LiveIndicator } from './live/index.ts';
 import { useLive } from './live/index.ts';
 import { ConflictBadge } from './review/index.ts';
@@ -57,8 +59,13 @@ export function App({ ws }: { ws: Workspace }) {
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [titleFocus, setTitleFocus] = useState(0);
   const editor = useRef<EditorHandle | null>(null);
+  // Attachments (R-VLT-12): the editor extension reads the open path through a ref.
+  const attachments = useAttachments(ws);
+  const pathNow = useRef(path);
+  pathNow.current = path;
+  const attachmentExtension = useMemo(() => attachments.editorExtension(() => pathNow.current ?? ''), [attachments]);
   const [handle, setHandle] = useState<EditorHandle | null>(null);
-  const [drawer, setDrawer] = useState<{ kind: 'review'; focus: string | null } | { kind: 'history' } | null>(null);
+  const [drawer, setDrawer] = useState<{ kind: 'review'; focus: string | null } | { kind: 'history' } | { kind: 'vault-history' } | null>(null);
 
   // Review inbox data (P08), live session for the open note (P08).
   const [conflicts] = useState(() => new ConflictStore(ws));
@@ -199,6 +206,7 @@ export function App({ ws }: { ws: Workspace }) {
       { id: 'right', name: 'Toggle right sidebar', run: () => setRightOpen((v) => !v) },
       { id: 'review', name: 'Open review inbox', run: () => setDrawer({ kind: 'review', focus: null }) },
       { id: 'history', name: 'Show version history', run: () => setDrawer({ kind: 'history' }), enabled: () => exists },
+      { id: 'vault-history', name: 'Open vault history', run: () => setDrawer({ kind: 'vault-history' }) },
     ],
     [ws, newNote, dailyNote, exists, path, setReading, setLeftView, setEditorMode],
   );
@@ -304,6 +312,7 @@ export function App({ ws }: { ws: Workspace }) {
                 setHandle(h);
               }}
               isLive={() => ws.client.isLive(path)}
+              extensions={attachmentExtension}
             />
             {reading && (
               <div className="reader-scroll" ref={readerBox}>
@@ -317,6 +326,7 @@ export function App({ ws }: { ws: Workspace }) {
                   }}
                   onTag={showTag}
                   onToggleTask={(line) => editText(path, toggleTask(text ?? '', line))}
+                  imageSrc={attachments.imageSrc}
                 />
               </div>
             )}
@@ -356,6 +366,8 @@ export function App({ ws }: { ws: Workspace }) {
         <ConflictBadge store={conflicts} onOpen={() => setDrawer({ kind: 'review', focus: null })} />
       </StatusBar>
 
+      {drawer?.kind === 'vault-history' && <VaultHistory ws={ws} onClose={() => setDrawer(null)} />}
+      <UpdatePrompt />
       {drawer?.kind === 'review' && (
         <ReviewDrawer store={conflicts} online={snap.status.online} focusId={drawer.focus} onOpenNote={(p) => open(p)} onClose={() => setDrawer(null)} />
       )}

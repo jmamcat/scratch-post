@@ -13,15 +13,21 @@ interface Props {
   label?: string;
   /** When set, task checkboxes are clickable and report their source line (R-RND-09). */
   onToggleTask?: (line: number) => void;
+  /** Image source for an embedded vault path (attachments, R-VLT-12). */
+  imageSrc?: (path: string) => string;
 }
 
 /** Reading view: the note rendered with `@quire/render` (raw HTML escaped, R-RND-06). */
-export function Reader({ text, resolve, onInternalLink, onTag, className, label, onToggleTask }: Props) {
+export function Reader({ text, resolve, onInternalLink, onTag, className, label, onToggleTask, imageSrc }: Props) {
   const html = useMemo(() => {
-    const out = renderMarkdown(text, { resolve: (t) => (t === '' ? null : resolve(t)), href: (p, h) => noteHash(p, h) });
+    const out = renderMarkdown(text, {
+      resolve: (t) => (t === '' ? null : resolve(t)),
+      href: (p, h) => noteHash(p, h),
+      ...(imageSrc ? { imageSrc } : {}),
+    });
     // The renderer disables checkboxes; enable them only where a toggle can be written back.
     return onToggleTask ? out.replace(/(<input type="checkbox" class="task-list-item-checkbox"[^>]*?) disabled>/g, '$1>') : out;
-  }, [text, resolve, onToggleTask]);
+  }, [text, resolve, onToggleTask, imageSrc]);
   const props = useMemo(() => Object.entries(splitFrontmatter(text).data ?? {}), [text]);
   return (
     <div

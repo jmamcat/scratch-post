@@ -1,7 +1,8 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import type { Conflict, ConflictStatus, DocMeta, RevisionStore } from '@quire/sync';
+import type { CommitExtra, Conflict, ConflictStatus, DocMeta, RevisionStore } from '@quire/sync';
+import { type MigrateOptions, migrate } from './schema.ts';
 
 interface RevRow {
   rev: number;
@@ -10,6 +11,10 @@ interface RevRow {
   deleted: number;
   device: string;
   created_at: string;
+  kind: string;
+  blob: string | null;
+  size: number | null;
+  renamed_from: string | null;
 }
 
 const toMeta = (r: RevRow): DocMeta => ({
@@ -19,41 +24,23 @@ const toMeta = (r: RevRow): DocMeta => ({
   deleted: r.deleted === 1,
   device: r.device,
   createdAt: r.created_at,
+  ...(r.kind === 'file' ? { kind: 'file' as const } : {}),
+  ...(r.blob ? { blob: r.blob } : {}),
+  ...(r.size !== null ? { size: r.size } : {}),
+  ...(r.renamed_from ? { renamedFrom: r.renamed_from } : {}),
 });
 
-const META_COLS = 'r.rev, r.path, r.hash, r.deleted, r.device, r.created_at';
+const META_COLS = 'r.rev, r.path, r.hash, r.deleted, r.device, r.created_at, r.kind, r.blob, r.size, r.renamed_from';
 
 /** RevisionStore on node:sqlite (R-VLT-03). Synchronous by design: every call is one statement or one transaction. */
 export class SqliteRevisionStore implements RevisionStore {
   readonly db: DatabaseSync;
 
-  constructor(file: string) {
+  constructor(file: string, opts: MigrateOptions = {}) {
     if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
     this.db = new DatabaseSync(file);
-    this.db.exec(`
-      PRAGMA journal_mode = WAL;
-      PRAGMA synchronous = NORMAL;
-      CREATE TABLE IF NOT EXISTS revisions (
-        rev INTEGER PRIMARY KEY AUTOINCREMENT,
-        path TEXT NOT NULL,
-        hash TEXT NOT NULL,
-        text TEXT,
-        deleted INTEGER NOT NULL,
-        device TEXT NOT NULL,
-        created_at TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS revisions_path ON revisions (path, rev);
-      CREATE TABLE IF NOT EXISTS heads (path TEXT PRIMARY KEY, rev INTEGER NOT NULL);
-      CREATE INDEX IF NOT EXISTS heads_rev ON heads (rev);
-      CREATE TABLE IF NOT EXISTS conflicts (
-        id TEXT PRIMARY KEY,
-        path TEXT NOT NULL,
-        status TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        data TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-    `);
+    this.db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;');
+    migrate(this.db, opts);
   }
 
   head(path: string): DocMeta | null {
@@ -73,17 +60,20 @@ export class SqliteRevisionStore implements RevisionStore {
     return row ? toMeta(row) : null;
   }
 
-  commit(path: string, text: string | null, device: string, hash: string): DocMeta {
+  commit(path: string, text: string | null, device: string, hash: string, extra: CommitExtra = {}): DocMeta {
     const createdAt = new Date().toISOString();
+    const deleted = text === null && !(extra.kind === 'file' && extra.blob);
     this.db.exec('BEGIN IMMEDIATE');
     try {
       const res = this.db
-        .prepare('INSERT INTO revisions (path, hash, text, deleted, device, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-        .run(path, hash, text, text === null ? 1 : 0, device, createdAt);
+        .prepare(
+          'INSERT INTO revisions (path, hash, text, deleted, device, created_at, kind, blob, size, renamed_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        )
+        .run(path, hash, text, deleted ? 1 : 0, device, createdAt, extra.kind ?? 'note', extra.blob ?? null, extra.size ?? null, extra.renamedFrom ?? null);
       const rev = Number(res.lastInsertRowid);
       this.db.prepare('INSERT INTO heads (path, rev) VALUES (?, ?) ON CONFLICT(path) DO UPDATE SET rev = excluded.rev').run(path, rev);
       this.db.exec('COMMIT');
-      return { path, rev, hash, deleted: text === null, device, createdAt };
+      return { path, rev, hash, deleted, device, createdAt, ...extra };
     } catch (e) {
       this.db.exec('ROLLBACK');
       throw e;
@@ -102,11 +92,33 @@ export class SqliteRevisionStore implements RevisionStore {
     return row.rev ?? 0;
   }
 
+  /** Newest first. Follows renames: revisions made under earlier names come after (R-VLT-09). */
   history(path: string): DocMeta[] {
-    const rows = this.db
-      .prepare(`SELECT ${META_COLS} FROM revisions r WHERE r.path = ? ORDER BY r.rev DESC`)
-      .all(path) as unknown as RevRow[];
-    return rows.map(toMeta);
+    const out: DocMeta[] = [];
+    const seen = new Set<string>();
+    let current: string | null = path;
+    let before = Number.MAX_SAFE_INTEGER;
+    while (current && !seen.has(current)) {
+      seen.add(current);
+      const rows = this.db
+        .prepare(`SELECT ${META_COLS} FROM revisions r WHERE r.path = ? AND r.rev < ? ORDER BY r.rev DESC`)
+        .all(current, before) as unknown as RevRow[];
+      // Only the stretch since this path was last created by a rename belongs to this name.
+      let next: string | null = null;
+      for (const row of rows) {
+        const meta = toMeta(row);
+        // The deletion that a rename leaves behind is not part of the renamed note's story.
+        if (out.length && meta.deleted && current !== path) continue;
+        out.push(meta);
+        if (meta.renamedFrom) {
+          next = meta.renamedFrom;
+          before = meta.rev;
+          break;
+        }
+      }
+      current = next;
+    }
+    return out;
   }
 
   heads(): DocMeta[] {

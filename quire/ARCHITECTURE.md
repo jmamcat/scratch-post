@@ -16,19 +16,23 @@ spec capabilities in `spec/` and `changes/*/spec/` (structure rule S2).
 | `packages/merge` | merge | Three-way merge with collision tiers |
 | `packages/sync` | sync | Sync protocol, server push handler, client engine, HTTP transport |
 | `packages/views` | views | Pure grouping: domains, tag tree, timeline, board columns, link graph |
-| `apps/server/src/vault` | vault | SQLite revision log, vault folder mirror, read routes |
+| `apps/server/src/vault` | vault | SQLite revision log and schema migrations, vault folder mirror, attachments (`files/`), read routes |
+| `apps/server/src/access` | access | Tokens, tickets, origins, security headers, limits |
+| `apps/server/src/backup` | backup | Change sets, whole-vault restore, compaction, backup bundles |
+| `apps/server/src/ops` | ops | JSON logs, metrics, readiness |
 | `apps/server/src/sync` | sync | Push and change feed routes, local node replicator |
 | `apps/server/src/review` | review | Conflict routes |
 | `apps/server/src/live` | live | Yjs rooms, Server-Sent Events |
-| `apps/server/src/platforms` | platforms | Configuration, token guard, serving the web build |
+| `apps/server/src/platforms` | platforms | Configuration, serving the web build |
 | `apps/server/src/shared` | shared | Event hub, HTTP error mapping, hashing |
 | `apps/web/src/sync` | sync | Local-first workspace (IndexedDB) and the sync loop |
-| `apps/web/src/vault` | vault | Editor, rename, version history |
+| `apps/web/src/vault` | vault | Editor, rename, version history, attachments |
+| `apps/web/src/backup` | backup | Vault history: change sets and whole-vault restore |
 | `apps/web/src/render` | render | Reading view |
 | `apps/web/src/navigate` | navigate | File tree, switcher, palette, search, right pane |
 | `apps/web/src/review` | review | Conflict badge, inbox, note banner |
 | `apps/web/src/live` | live | Live co-editing in the editor |
-| `apps/web/src/platforms` | platforms | Settings (server URL, token, device name), themes |
+| `apps/web/src/platforms` | platforms | Settings (server URL, token, device name), themes, offline start |
 | `apps/web/src/views` | views | Sidebar views: Recent, Domains, Tags, Timeline, Board |
 | `apps/web/src/shared` | shared | UI primitives, router, preferences |
 | `apps/android` | platforms | Capacitor wrapper around the web build |
@@ -55,7 +59,8 @@ Packages never import apps, apps never import each other, packages do no I/O.
 
 ## Entry points
 
-- Server process: `apps/server/src/main.ts` (`start()`); HTTP composition in `app.ts`.
+- Server process: `apps/server/src/main.ts` (`start()`); HTTP composition in `app.ts`;
+  command line `apps/server/src/cli.ts` (`quire tokens|backup|restore|compact`).
 - Web client: `apps/web/src/main.tsx`, layout in `App.tsx`.
 - Requests: `/api/*` (JSON), `/api/events` (SSE), `/live?path=` (WebSocket).
 - Data: `$QUIRE_DATA_DIR/quire.db` (revisions, conflicts) and `$QUIRE_DATA_DIR/vault/` (the

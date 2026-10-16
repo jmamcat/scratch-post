@@ -64,10 +64,38 @@ export class HttpTransport implements Transport {
     return `${this.baseUrl}${path}${s ? `?${s}` : ''}`;
   }
 
+  /**
+   * Query parameters that authorize one event stream or live connection. Change 0003/P01 makes
+   * this fetch a single-use ticket (R-ACC-03); call it again for every new connection.
+   */
+  async streamParams(): Promise<Record<string, string>> {
+    return this.token ? { token: this.token } : {};
+  }
+
+  /** Full URL for one event stream connection, authorized by `streamParams`. */
+  async streamUrl(path: string, params: Record<string, string> = {}): Promise<string> {
+    const q = new URLSearchParams({ ...params, ...(await this.streamParams()) }).toString();
+    return `${this.baseUrl}${path}${q ? `?${q}` : ''}`;
+  }
+
+  /** Headers that authenticate a request (for callers that build their own fetch, such as uploads). */
+  authHeaders(): Record<string, string> {
+    return this.token ? { authorization: `Bearer ${this.token}` } : {};
+  }
+
+  /** Any JSON API call, for capabilities that add routes (vault history, files, tickets). */
+  request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    return this.call(method, path, body);
+  }
+
+  /** The fetch this transport uses, so other clients share its test hooks. */
+  get fetcher(): typeof fetch {
+    return this.fetchFn;
+  }
+
   private async call<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { ...this.authHeaders() };
     if (body !== undefined) headers['content-type'] = 'application/json';
-    if (this.token) headers.authorization = `Bearer ${this.token}`;
     const res = await this.fetchFn(`${this.baseUrl}${path}`, {
       method,
       headers,

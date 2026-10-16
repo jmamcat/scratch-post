@@ -6,3 +6,4 @@ export * from './note-paths.ts';
 export * from './changelog/ChangesView.tsx';
 export * from './live-preview/index.ts';
 export * from './properties/PropertiesEditor.tsx';
+export * from './attachments/index.ts';

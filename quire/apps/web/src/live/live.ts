@@ -104,9 +104,10 @@ export class LiveSession {
 
     const joinText = this.view.state.doc.toString();
     const doc = new Y.Doc();
-    const { serverUrl, token } = this.ws.settings;
-    const provider = new WebsocketProvider(`${wsBase(serverUrl)}/live`, '', doc, {
-      params: { path: this.path, device: this.ws.device, ...(token ? { token } : {}) },
+    const auth = await this.ws.transport.streamParams();
+    if (this.stopped || this.provider) return;
+    const provider = new WebsocketProvider(`${wsBase(this.ws.settings.serverUrl)}/live`, '', doc, {
+      params: { path: this.path, device: this.ws.device, ...auth },
       disableBc: true,
       maxBackoffTime: 5000,
     });

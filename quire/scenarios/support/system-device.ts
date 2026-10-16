@@ -101,7 +101,7 @@ export class SystemDevice implements Device {
     await this.client.sync();
     const doc = new Y.Doc();
     const provider = new WebsocketProvider(`${this.serverUrl.replace(/^http/, 'ws')}/live`, '', doc, {
-      params: { path },
+      params: { path, ...(await this.transport.streamParams()) },
       WebSocketPolyfill: WS as unknown as typeof WebSocket,
       disableBc: true,
     });

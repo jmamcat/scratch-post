@@ -23,9 +23,18 @@ export class World {
     private readonly browser: () => Promise<Browser>,
   ) {}
 
-  async startCloud(token?: string): Promise<ServerProcess> {
+  /** A data folder prepared by a step (`a data folder from schema version 1 ...`), used by the next start. */
+  preparedDataDir: string | undefined;
+  /** Output of the last start that failed, for `the cloud server fails to start ...`. */
+  failedStart: string | undefined;
+
+  async startCloud(token?: string, env: Record<string, string> = {}): Promise<ServerProcess> {
     this.token = token;
-    const cloud = new ServerProcess({ device: 'cloud', env: token ? { QUIRE_TOKEN: token } : {} });
+    const cloud = new ServerProcess({
+      device: 'cloud',
+      env: { ...(token ? { QUIRE_TOKEN: token } : {}), ...env },
+      ...(this.preparedDataDir ? { dataDir: this.preparedDataDir } : {}),
+    });
     for (const [path, text] of this.preload) {
       const file = join(cloud.vaultDir, path);
       mkdirSync(dirname(file), { recursive: true });
@@ -64,9 +73,10 @@ export class World {
     return node;
   }
 
-  async addDevice(name: string, serverName = 'cloud'): Promise<Device> {
+  /** `token` overrides the server's token (devices "using the token", R-ACC-02). */
+  async addDevice(name: string, serverName = 'cloud', tokenOverride?: string): Promise<Device> {
     const server = this.server(serverName);
-    const token = serverName === 'cloud' ? this.token : undefined;
+    const token = tokenOverride ?? (serverName === 'cloud' ? this.token : undefined);
     const device: Device =
       this.layer === 'ui'
         ? await (await import('./browser-device.ts')).BrowserDevice.open(name, server.url, token, await this.browser())

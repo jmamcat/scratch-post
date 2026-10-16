@@ -81,7 +81,7 @@ export class Workspace {
     this.transport = opts.transport ?? new HttpTransport(settings.serverUrl, settings.token || undefined);
     this.client = new SyncClient({ store: this.store, transport: this.transport, device: settings.device });
     this.events = new EventStream({
-      url: this.transport.url('/api/events'),
+      url: () => this.transport.streamUrl('/api/events'),
       ...(opts.createEventSource ? { createSource: opts.createEventSource } : {}),
       onEvent: (e) => this.handleEvent(e),
       onStatus: (up) => {

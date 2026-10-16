@@ -7,6 +7,7 @@
     "generate": "python3 ../../playbook/bin/spec-scenarios.py --check && bddgen",
     "test": "pnpm build:web:if-needed && pnpm generate && playwright test",
     "system": "pnpm generate && playwright test --grep @system",
+    "deploy": "pnpm generate && QUIRE_DEPLOY=1 playwright test --workers 1",
     "ui": "pnpm generate && playwright test --grep @ui",
     "approve": "pnpm generate && QUIRE_APPROVE=1 playwright test --grep @R-RND-00",
     "typecheck": "tsc -p .",
@@ -22,8 +23,14 @@
     "yjs": "^13.6.27"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.56.1",
+    "@types/pngjs": "^6.0.5",
     "@types/ws": "^8.18.0",
-    "playwright-bdd": "^9.2.1"
+    "colorjs.io": "0.7.1",
+    "pixelmatch": "7.2.0",
+    "playwright-bdd": "^9.2.1",
+    "pngjs": "7.0.0",
+    "syllable": "5.0.1"
   }
 }

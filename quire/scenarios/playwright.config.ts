@@ -15,6 +15,8 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 5_000 },
   workers: process.env.CI ? 2 : 3,
+  // @deploy scenarios build and run containers; they run only through `pnpm scenarios:deploy`.
+  ...(process.env.QUIRE_DEPLOY ? { grep: /@deploy/ } : { grepInvert: /@deploy/ }),
   reporter: [['list']],
   use: {
     launchOptions: process.env.PLAYWRIGHT_BROWSERS_PATH ? {} : { executablePath: '/opt/pw-browsers/chromium' },

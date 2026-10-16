@@ -5,6 +5,7 @@ import {
   SyncError,
   hashText,
   type ChangeFeed,
+  type CommitExtra,
   type Conflict,
   type ConflictStatus,
   type DocMeta,
@@ -20,7 +21,7 @@ export interface RevisionStore {
   text(rev: number): string | null;
   /** Metadata of any revision, or null. */
   revision(rev: number): DocMeta | null;
-  commit(path: string, text: string | null, device: string, hash: string): DocMeta;
+  commit(path: string, text: string | null, device: string, hash: string, extra?: CommitExtra): DocMeta;
   changesSince(rev: number): DocMeta[];
   headRev(): number;
   history(path: string): DocMeta[];
@@ -268,8 +269,8 @@ export class MemoryRevisionStore implements RevisionStore {
     return r ? { ...r.meta } : null;
   }
 
-  commit(path: string, text: string | null, device: string, hash: string): DocMeta {
-    const meta: DocMeta = { path, rev: this.revs.length + 1, hash, deleted: text === null, device, createdAt: new Date().toISOString() };
+  commit(path: string, text: string | null, device: string, hash: string, extra: CommitExtra = {}): DocMeta {
+    const meta: DocMeta = { path, rev: this.revs.length + 1, hash, deleted: text === null, device, createdAt: new Date().toISOString(), ...extra };
     this.revs.push({ meta, text });
     this.headIdx.set(path, this.revs.length - 1);
     return { ...meta };

@@ -2,7 +2,7 @@
 playbook: playbook
 version: 1
 target: quire
-modules: [specs, scenarios, structure, references, demo, usage]
+modules: [specs, scenarios, structure, references, demo, usage, hardening, ux]
 specs: quire/spec
 changes: quire/changes
 references: references
@@ -11,6 +11,8 @@ scenarios_out: quire/scenarios/.features
 check: pnpm -C quire check
 scenarios: pnpm -C quire scenarios
 demo: pnpm -C quire demo
+deploy: pnpm -C quire scenarios:deploy   # container image and Compose stack (modules/hardening)
+ux: pnpm -C quire ux                     # UX scorer report and baseline check (modules/ux)
 structure_roots: quire/packages, quire/apps/server/src, quire/apps/web/src
 structure_ext: .ts, .tsx
 structure_allow: shared

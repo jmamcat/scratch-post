@@ -1,8 +1,8 @@
 import type { MiddlewareHandler } from 'hono';
 
 /**
- * R-PLT-04: when a token is configured, every /api route except health needs it, as a bearer
- * header or, for EventSource and WebSocket which cannot set headers, as ?token=.
+ * Stub carried over from 0002 (R-PLT-04): one optional token, as a bearer header or `?token=`.
+ * Packet 0003/P01 replaces it with R-ACC-01 to R-ACC-06.
  */
 export function tokenGuard(token: string | undefined): MiddlewareHandler {
   return async (c, next) => {

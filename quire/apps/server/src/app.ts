@@ -1,14 +1,16 @@
 import { join } from 'node:path';
 import { type DocMeta, SyncServer } from '@quire/sync';
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
+import { type Access, createAccess } from './access/index.ts';
+import { type BackupDeps, backupRoutes, beforeMigrate } from './backup/index.ts';
 import { eventRoutes } from './live/index.ts';
-import { type Config, serveWebClient, tokenGuard } from './platforms/index.ts';
+import { type Ops, createOps } from './ops/index.ts';
+import { type Config, serveWebClient } from './platforms/index.ts';
 import { reviewRoutes } from './review/index.ts';
 import { EventHub } from './shared/events.ts';
 import { onError } from './shared/http.ts';
 import { syncRoutes } from './sync/index.ts';
-import { SqliteRevisionStore, VaultMirror, vaultRoutes } from './vault/index.ts';
+import { type Files, SqliteRevisionStore, VaultMirror, createFiles, vaultRoutes } from './vault/index.ts';
 
 /** Everything one server process holds. Built here, the composition root for HTTP. */
 export interface QuireServer {
@@ -18,6 +20,11 @@ export interface QuireServer {
   store: SqliteRevisionStore;
   vault: VaultMirror;
   events: EventHub;
+  access: Access;
+  ops: Ops;
+  files: Files;
+  /** Everything the backup module needs, built once. */
+  backupDeps: BackupDeps;
   hooks: {
     beforeWrite: Set<(path: string) => void>;
     afterWrite: Set<(path: string, text: string | null, meta: DocMeta) => void>;
@@ -28,15 +35,26 @@ export interface QuireServer {
 }
 
 export async function createQuireServer(config: Config): Promise<QuireServer> {
-  const store = new SqliteRevisionStore(join(config.dataDir, 'quire.db'));
-  const vault = new VaultMirror(join(config.dataDir, 'vault'), store);
-  const events = new EventHub();
+  const dbFile = join(config.dataDir, 'quire.db');
+  const store = new SqliteRevisionStore(dbFile, { beforeMigrate: beforeMigrate(config, dbFile) });
+  const access = createAccess(config, store);
+  access.assertConfigured();
   const hooks: QuireServer['hooks'] = { beforeWrite: new Set(), afterWrite: new Set() };
+  const ops = createOps({ config, store, hooks });
+  const vaultDir = join(config.dataDir, 'vault');
+  const vault = new VaultMirror(vaultDir, store);
+  const events = new EventHub();
+  let files: Files | null = null;
 
   // Every commit lands on disk first, then reaches live rooms and other listeners.
   const afterCommit = (path: string, text: string | null, meta: DocMeta) => {
-    vault.write(path, text, meta.rev);
+    if (meta.kind === 'file') files?.mirror(meta);
+    else vault.write(path, text, meta.rev);
     for (const fn of hooks.afterWrite) fn(path, text, meta);
+  };
+  const committed = (path: string, text: string | null, meta: DocMeta) => {
+    afterCommit(path, text, meta);
+    events.emit({ type: 'commit', path, rev: meta.rev, hash: meta.hash, device: meta.device, deleted: meta.deleted });
   };
 
   const sync = new SyncServer(store, {
@@ -47,12 +65,18 @@ export async function createQuireServer(config: Config): Promise<QuireServer> {
     onEvent: (e) => events.emit(e),
   });
 
+  files = createFiles({ config, store, sync, vaultDir, committed });
+  const backupDeps: BackupDeps = { config, store, sync, vaultDir, hooks, committed, log: ops.log, metrics: ops.metrics };
+
   const app = new Hono();
-  app.use('*', cors());
+  ops.installFirst(app);
   app.onError(onError);
+  access.install(app);
   app.get('/api/health', (c) => c.json({ ok: true, mode: config.mode, device: config.device, rev: store.headRev() }));
-  app.use('/api/*', tokenGuard(config.token));
+  ops.routes(app);
   vaultRoutes(app, { store, sync });
+  files.routes(app);
+  backupRoutes(app, backupDeps);
   syncRoutes(app, { sync });
   reviewRoutes(app, { store, sync });
   eventRoutes(app, { events, headRev: () => store.headRev() });
@@ -69,12 +93,14 @@ export async function createQuireServer(config: Config): Promise<QuireServer> {
     store,
     vault,
     events,
+    access,
+    ops,
+    files,
+    backupDeps,
     hooks,
-    committed: (path, text, meta) => {
-      afterCommit(path, text, meta);
-      events.emit({ type: 'commit', path, rev: meta.rev, hash: meta.hash, device: meta.device, deleted: meta.deleted });
-    },
+    committed,
     async close() {
+      access.stop();
       await vault.close();
       await sync.exclusive(() => undefined);
       store.close();

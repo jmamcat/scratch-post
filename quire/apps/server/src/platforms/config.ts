@@ -15,6 +15,23 @@ export interface Config {
   /** Local mode: replication interval and the cap on retry backoff, in milliseconds. */
   replicateMs?: number;
   replicateMaxBackoffMs?: number;
+  /** Development only: run with no access token (R-ACC-01). */
+  insecureNoAuth: boolean;
+  /** Extra origins allowed to call the API from a browser (R-ACC-05). */
+  allowedOrigins: string[];
+  /** Size limits in bytes (R-ACC-06). */
+  maxNoteBytes: number;
+  maxFileBytes: number;
+  /** Tickets for event streams and live connections live this long (R-ACC-03). */
+  ticketTtlMs: number;
+  maxTokens: number;
+  /** Backups (R-BAK-05); none when unset. */
+  backupDir?: string;
+  /** Quiet time that closes a change set (R-BAK-02). */
+  changesetGapMs: number;
+  /** Compaction keeps every revision this many days (R-BAK-04). */
+  keepAllDays: number;
+  logLevel: 'debug' | 'info' | 'warn' | 'error';
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -36,5 +53,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     watch: env.QUIRE_WATCH !== '0',
     ...(env.QUIRE_REPLICATE_MS ? { replicateMs: Number(env.QUIRE_REPLICATE_MS) } : {}),
     ...(env.QUIRE_REPLICATE_MAX_BACKOFF_MS ? { replicateMaxBackoffMs: Number(env.QUIRE_REPLICATE_MAX_BACKOFF_MS) } : {}),
+    insecureNoAuth: env.QUIRE_INSECURE_NO_AUTH === '1',
+    allowedOrigins: (env.QUIRE_ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+    maxNoteBytes: Number(env.QUIRE_MAX_NOTE_BYTES ?? 2 * 1024 * 1024),
+    maxFileBytes: Number(env.QUIRE_MAX_FILE_BYTES ?? 25 * 1024 * 1024),
+    ticketTtlMs: Number(env.QUIRE_TICKET_TTL_MS ?? 60_000),
+    maxTokens: Number(env.QUIRE_MAX_TOKENS ?? 32),
+    ...(env.QUIRE_BACKUP_DIR ? { backupDir: resolve(env.QUIRE_BACKUP_DIR) } : {}),
+    changesetGapMs: Number(env.QUIRE_CHANGESET_GAP_MS ?? 10 * 60_000),
+    keepAllDays: Number(env.QUIRE_KEEP_ALL_DAYS ?? 30),
+    logLevel: (['debug', 'info', 'warn', 'error'] as const).find((l) => l === env.QUIRE_LOG_LEVEL) ?? 'info',
   };
 }

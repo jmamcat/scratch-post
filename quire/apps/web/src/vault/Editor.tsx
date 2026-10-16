@@ -1,4 +1,4 @@
-import { Annotation, Compartment, EditorState } from '@codemirror/state';
+import { Annotation, Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { Workspace } from '../sync/index.ts';
@@ -33,10 +33,12 @@ interface Props {
   onHandle?: (h: EditorHandle | null) => void;
   /** True while a live room owns the text; workspace text updates are then ignored. */
   isLive?: () => boolean;
+  /** Extra editor behaviour from other capabilities (attachments, R-VLT-12). Read once per editor. */
+  extensions?: Extension;
 }
 
 /** Markdown editor (CodeMirror 6) in Live Preview or source mode. Every change goes to the local copy. */
-export function NoteEditor({ ws, path, hidden, mode, onOpenLink, onHandle, isLive }: Props) {
+export function NoteEditor({ ws, path, hidden, mode, onOpenLink, onHandle, isLive, extensions }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const pathRef = useRef(path);
@@ -52,6 +54,7 @@ export function NoteEditor({ ws, path, hidden, mode, onOpenLink, onHandle, isLiv
       doc: text,
       extensions: [
         baseExtensions(),
+        extensions ?? [],
         collabSlot.of([]),
         modeSlot.of(modeExtension(modeRef.current)),
         EditorView.updateListener.of((u) => {

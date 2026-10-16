@@ -22,18 +22,32 @@ export async function freePort(): Promise<number> {
 export interface ServerOptions {
   device: string;
   env?: Record<string, string>;
+  /** Start on an existing data folder (migrations, restores); a fresh temporary one otherwise. */
+  dataDir?: string;
 }
 
 /** A real Quire server process (cloud or local node) with its own data folder and port. */
 export class ServerProcess {
-  readonly dataDir = mkdtempSync(join(tmpdir(), 'quire-scenario-'));
-  readonly vaultDir = join(this.dataDir, 'vault');
+  readonly dataDir: string;
+  readonly vaultDir: string;
   port = 0;
   private child: ChildProcess | null = null;
   private log = '';
 
   constructor(private readonly opts: ServerOptions) {
+    this.dataDir = opts.dataDir ?? mkdtempSync(join(tmpdir(), 'quire-scenario-'));
+    this.vaultDir = join(this.dataDir, 'vault');
     mkdirSync(this.vaultDir, { recursive: true });
+  }
+
+  /** Everything the process printed since it last started (R-OPS-02 steps read it). */
+  get output(): string {
+    return this.log;
+  }
+
+  /** Environment for the next start; steps may change it before a restart. */
+  get env(): Record<string, string> {
+    return (this.opts.env ??= {});
   }
 
   get url(): string {
@@ -52,6 +66,10 @@ export class ServerProcess {
         QUIRE_DEVICE: this.opts.device,
         QUIRE_WEB_DIST: process.env.QUIRE_WEB_DIST ?? fileURLToPath(new URL('../../apps/web/dist', import.meta.url)),
         NODE_NO_WARNINGS: '1',
+        // Change 0003: scenario servers run without a token unless a step sets one, and close
+        // change sets after one second of quiet.
+        ...(this.opts.env?.QUIRE_TOKEN || this.opts.env?.QUIRE_SECURE ? {} : { QUIRE_INSECURE_NO_AUTH: '1' }),
+        QUIRE_CHANGESET_GAP_MS: '1000',
         ...this.opts.env,
       },
       stdio: ['ignore', 'pipe', 'pipe'],

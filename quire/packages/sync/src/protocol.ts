@@ -7,6 +7,34 @@ export interface DocMeta {
   deleted: boolean;
   device: string;
   createdAt: string;
+  /** `file` for attachments (R-VLT-11); absent means a note. */
+  kind?: 'note' | 'file';
+  /** Attachments: SHA-256 of the bytes, which live in the content store, and their size. */
+  blob?: string;
+  size?: number;
+  /** First revision of a renamed path: the path it came from (R-VLT-09). */
+  renamedFrom?: string;
+}
+
+/** Extra columns a commit can carry (schema version 2). */
+export interface CommitExtra {
+  kind?: 'note' | 'file';
+  blob?: string;
+  size?: number;
+  renamedFrom?: string;
+}
+
+/** A group of consecutive commits by one device (R-BAK-02). */
+export interface ChangeSet {
+  id: number;
+  device: string;
+  firstRev: number;
+  lastRev: number;
+  startedAt: string;
+  endedAt: string;
+  /** Paths of notes and files it changed, sorted. */
+  paths: string[];
+  closed: boolean;
 }
 
 export interface ChangeFeed {
@@ -22,6 +50,8 @@ export interface PushItem {
   baseRev: number | null;
   /** New text, or null to delete. */
   text: string | null;
+  /** Set when this item creates the path by renaming another (R-VLT-09). */
+  renamedFrom?: string;
 }
 
 export interface PushRequest {
@@ -39,6 +69,8 @@ export interface PushResult {
   /** Head text after the push; null when the head is a deletion. */
   text: string | null;
   conflictId?: string;
+  /** The path was renamed after the client's base: the edit landed on this path instead (R-VLT-09). */
+  movedTo?: string;
 }
 
 export type ConflictStatus = 'open' | 'review' | 'resolved' | 'dismissed';
@@ -46,7 +78,8 @@ export type ConflictStatus = 'open' | 'review' | 'resolved' | 'dismissed';
 export interface Conflict {
   id: string;
   path: string;
-  kind: 'content' | 'delete-edit';
+  /** `file`: an attachment changed on two devices; both copies are kept (R-VLT-11). */
+  kind: 'content' | 'delete-edit' | 'file';
   status: ConflictStatus;
   /** Revision committed when the conflict was created; its text is the provisional text. */
   rev: number;

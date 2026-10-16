@@ -128,3 +128,86 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `"d" sets the property "k" to "v"` / `"d" adds the property "k" with "v"` / `"d" removes the property "k"` | properties pane |
 | `"d" picks the theme "Name"` / `the app on "d" uses the theme "Name"` | themes |
 | `in every theme the headings on "d" look different from each other` | H1, H2, H3 differ in every theme |
+
+## Production hardening (change 0003)
+
+Scenario servers run with `QUIRE_INSECURE_NO_AUTH=1` unless a step sets a token, and with a
+1 second change-set gap (`QUIRE_CHANGESET_GAP_MS=1000`).
+
+### Access (`@system` unless noted)
+
+| Phrase | Meaning |
+| --- | --- |
+| `a cloud server starts with no access token` / `the cloud server fails to start with the message "m"` | start without a token and without the insecure flag; the process exits and its output contains `m` |
+| `the token "t" is added as "name"` / `the token "name" is revoked` | `quire tokens add` / `revoke` against the cloud server's data folder |
+| `N tokens are added` / `adding the token "t" as "name" is refused` | token limit |
+| `a request for the note list with the token "t" succeeds` / `... is refused` | a specific token in the header |
+| `a request for the note list with the token in the URL is refused` | `?token=` with the configured token |
+| `a request for the note list with the token is answered with status N` | the configured token, expecting a status |
+| `N requests with a wrong token are made` | failed token checks from this address |
+| `the cloud server's data folder does not contain "t"` | no file in the data folder holds the bytes of `t` |
+| `device "d" using the token "t"` / `devices "a" and "b" using the token "t"` | devices that authenticate with that token |
+| `within N seconds "d" has lost its live connection` | the device's live room closed |
+| `a ticket opens the event stream once and is refused the second time` | ticket rules |
+| `no request from "d" carries "t" in its URL` | (`@ui`) every request the browser made |
+| `a cloud server that allows the origin "o"` | `QUIRE_ALLOWED_ORIGINS` |
+| `a request from the origin "o" is allowed` / `... is not allowed` | CORS preflight for the note list |
+| `the app page and the note list carry the security headers` | CSP with `frame-ancestors 'none'`, nosniff, no-referrer |
+| `"d" tries to save a note of N MiB` / `the request is rejected with status N` | size limits |
+
+### Versioning and backup
+
+| Phrase | Meaning |
+| --- | --- |
+| `a data folder from schema version 1 with "p" reading "t"` / `a data folder from a newer schema version` | a prepared database |
+| `a cloud server starts on that data folder` / `the database has the latest schema version` | migrations |
+| `N seconds pass` | wait (change sets close after 1 second of quiet in scenarios) |
+| `the vault history lists N change sets` | `GET /api/changesets` |
+| `change set N of the vault history is by "d" and changed "p, q"` | newest is 1; paths in any order, comma separated |
+| `"d" restores the vault to change set N` | the device calls the restore API |
+| `"p" is gone from "d"` | the device's store has no live copy of `p` |
+| `a cloud server that keeps every revision for N days` | `QUIRE_KEEP_ALL_DAYS` |
+| `the cloud server compacts its history` | `quire compact` against its data folder |
+| `a cloud server with a backup folder` | `QUIRE_BACKUP_DIR` in a separate temporary folder |
+| `within N seconds the backup folder holds a full bundle and at least N incremental bundles` | bundle chain |
+| `the backup chain verifies` / `the backup chain does not verify` | `quire backup verify` |
+| `within N seconds the backup bundles store the text "t" once` | across all bundles' content stores |
+| `a byte of the newest backup bundle is changed` | tamper test |
+| `the cloud server's data is lost and restored from the backup folder` / `... as of the first change set` | stop, delete the data folder, `quire restore`, start |
+| `the vault history on "d" lists N change sets` / `"d" restores the vault to change set N in the app` | (`@ui`) vault history view, confirm included |
+
+### Operations
+
+| Phrase | Meaning |
+| --- | --- |
+| `the readiness check succeeds` / `within N seconds the readiness check fails naming "x"` | `/api/ready` |
+| `the backup folder becomes unwritable` | the backup folder is replaced by a file (works for root too) |
+| `the cloud server's log has a JSON line for "METHOD /path" with status N` / `the cloud server's log does not contain "t"` | process output |
+| `the metrics report at least N for "metric"` / `the metrics include "metric"` | `/api/metrics` |
+| `the container image is built` / `the Compose stack starts with an access token` | (`@deploy`) Docker |
+| `within N seconds the stack's cloud server is healthy` / `the stack's cloud server runs as a non-root user` / `a note written through the stack survives a restart of the stack` | (`@deploy`) |
+| `N devices` | that many sync clients on the cloud server |
+| `every device makes N edits across M shared notes while K of them type in "p", with seed S` | seeded load run |
+| `the 95th percentile push took under N ms` / `no request failed` | load results |
+
+### Rename and attachments
+
+| Phrase | Meaning |
+| --- | --- |
+| `"d" renames "p" to "q"` | rename with link rewriting (`@system`) |
+| `"d" renames the open note to "title"` | (`@ui`) edit the inline title and press Enter |
+| `"d" adds the file "p" with N bytes from seed S` | deterministic pseudo-random bytes |
+| `"d" has the file "p" with N bytes from seed S` / `the vault folder has the file "p" with N bytes from seed S` | byte-for-byte |
+| `the cloud server stores 1 copy of N bytes from seed S` | content store |
+| `within N seconds the cloud server has the file "p"` | file head exists |
+| `within N seconds "p" on "d" reads "t"` | (`@ui`) polling form |
+| `"d" drops the image "name" into the editor` / `"d" drops a file of N MiB into the editor` | (`@ui`) drag and drop with a generated PNG or blob |
+| `the reading view on "d" shows the image "name" loaded` / `"d" sees the message "t"` | (`@ui`) |
+
+### Platforms
+
+| Phrase | Meaning |
+| --- | --- |
+| `the web app is built` / `the first-load JavaScript is under N kB gzip` / `... does not include "pkg"` | the production build's entry chunk and its static imports |
+| `device "d" with the demo notes` | (`@ui`) a device after the demo seed is pushed |
+| `in every theme the standard screens on "d" pass the UX gate` | (`@ui`) UX scorer over every theme, light and dark |

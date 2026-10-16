@@ -16,7 +16,8 @@ import { sha256 } from '../shared/hash.ts';
 export interface LiveDeps {
   store: RevisionStore;
   sync: SyncServer;
-  token?: string | undefined;
+  /** Name of the token or ticket allowed to open this connection, or null to refuse (R-ACC-03). */
+  authorize(url: URL, req: IncomingMessage): string | null;
   hooks: {
     beforeWrite: Set<(path: string) => void>;
     afterWrite: Set<(path: string, text: string | null, meta: DocMeta) => void>;
@@ -36,6 +37,9 @@ export interface LiveRooms {
   /** Bring a room to a new head text without losing live edits. */
   apply(path: string, text: string | null, meta: DocMeta): void;
   activePaths(): string[];
+  /** Close every connection opened with this token name (revocation, R-ACC-02). */
+  closeConnections(tokenName: string): void;
+  stats(): { rooms: number; connections: number };
   close(): Promise<void>;
 }
 
@@ -61,6 +65,7 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
   const rooms = new Map<string, Room>();
   const wss = new WebSocketServer({ noServer: true });
   const devices = new WeakMap<WebSocket, string>();
+  const tokenNames = new Map<WebSocket, string>();
 
   function getRoom(path: string): Room {
     const existing = rooms.get(path);
@@ -173,7 +178,8 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
       server.on('upgrade', (req: IncomingMessage, socket: Duplex, head: Buffer) => {
         const url = new URL(req.url ?? '/', 'http://localhost');
         if (url.pathname !== '/live' && url.pathname !== '/live/') return;
-        if (q.token && url.searchParams.get('token') !== q.token) {
+        const tokenName = q.authorize(url, req);
+        if (tokenName === null) {
           socket.end('HTTP/1.1 401 Unauthorized\r\n\r\n');
           return;
         }
@@ -188,6 +194,8 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
         const device = url.searchParams.get('device')?.trim().slice(0, 64) || null;
         wss.handleUpgrade(req, socket, head, (ws) => {
           if (device) devices.set(ws, device);
+          tokenNames.set(ws, tokenName);
+          ws.on('close', () => tokenNames.delete(ws));
           connect(ws, path);
         });
       });
@@ -212,6 +220,12 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
     },
 
     activePaths: () => [...rooms.keys()],
+
+    closeConnections(tokenName) {
+      for (const [ws, name] of tokenNames) if (name === tokenName) ws.close(4401, 'token revoked');
+    },
+
+    stats: () => ({ rooms: rooms.size, connections: tokenNames.size }),
 
     async close() {
       await q.sync.exclusive(() => {
