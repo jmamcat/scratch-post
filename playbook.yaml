@@ -1,0 +1,17 @@
+# Binds this repository to the RefSpec playbook (playbook/README.md).
+playbook: playbook
+version: 1
+target: quire
+modules: [specs, scenarios, structure, references, demo]
+specs: quire/spec
+changes: quire/changes
+references: references
+scenarios_out: quire/scenarios/.features
+check: pnpm -C quire check
+scenarios: pnpm -C quire scenarios
+demo: pnpm -C quire demo
+structure_roots: quire/packages, quire/apps/server/src, quire/apps/web/src
+structure_ext: .ts, .tsx
+structure_allow: shared
+structure_soft_lines: 300
+structure_hard_lines: 500

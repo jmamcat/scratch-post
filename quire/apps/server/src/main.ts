@@ -2,9 +2,9 @@ import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { serve } from '@hono/node-server';
 import { type QuireServer, createQuireServer } from './app.ts';
-import { type Config, loadConfig } from './config.ts';
-import { type LiveRooms, createLiveRooms } from './live.ts';
-import { type Replicator, createReplicator } from './replicator.ts';
+import { type LiveRooms, createLiveRooms } from './live/index.ts';
+import { type Config, loadConfig } from './platforms/index.ts';
+import { type Replicator, createReplicator } from './sync/index.ts';
 
 export interface Running {
   quire: QuireServer;
@@ -20,12 +20,19 @@ export async function start(config: Config): Promise<Running> {
   const http = await new Promise<Server>((resolve) => {
     const s = serve({ fetch: quire.app.fetch, port: config.port }, () => resolve(s as Server));
   });
-  const live = createLiveRooms(quire);
+  const live = createLiveRooms({ ...quire, token: config.token });
   live.attach(http);
 
   const replicator =
     config.mode === 'local' && config.upstream
-      ? createReplicator(quire, { url: config.upstream.url, device: config.device, ...(config.upstream.token ? { token: config.upstream.token } : {}) })
+      ? createReplicator(
+          quire,
+          { url: config.upstream.url, device: config.device, ...(config.upstream.token ? { token: config.upstream.token } : {}) },
+          {
+            ...(config.replicateMs ? { intervalMs: config.replicateMs, debounceMs: Math.min(1000, config.replicateMs) } : {}),
+            ...(config.replicateMaxBackoffMs ? { maxBackoffMs: config.replicateMaxBackoffMs } : {}),
+          },
+        )
       : null;
   replicator?.start();
 

@@ -1,0 +1,46 @@
+# Packets and lanes
+
+A **packet** is one self-contained unit of work for one worker. A **lane** is a sequence of
+packets that touch the same area. Packets in different lanes, with no dependency between
+them and no overlapping owned paths, can run at the same time.
+
+## Packet rules
+
+1. **Self-contained.** A worker with only the packet file, the paths under `reads`, and a
+   shell can do it. Contracts (types, routes, file formats, CLI flags) are copied into the
+   packet verbatim, never "see design.md".
+2. **Owned paths.** `owns` lists globs the packet may create or edit. Nobody else edits them
+   while it runs. Shared integration files (dependency manifests, lockfiles, workspace config,
+   root CI) belong to `P00`, owned by the coordinator.
+3. **Small.** `size: S` (under ~300 changed lines), `M` (under ~800), never `L`: split it.
+   A packet must fit a 32k-token context with room to work. This is what keeps the
+   playbook usable with mid-size and local models.
+4. **Verifiable.** The Acceptance section lists commands that must exit 0. For behaviour,
+   that means named scenarios (`modules/scenarios`), not "tests pass".
+5. **Traceable.** The Context section cites the requirement IDs it implements.
+
+## Lanes by play
+
+Plays suggest typical lanes. Examples:
+
+| Play | Typical lanes |
+| --- | --- |
+| new system | Z integration, A domain libraries, B protocol, C server, D client, E packaging |
+| fix a bug | one packet: reproduce as a scenario, fix, verify |
+| port a language | per module: port, run the shared scenarios against both implementations |
+| combine systems | per capability: adapter on each side, then the merged module |
+
+## Template
+
+`templates/change/packet.md`. Front matter keys: `id`, `title`, `lane`, `depends_on`,
+`owns`, `reads`, `size`, `status` (`todo | doing | done | blocked`), `claimed_by`.
+
+## Model tiers
+
+| Tier | Typical models | May take | Needs |
+| --- | --- | --- | --- |
+| A | frontier models | S, M, coordinator, proposals, designs | |
+| B | strong open-weight models | S, M | contracts copied into the packet |
+| C | small or local models | S | explicit steps and acceptance commands |
+
+Write packets for tier B by default.

@@ -7,20 +7,23 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "check": "pnpm -r typecheck && pnpm -r test",
+    "check": "pnpm -r typecheck && pnpm deps && python3 ../playbook/bin/check-structure.py",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "scenarios": "pnpm --filter @quire/scenarios test",
+    "scenarios:system": "pnpm --filter @quire/scenarios system",
+    "scenarios:ui": "pnpm build:web && pnpm --filter @quire/scenarios ui",
+    "scenarios:approve": "pnpm --filter @quire/scenarios approve",
     "dev:server": "pnpm --filter @quire/server dev",
     "dev:web": "pnpm --filter @quire/web dev",
     "build:web": "pnpm --filter @quire/web build",
     "start": "pnpm build:web && pnpm --filter @quire/server start",
-    "e2e": "pnpm build:web && playwright test -c e2e/playwright.config.ts"
+    "demo": "pnpm build:web && node demo/run.mjs",
+    "deps": "depcruise --config .dependency-cruiser.cjs packages apps scenarios/support scenarios/steps"
   },
   "devDependencies": {
-    "@playwright/test": "1.56.1",
     "@types/node": "^22.10.0",
-    "typescript": "~5.9.3",
-    "vitest": "^3.2.4"
+    "dependency-cruiser": "^17.4.3",
+    "typescript": "~5.9.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

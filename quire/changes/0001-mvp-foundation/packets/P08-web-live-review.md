@@ -13,7 +13,8 @@ reads:
   - quire/changes/0001-mvp-foundation/spec/live/spec.md
   - references/confluence/product/ux-principles.md
 size: M
-status: todo
+status: doing
+claimed_by: claude-code/claude
 ---
 
 # Live editing, review inbox and history

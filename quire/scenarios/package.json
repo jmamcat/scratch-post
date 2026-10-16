@@ -1,0 +1,27 @@
+{
+  "name": "@quire/scenarios",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "python3 ../../playbook/bin/spec-scenarios.py --check && bddgen",
+    "test": "pnpm build:web:if-needed && pnpm generate && playwright test",
+    "system": "pnpm generate && playwright test --grep @system",
+    "ui": "pnpm generate && playwright test --grep @ui",
+    "approve": "pnpm generate && QUIRE_APPROVE=1 playwright test --grep @R-RND-00",
+    "typecheck": "tsc -p .",
+    "build:web:if-needed": "test -f ../apps/web/dist/index.html || pnpm --filter @quire/web build"
+  },
+  "dependencies": {
+    "@quire/core": "workspace:*",
+    "@quire/sync": "workspace:*",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.27",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/ws": "^8.18.0",
+    "playwright-bdd": "^9.2.1"
+  }
+}
