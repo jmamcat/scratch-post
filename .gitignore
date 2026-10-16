@@ -144,6 +144,7 @@ quire/e2e/test-results/
 quire/test-results/
 quire/playwright-report/
 quire/.demo/
+quire/scenarios/ux/report.md
 
 # RefSpec usage ledger: real model names stay local
 usage/models.local.yaml

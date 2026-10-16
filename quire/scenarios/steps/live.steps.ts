@@ -14,7 +14,9 @@ When('{string} types {string} at the start of {string}', async ({ world }, d: st
 });
 
 When('{string} types {string} at the end of {string}', async ({ world }, d: string, body: string, path: string) => {
-  world.systemDevice(d).insertLive(path, 'end', text(body));
+  // Browser devices type into the open editor (R-ACC-04); system devices into their live room.
+  if (world.layer === 'ui') await world.device(d).append(path, text(body));
+  else world.systemDevice(d).insertLive(path, 'end', text(body));
 });
 
 When('{string} loses its live connection', async ({ world }, d: string) => {

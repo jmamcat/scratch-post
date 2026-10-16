@@ -1,7 +1,8 @@
 import type { Extension } from '@codemirror/state';
 import { useMemo, useSyncExternalStore } from 'react';
 import type { Workspace } from '../../sync/index.ts';
-import { attachmentExtension } from './editor-extension.ts';
+import type { EditorView } from '@codemirror/view';
+import { attachmentExtension, insertAttachment } from './editor-extension.ts';
 import { AttachmentEngine } from './engine.ts';
 
 /** Attachments in the app (R-VLT-12). Contract fixed by 0003/P00. */
@@ -12,6 +13,8 @@ export interface Attachments {
   imageSrc(path: string): string;
   /** Bumps when newly fetched files can now be shown, so views re-render. */
   version: number;
+  /** "Insert attachment" command: pick files and embed them at the editor's cursor. */
+  insert(view: EditorView, currentPath: () => string): void;
 }
 
 /** One engine per workspace, however often React renders. */
@@ -35,6 +38,7 @@ export function useAttachments(ws: Workspace): Attachments {
       editorExtension: (currentPath: () => string) => attachmentExtension(engine, currentPath),
       imageSrc: (path: string) => engine.imageSrc(path),
       version,
+      insert: (view: EditorView, currentPath: () => string) => insertAttachment(engine, currentPath, view),
     }),
     [engine, version],
   );

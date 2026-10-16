@@ -20,7 +20,8 @@ const MAX_FAILURES = 10;
 // ---- security headers and origins (R-ACC-05) ----
 
 function csp(host: string | undefined): string {
-  const ws = host ? ` ws://${host} wss://${host}` : '';
+  // The Host header is client input: only a plain host[:port] goes into the policy.
+  const ws = host && /^[A-Za-z0-9.:[\]-]+$/.test(host) ? ` ws://${host} wss://${host}` : '';
   return [
     "default-src 'self'",
     "script-src 'self'",
@@ -93,7 +94,7 @@ export function sizeLimits(config: Config): MiddlewareHandler {
     const limit = c.req.path === '/api/files' ? files : other;
     return limit(c, async () => {
       const refused = await textCheck(c, next);
-      if (refused) c.res = refused;
+      if (refused instanceof Response) c.res = refused;
     });
   };
 }

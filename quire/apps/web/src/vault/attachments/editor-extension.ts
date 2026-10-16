@@ -10,18 +10,36 @@ const LITERAL = new Set(['FencedCode', 'CodeBlock', 'InlineCode', 'Frontmatter']
 
 /** Drop, paste and pick files into the attachment folder, and show image embeds as images. */
 export function attachmentExtension(engine: AttachmentEngine, currentPath: () => string): Extension {
-  const ingest = async (view: EditorView, files: File[], source: 'drop' | 'paste' | 'pick') => {
-    const note = currentPath();
-    const names = await engine.addFiles(files, source);
-    if (names.length === 0) return;
-    const insert = names.map((n) => `![[${n}]]\n`).join('');
-    // The note may have been closed while the upload ran; then the lines go to it directly.
-    if (view.dom.isConnected && currentPath() === note) {
-      const at = view.state.selection.main.head;
-      view.dispatch({ changes: { from: at, insert }, selection: { anchor: at + insert.length }, userEvent: 'input.paste' });
-    } else engine.appendToNote(note, insert);
-  };
+  const ingest = (view: EditorView, files: File[], source: 'drop' | 'paste' | 'pick') => ingestFiles(engine, currentPath, view, files, source);
+  return extensionFor(ingest, engine);
+}
 
+/** "Insert attachment": pick files and embed them at the cursor. */
+export function insertAttachment(engine: AttachmentEngine, currentPath: () => string, view: EditorView): void {
+  void pickFiles().then((files) => (files.length > 0 ? ingestFiles(engine, currentPath, view, files, 'pick') : undefined));
+}
+
+async function ingestFiles(
+  engine: AttachmentEngine,
+  currentPath: () => string,
+  view: EditorView,
+  files: File[],
+  source: 'drop' | 'paste' | 'pick',
+): Promise<void> {
+  const note = currentPath();
+  const names = await engine.addFiles(files, source);
+  if (names.length === 0) return;
+  const insert = names.map((n) => `![[${n}]]\n`).join('');
+  // The note may have been closed while the upload ran; then the lines go to it directly.
+  if (view.dom.isConnected && currentPath() === note) {
+    const at = view.state.selection.main.head;
+    view.dispatch({ changes: { from: at, insert }, selection: { anchor: at + insert.length }, userEvent: 'input.paste' });
+  } else engine.appendToNote(note, insert);
+}
+
+type Ingest = (view: EditorView, files: File[], source: 'drop' | 'paste' | 'pick') => Promise<void>;
+
+function extensionFor(ingest: Ingest, engine: AttachmentEngine): Extension {
   return [
     EditorView.domEventHandlers({
       dragover(e) {
@@ -44,7 +62,7 @@ export function attachmentExtension(engine: AttachmentEngine, currentPath: () =>
         return true;
       },
     }),
-    // "Insert attachment": Mod-Alt-i. The command palette entry needs App.tsx (see the packet notes).
+    // "Insert attachment": Mod-Alt-i here; the command palette runs insertAttachment.
     keymap.of([
       {
         key: 'Mod-Alt-i',

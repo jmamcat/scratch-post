@@ -207,6 +207,12 @@ export function App({ ws }: { ws: Workspace }) {
       { id: 'review', name: 'Open review inbox', run: () => setDrawer({ kind: 'review', focus: null }) },
       { id: 'history', name: 'Show version history', run: () => setDrawer({ kind: 'history' }), enabled: () => exists },
       { id: 'vault-history', name: 'Open vault history', run: () => setDrawer({ kind: 'vault-history' }) },
+      {
+        id: 'attach',
+        name: 'Insert attachment',
+        run: () => editor.current && attachments.insert(editor.current.view, () => pathNow.current ?? ''),
+        enabled: () => exists && !reading,
+      },
     ],
     [ws, newNote, dailyNote, exists, path, setReading, setLeftView, setEditorMode],
   );
@@ -250,6 +256,11 @@ export function App({ ws }: { ws: Workspace }) {
         recent={recent}
         onOpen={(p) => open(p)}
         onNewNote={(f) => newNote(f)}
+        onRename={(p) => {
+          // Open the note, then put the cursor in its inline title (R-VLT-10).
+          open(p);
+          setTimeout(() => setTitleFocus((n) => n + 1), 0);
+        }}
         onNewFolder={() => setDialog({ kind: 'new-folder' })}
         onDaily={dailyNote}
         onTag={showTag}

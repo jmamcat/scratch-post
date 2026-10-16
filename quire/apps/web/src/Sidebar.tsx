@@ -30,6 +30,7 @@ interface Props {
   recent: string[];
   onOpen: (path: string) => void;
   onNewNote: (folder?: string) => void;
+  onRename: (path: string) => void;
   onNewFolder: () => void;
   onDaily: () => void;
   onTag: (tag: string) => void;
@@ -62,7 +63,7 @@ export function Sidebar(p: Props) {
         </button>
       </div>
       <div className="pane-body" data-view={p.view}>
-        {p.view === 'files' && <FileTree paths={p.paths} active={p.active} pending={(path) => p.ws.isPending(path)} onOpen={p.onOpen} onNewNote={(f) => p.onNewNote(f)} />}
+        {p.view === 'files' && <FileTree paths={p.paths} active={p.active} pending={(path) => p.ws.isPending(path)} onOpen={p.onOpen} onNewNote={(f) => p.onNewNote(f)} onRename={p.onRename} />}
         {p.view === 'search' && <SearchPane ws={p.ws} version={p.version} query={p.query} onQuery={p.onQuery} onOpen={p.onOpen} />}
         {p.view === 'recent' && <RecentView {...common} recent={p.recent} />}
         {p.view === 'changes' && <ChangesView {...common} />}

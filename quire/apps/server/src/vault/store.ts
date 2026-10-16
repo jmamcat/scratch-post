@@ -39,7 +39,8 @@ export class SqliteRevisionStore implements RevisionStore {
   constructor(file: string, opts: MigrateOptions = {}) {
     if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
     this.db = new DatabaseSync(file);
-    this.db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;');
+    // busy_timeout: the CLI (compact, tokens) writes while the server runs (D-P02-4).
+    this.db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA busy_timeout = 5000;');
     migrate(this.db, opts);
   }
 

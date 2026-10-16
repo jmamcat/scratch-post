@@ -1,10 +1,7 @@
 /**
- * Offline app start (R-PLT-06): register the service worker, and tell the app when a new
- * version waits. Stubs fixed by 0003/P00; P08 implements them.
+ * Offline app start (R-PLT-06): a service worker caches the app shell so the app starts with
+ * no network, and a new version waits behind a "Reload to update" prompt. The build plugin
+ * (`plugin.ts`) is for vite.config.ts only and is not part of this entry.
  */
-export function registerOffline(): void {}
-
-/** "Reload to update" prompt; renders nothing until a new version is waiting. */
-export function UpdatePrompt() {
-  return null;
-}
+export { registerOffline } from './register.ts';
+export { UpdatePrompt } from './UpdatePrompt.tsx';

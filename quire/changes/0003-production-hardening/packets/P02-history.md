@@ -15,7 +15,7 @@ reads:
   - quire/scenarios/**
 size: M
 revision: 1
-status: doing
+status: done
 claimed_by: claude-code/tier-A
 ---
 
@@ -84,6 +84,12 @@ playbook/bin/gate.sh scenarios "@R-BAK-01|@R-BAK-02|@R-BAK-03|@R-BAK-04|@cap-syn
 ```
 
 All scenarios of R-BAK-01 to R-BAK-04 pass; sync and vault scenarios still pass.
+
+Result (2026-10-16, `QUIRE_WEB_DIST` = own build in the worker scratchpad):
+
+- `gate.sh check`: typecheck clean in every package, no dependency violations (217 modules), structure 0 violations (6 existing soft-limit warnings, none in `backup/`).
+- `gate.sh scenarios "@R-BAK-01|@R-BAK-02|@R-BAK-03|@R-BAK-04|@cap-sync|@cap-vault"`: **43 passed, 0 failed**. That is 8 backup scenarios (R-BAK-01 ×2, R-BAK-02 ×2, R-BAK-03 ×2, R-BAK-04 ×2) plus every sync and vault scenario, @system and @ui.
+- An earlier run failed the 2 R-VLT-12 @ui scenarios (P07). The web build was stale. After a rebuild they passed alone and in the full run.
 
 ## Decisions log
 

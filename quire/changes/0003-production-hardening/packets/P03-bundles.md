@@ -15,7 +15,8 @@ reads:
   - quire/scenarios/**
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-A
 ---
 
 # Backup bundles, verify and restore

@@ -14,6 +14,8 @@
     "scenarios:deploy": "pnpm --filter @quire/scenarios deploy",
     "scenarios:ui": "pnpm build:web && pnpm --filter @quire/scenarios ui",
     "scenarios:approve": "pnpm --filter @quire/scenarios approve",
+    "ux": "pnpm --filter @quire/scenarios build:web:if-needed && pnpm --filter @quire/scenarios exec playwright test -c ux/playwright.config.ts",
+    "ux:approve": "pnpm --filter @quire/scenarios build:web:if-needed && QUIRE_UX_APPROVE=1 pnpm --filter @quire/scenarios exec playwright test -c ux/playwright.config.ts",
     "dev:server": "pnpm --filter @quire/server dev",
     "dev:web": "pnpm --filter @quire/web dev",
     "build:web": "pnpm --filter @quire/web build",

@@ -1,4 +1,4 @@
-import { type FileHead, type FileSink, FileSync, HttpError } from '@quire/sync';
+import { type DocMeta, type FileHead, type FileSink, FileSync, HttpError } from '@quire/sync';
 import { isAttachmentPath, mimeOf } from '@quire/vault';
 import type { Workspace } from '../../sync/index.ts';
 import { loadPref } from '../../shared/use-pref.ts';
@@ -121,7 +121,7 @@ export class AttachmentEngine {
    */
   private async catchUp(): Promise<void> {
     try {
-      for (const meta of await this.ws.transport.docs()) if (meta.kind === 'file') await this.files.onRemote(meta);
+      for (const meta of await this.ws.transport.request<DocMeta[]>('GET', '/api/docs?kind=file')) await this.files.onRemote(meta);
       await this.refresh();
     } catch {
       // offline: tried again when the connection returns

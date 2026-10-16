@@ -1,0 +1,43 @@
+/* Vault history drawer (R-BAK-07): one card per change set, newest first. */
+.vault-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vault-history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'when action'
+    'meta action'
+    'notes notes';
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+}
+.vault-history-when {
+  grid-area: when;
+  font-weight: 500;
+}
+.vault-history-meta {
+  grid-area: meta;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.vault-history-notes {
+  grid-area: notes;
+  font-size: 13px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  margin-top: 4px;
+}
+.vault-history-item > button {
+  grid-area: action;
+}

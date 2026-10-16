@@ -164,42 +164,55 @@ export class SyncClient {
     if (dirty.length === 0) return;
     // Renamed copies go first, so the server sees the rename before the old path's deletion.
     dirty.sort((a, b) => Number(!a.renamedFrom) - Number(!b.renamedFrom));
-    const items: PushItem[] = dirty.map((d) => ({
-      path: d.path,
-      baseRev: d.baseRev,
-      text: d.deleted ? null : d.text,
-      ...(d.renamedFrom && !d.deleted ? { renamedFrom: d.renamedFrom } : {}),
-    }));
-    const results = await this.transport.push({ device: this.device, items });
-    report.pushed += results.length;
-
-    for (const [n, res] of results.entries()) {
-      const sent = dirty[n]!;
-      if (res.conflictId) report.conflicts.push(res.conflictId);
-      const stored = await this.store.get(sent.path);
-      const cur = stored && withoutRename(stored);
-      const untouched = !!cur && cur.text === sent.text && cur.deleted === sent.deleted;
-
-      if (res.movedTo && res.movedTo !== sent.path) {
-        await this.moved(sent, cur, untouched, res);
-        changed.push(sent.path, res.movedTo);
-        continue;
+    // Batches keep each request under the server's body limit (R-ACC-06).
+    for (const batch of pushBatches(dirty)) {
+      const items: PushItem[] = batch.map((d) => ({
+        path: d.path,
+        baseRev: d.baseRev,
+        text: d.deleted ? null : d.text,
+        ...(d.renamedFrom && !d.deleted ? { renamedFrom: d.renamedFrom } : {}),
+      }));
+      let results: PushResult[];
+      try {
+        results = await this.transport.push({ device: this.device, items });
+      } catch (e) {
+        // One note over the limit must not hold back every other edit.
+        if (batch.length === 1 && (e as { status?: number }).status === 413) {
+          report.error = `${batch[0]!.path} is larger than the server accepts`;
+          continue;
+        }
+        throw e;
       }
-      if (res.text === null) {
-        if (!cur || untouched) await this.store.remove(sent.path);
-        else await this.store.put({ ...cur, baseRev: res.meta.rev, baseText: null, deleted: false });
-      } else if (!cur) {
-        // Deleted locally while the push was in flight: keep the deletion pending.
-        await this.store.put({ path: sent.path, text: res.text, baseRev: res.meta.rev, baseText: res.text, deleted: true });
-      } else if (untouched) {
-        await this.store.put({ path: sent.path, text: res.text, baseRev: res.meta.rev, baseText: res.text, deleted: false });
-      } else {
-        // R-SYN-07: typed during the round trip. Local typing wins overlapping hunks; the
-        // server's version stays in its history.
-        const text = cur.deleted ? res.text : merge3(sent.text, cur.text, res.text).text;
-        await this.store.put({ ...cur, text, baseRev: res.meta.rev, baseText: res.text });
+      report.pushed += results.length;
+
+      for (const [n, res] of results.entries()) {
+        const sent = batch[n]!;
+        if (res.conflictId) report.conflicts.push(res.conflictId);
+        const stored = await this.store.get(sent.path);
+        const cur = stored && withoutRename(stored);
+        const untouched = !!cur && cur.text === sent.text && cur.deleted === sent.deleted;
+
+        if (res.movedTo && res.movedTo !== sent.path) {
+          await this.moved(sent, cur, untouched, res);
+          changed.push(sent.path, res.movedTo);
+          continue;
+        }
+        if (res.text === null) {
+          if (!cur || untouched) await this.store.remove(sent.path);
+          else await this.store.put({ ...cur, baseRev: res.meta.rev, baseText: null, deleted: false });
+        } else if (!cur) {
+          // Deleted locally while the push was in flight: keep the deletion pending.
+          await this.store.put({ path: sent.path, text: res.text, baseRev: res.meta.rev, baseText: res.text, deleted: true });
+        } else if (untouched) {
+          await this.store.put({ path: sent.path, text: res.text, baseRev: res.meta.rev, baseText: res.text, deleted: false });
+        } else {
+          // R-SYN-07: typed during the round trip. Local typing wins overlapping hunks; the
+          // server's version stays in its history.
+          const text = cur.deleted ? res.text : merge3(sent.text, cur.text, res.text).text;
+          await this.store.put({ ...cur, text, baseRev: res.meta.rev, baseText: res.text });
+        }
+        changed.push(sent.path);
       }
-      changed.push(sent.path);
     }
   }
 
@@ -320,4 +333,25 @@ export function memoryTransport(server: SyncServer, opts: { online?: () => boole
       return wire(server.doc(path, rev));
     },
   };
+}
+
+/** Largest push request body the client builds; the server accepts more (R-ACC-06). */
+const MAX_BATCH_BYTES = 1024 * 1024;
+const MAX_BATCH_ITEMS = 200;
+
+/** Splits pushes in order into batches under MAX_BATCH_BYTES; a larger note goes alone. */
+function* pushBatches(docs: LocalDoc[]): Generator<LocalDoc[]> {
+  let batch: LocalDoc[] = [];
+  let bytes = 0;
+  for (const d of docs) {
+    const size = d.deleted ? 64 : d.text.length * 3 + 64;
+    if (batch.length && (bytes + size > MAX_BATCH_BYTES || batch.length >= MAX_BATCH_ITEMS)) {
+      yield batch;
+      batch = [];
+      bytes = 0;
+    }
+    batch.push(d);
+    bytes += size;
+  }
+  if (batch.length) yield batch;
 }

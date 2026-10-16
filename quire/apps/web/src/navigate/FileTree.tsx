@@ -9,10 +9,12 @@ interface Props {
   pending: (path: string) => boolean;
   onOpen: (path: string) => void;
   onNewNote: (folder: string) => void;
+  /** Rename a note (R-VLT-10): F2 on a note, or its pencil button. */
+  onRename?: (path: string) => void;
 }
 
 /** Left sidebar file tree; folders are path prefixes (R-SYN-01 local copy). */
-export function FileTree({ paths, active, pending, onOpen, onNewNote }: Props) {
+export function FileTree({ paths, active, pending, onOpen, onNewNote, onRename }: Props) {
   const tree = useMemo(() => buildTree(paths), [paths]);
   const [open, setOpen] = useState<Set<string>>(() => new Set(loadPref<string[]>('openFolders', [])));
 
@@ -83,9 +85,29 @@ export function FileTree({ paths, active, pending, onOpen, onNewNote }: Props) {
               e.preventDefault();
               onOpen(file.path);
             }}
+            onKeyDown={(e) => {
+              if (e.key !== 'F2' || !onRename) return;
+              e.preventDefault();
+              onRename(file.path);
+            }}
           >
             <span className="tree-name">{file.name}</span>
             {pending(file.path) && <span className="dot" title="Not synced yet" aria-label="pending sync" />}
+            {onRename && (
+              <button
+                type="button"
+                className="icon-button tree-action"
+                aria-label={`Rename ${file.name}`}
+                title="Rename (F2)"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onRename(file.path);
+                }}
+              >
+                <Icon name="pencil" size={14} />
+              </button>
+            )}
           </a>
         </li>
       ))}

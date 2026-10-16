@@ -16,7 +16,8 @@ reads:
   - quire/scenarios/**
 size: S
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-B
 ---
 
 # Vault history in the app

@@ -109,6 +109,8 @@ export interface UxApp {
   userContent: readonly string[];
   /** Selectors of the rendered document, where line length and line height are measured. */
   prose: readonly string[];
+  /** Selectors of primary actions, reported against the 44 px advisory target size. */
+  primaryActions: readonly string[];
   /** Widgets that keep Tab (code editors), with the key that lets focus leave them. */
   tabEscapes: readonly { selector: string; key: string }[];
   /** Puts the page into a theme and colour scheme for the next screen. */
