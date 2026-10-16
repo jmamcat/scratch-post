@@ -30,7 +30,7 @@ cited here are untriaged; triage happens when a change touches their area.
 | Quire feature | Decision | Change | Obsidian | Notion | Confluence | Joplin | SilverBullet | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Source editor + reading view | adapt | 0001 | OBS-F-002, OBS-F-003 | | | JOP-F-002 | | Live Preview (OBS-F-001, SB-F-002) deferred |
-| Live Preview | defer | | OBS-F-001, OBS-F-211 | NOT-F-030 | CNF-F-002 | | SB-F-002 | Obsidian default mode; next editor change |
+| Live Preview | adopt | 0002 | OBS-F-001, OBS-F-211 | NOT-F-030 | CNF-F-002 | | SB-F-002 | Default editing mode, as in Obsidian; source mode one command away |
 | Wikilinks, headings, block refs | adopt | 0001 | OBS-F-004, OBS-F-006, OBS-F-007 | NOT-F-067, NOT-F-070 | CNF-F-024 | JOP-F-006 | SB-F-003 | |
 | Markdown internal links | adopt | 0001 | OBS-F-005 | | | | | |
 | Image embeds | adopt | 0001 | OBS-F-009 | NOT-F-021 | CNF-F-022 | | | |
@@ -55,20 +55,33 @@ cited here are untriaged; triage happens when a change touches their area.
 | File tree | adopt | 0001 | OBS-F-067 | NOT-F-035, NOT-F-036 | CNF-F-044, CNF-F-046 | JOP-F-013 | | Folders as Confluence page tree |
 | Backlinks and outgoing links | adopt | 0001 | OBS-F-061, OBS-F-072 | NOT-F-069 | | | SB-F-003 | |
 | Outline | adopt | 0001 | OBS-F-073 | NOT-F-025 | CNF-F-026 | | | |
-| Tags (inline + front matter, nested) | adopt | 0001 | OBS-F-024, OBS-F-083 | | CNF-F-088 | JOP-F-014 | SB-F-011 | Tags pane deferred |
-| Offline full-text search | adapt | 0001 | OBS-F-079, OBS-F-130 | NOT-F-072 | CNF-F-090 | JOP-F-019 | SB-F-015 | Plain substring search first; operators (OBS-F-131/132) deferred |
+| Tags (inline + front matter, nested) | adopt | 0001, 0002 | OBS-F-024, OBS-F-083 | | CNF-F-088 | JOP-F-014 | SB-F-011 | 0002 adds the tags view |
+| Offline full-text search | adapt | 0001, 0002 | OBS-F-079, OBS-F-130, OBS-F-131, OBS-F-132 | NOT-F-072 | CNF-F-090 | JOP-F-019 | SB-F-015 | 0002 adds path:, file:, tag:, quotes and -exclude; regex deferred |
 | Quick switcher | adopt | 0001 | OBS-F-077 | NOT-F-072 | | JOP-F-020 | SB-F-006 | |
 | Command palette | adopt | 0001 | OBS-F-065 | | | | SB-F-006 | |
 | Daily notes | adopt | 0001 | OBS-F-066 | NOT-F-081 | | | | |
-| Graph view | defer | | OBS-F-070 | | | | | |
+| Graph view (global and local) | adopt | 0002 | OBS-F-070, OBS-F-140, OBS-F-141 | | | | | Filters and groups deferred |
 | Bookmarks / favorites | defer | | OBS-F-063 | NOT-F-036 | CNF-F-055 | | | |
 | Page preview on hover | defer | | OBS-F-074 | NOT-F-073 | | | | |
+
+## Views and appearance (0002)
+
+| Quire feature | Decision | Change | Obsidian | Notion | Confluence | Joplin | SilverBullet | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Interactive task checkboxes | adopt | 0002 | OBS-F-016 | NOT-F-005 | CNF-F-009 | JOP-F-008 | SB-F-005 | Reading view and Live Preview |
+| Editable properties | adopt | 0002 | OBS-F-075, OBS-F-100, OBS-F-101 | NOT-F-046 | CNF-F-032 | | SB-F-004 | Text, number, checkbox, date, list |
+| Recently opened | adopt | 0002 | OBS-F-077 | NOT-F-036 | CNF-F-055 | | | Per device |
+| Changes view (vault-wide) | adapt | 0002 | OBS-F-157 | NOT-F-041 | CNF-F-057 | JOP-F-049 | SB-F-034 | From the revision log, cached offline |
+| Domain view (by topic) | adapt | 0002 | | NOT-F-037 | CNF-F-041 | JOP-F-013 | SB-F-011 | Quire's own: groups by property, journal, tag, folder; like Confluence spaces without moving files |
+| Timeline view | adapt | 0002 | | NOT-F-054 | | | | Buckets by last change |
+| Themes with distinct headings | adapt | 0002 | OBS-F-214, OBS-F-217 | NOT-F-019 | CNF-F-039 | JOP-F-069 | | Five built-in themes; CSS snippets deferred |
 
 ## Structured data
 
 | Quire feature | Decision | Change | Obsidian | Notion | Confluence | Joplin | SilverBullet | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Database views over front matter (table, board) | defer | | OBS-F-062, OBS-F-110, OBS-F-111 | NOT-F-044, NOT-F-051, NOT-F-052 | CNF-F-092, CNF-F-093 | | SB-F-012 | Next big change; Obsidian Bases `.base` format is the candidate |
+| Board view grouped by a property | adapt | 0002 | OBS-F-111 | NOT-F-052 | CNF-F-052 | | | A sidebar view; full Bases-style table views still deferred |
+| Database views over front matter (table) | defer | | OBS-F-062, OBS-F-110 | NOT-F-044, NOT-F-051 | CNF-F-092, CNF-F-093 | | SB-F-012 | Obsidian Bases `.base` format is the candidate |
 | Calendar, timeline, chart, map views | reject | | | NOT-F-053, NOT-F-054, NOT-F-056, NOT-F-057 | CNF-F-036 | | | Feature-lean |
 | Formulas, relations, rollups | defer | | OBS-F-113 | NOT-F-048, NOT-F-049 | | | | Only if Bases lands |
 | Canvas | defer | | OBS-F-064, OBS-F-120 | | CNF-F-094 | JOP-F-010 | | JSON Canvas is open |
