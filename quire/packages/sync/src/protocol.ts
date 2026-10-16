@@ -1,4 +1,4 @@
-import type { Choice, Segment } from '@quire/core';
+import type { Choice, Segment } from '@quire/merge';
 
 export interface DocMeta {
   path: string;

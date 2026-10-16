@@ -52,10 +52,11 @@ pnpm -C quire --filter @quire/web build
 pnpm -C quire --filter @quire/web test
 ```
 
-Result (2026-10-16): typecheck exit 0; build exit 0 (368 modules, main chunk about 1.1 MB, 374 kB
-gzip; CodeMirror code languages split into lazy chunks); test exit 0 (3 files, 15 tests:
-IndexedDB store with fake-indexeddb, workspace sync/offline/rebase/server switch against an
-in-process SyncServer, tree, fuzzy match, notes helpers, link index).
+Result (2026-10-16): typecheck exit 0; build exit 0 (main chunk about 1.2 MB, 412 kB gzip after
+P08; CodeMirror code languages split into lazy chunks). The `test` command passed (3 files,
+15 tests) until the coordinator dropped unit tests and removed vitest from the workspace; the
+web unit tests, `vitest.config.ts` and the `test` script were then deleted, so acceptance is
+typecheck + build + the manual check below, per the coordinator's instruction.
 
 Manual check against the real server (`apps/server`, built web served from it, Playwright
 Chromium, two browser contexts): open note, Ctrl+E reading view, unresolved link click creates
@@ -63,12 +64,19 @@ the note, New note + inline title rename, Ctrl+O switcher, Ctrl+P palette (daily
 pane backlinks/outline, an edit on device B shows on device A, offline edit shows
 "Offline · 1 pending" and syncs to "Synced" after reconnect, search pane, 390 px wide layout.
 
-Per the coordinator's later instruction, no further unit tests were added after the first set;
-the UI carries accessible roles and labels plus a few `data-testid`s for scenario tests.
+The UI carries accessible roles and labels for scenario tests: dialogs "Quick switcher",
+"Command palette", "Settings", "Review inbox", "Version history"; the editor is a textbox named
+"Note editor"; the sync label is `role="status"`; `data-testid` on `file-tree`, `backlinks`,
+`outgoing`, `outline`, `properties`, `conflict-badge`, `review-card`, `hunk`, `note-banner`.
 
 ## Needs from P00
 
-- None. Note for the core owner: `@quire/core` imports `markdown-it-footnote` and
+- `fake-indexeddb` in `apps/web` devDependencies is no longer used (unit tests removed); it can
+  be dropped from `apps/web/package.json` with the lockfile.
+- Server (not web): `apps/server/src/platforms/config.ts` resolves the default web build as
+  `new URL('../../web/dist', import.meta.url)`, which after the move into `platforms/` points at
+  `apps/server/web/dist`, so the server answers 404 on `/` unless `QUIRE_WEB_DIST` is set. It
+  needs one more `../`. Note for the core owner: `@quire/core` imports `markdown-it-footnote` and
   `markdown-it-mark`, whose types live in `packages/core/src/markdown/vendor.d.ts`; that file is
   only in a program that includes it, so `apps/web/tsconfig.json` lists it in `include`. A
   `/// <reference path="./vendor.d.ts" />` in `md.ts` would make that unnecessary.

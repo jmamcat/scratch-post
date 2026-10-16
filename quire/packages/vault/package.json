@@ -1,0 +1,16 @@
+{
+  "name": "@quire/vault",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Document identity and format: vault path rules and front matter.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "yaml": "^2.8.0"
+  }
+}

@@ -2,7 +2,7 @@ import type { Conflict } from '@quire/sync';
 import { useEffect, useSyncExternalStore } from 'react';
 import { ConflictCard } from './ConflictCard.tsx';
 import type { ConflictStore } from './conflicts.ts';
-import { Drawer } from './Drawer.tsx';
+import { Drawer } from '../shared/Drawer.tsx';
 
 interface Props {
   store: ConflictStore;

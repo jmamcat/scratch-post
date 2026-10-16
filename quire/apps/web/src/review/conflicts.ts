@@ -1,5 +1,5 @@
 import type { Conflict, PushResult, Resolution } from '@quire/sync';
-import type { Workspace } from '../store/workspace.ts';
+import type { Workspace } from '../sync/index.ts';
 
 export interface ConflictSnapshot {
   open: Conflict[];

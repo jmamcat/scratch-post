@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { EditorHandle } from '../components/Editor.tsx';
-import type { Workspace } from '../store/workspace.ts';
+import type { EditorHandle } from '../vault/index.ts';
+import type { Workspace } from '../sync/index.ts';
 import { type LiveInfo, LiveSession } from './live.ts';
 
 const OFF: LiveInfo = { state: 'off', peers: [] };

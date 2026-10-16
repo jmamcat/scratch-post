@@ -1,4 +1,4 @@
-import type { Choice } from '@quire/core';
+import type { Choice } from '@quire/merge';
 import type { Conflict } from '@quire/sync';
 import { expect } from '@playwright/test';
 import { BrowserDevice } from '../support/browser-device.ts';

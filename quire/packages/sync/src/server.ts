@@ -1,4 +1,5 @@
-import { InvalidPathError, applyChoices, merge3, normalizePath } from '@quire/core';
+import { applyChoices, merge3 } from '@quire/merge';
+import { InvalidPathError, normalizePath } from '@quire/vault';
 import {
   DELETED_HASH,
   SyncError,

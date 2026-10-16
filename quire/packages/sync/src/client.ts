@@ -1,4 +1,4 @@
-import { merge3 } from '@quire/core';
+import { merge3 } from '@quire/merge';
 import type { ChangeFeed, DocMeta, PushItem, PushRequest, PushResult } from './protocol.ts';
 import type { SyncServer } from './server.ts';
 

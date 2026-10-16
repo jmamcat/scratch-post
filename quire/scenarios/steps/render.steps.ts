@@ -1,7 +1,8 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderMarkdown, resolveLink } from '@quire/core';
+import { resolveLink } from '@quire/navigate';
+import { renderMarkdown } from '@quire/render';
 import { expect } from '@playwright/test';
 import { Then } from '../support/world.ts';
 

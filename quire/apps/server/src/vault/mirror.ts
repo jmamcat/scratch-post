@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { type FSWatcher, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, watch, writeFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
-import { InvalidPathError, normalizePath } from '@quire/core';
+import { InvalidPathError, normalizePath } from '@quire/vault';
 import type { RevisionStore, SyncServer } from '@quire/sync';
 import { sha256 } from '../shared/hash.ts';
 

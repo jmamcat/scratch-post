@@ -1,8 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
-import { loadSettings } from './settings.ts';
-import { Workspace } from './store/workspace.ts';
+import { loadSettings } from './platforms/index.ts';
+import { Workspace } from './sync/index.ts';
 import './styles.css';
 
 const ws = new Workspace(loadSettings());

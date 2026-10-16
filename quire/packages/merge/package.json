@@ -1,0 +1,17 @@
+{
+  "name": "@quire/merge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Three-way merge of Markdown documents with collision tiers.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "node-diff3": "^3.1.2",
+    "yaml": "^2.8.0"
+  }
+}

@@ -32,7 +32,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     ...(upstreamUrl
       ? { upstream: { url: upstreamUrl, ...(env.QUIRE_UPSTREAM_TOKEN ? { token: env.QUIRE_UPSTREAM_TOKEN } : {}) } }
       : {}),
-    webDist: resolve(env.QUIRE_WEB_DIST ?? fileURLToPath(new URL('../../web/dist', import.meta.url))),
+    webDist: resolve(env.QUIRE_WEB_DIST ?? fileURLToPath(new URL('../../../web/dist', import.meta.url))),
     watch: env.QUIRE_WATCH !== '0',
     ...(env.QUIRE_REPLICATE_MS ? { replicateMs: Number(env.QUIRE_REPLICATE_MS) } : {}),
     ...(env.QUIRE_REPLICATE_MAX_BACKOFF_MS ? { replicateMaxBackoffMs: Number(env.QUIRE_REPLICATE_MAX_BACKOFF_MS) } : {}),

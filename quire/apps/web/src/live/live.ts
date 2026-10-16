@@ -1,12 +1,12 @@
-import { merge3 } from '@quire/core';
+import { merge3 } from '@quire/merge';
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { yCollab } from 'y-codemirror.next';
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
-import { collabSlot } from '../components/Editor.tsx';
-import { minimalChange } from '../components/editorSetup.ts';
-import type { Workspace } from '../store/workspace.ts';
+import { collabSlot } from '../vault/index.ts';
+import { minimalChange } from '../vault/index.ts';
+import type { Workspace } from '../sync/index.ts';
 
 export type LiveState = 'off' | 'connecting' | 'live';
 

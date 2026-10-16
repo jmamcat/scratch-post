@@ -1,4 +1,4 @@
-import { InvalidPathError } from '@quire/core';
+import { InvalidPathError } from '@quire/vault';
 import { SyncError } from '@quire/sync';
 import type { Context, ErrorHandler } from 'hono';
 

@@ -1,7 +1,8 @@
-import { applyChoices, type Choice, type Hunk, type Segment, titleOf } from '@quire/core';
+import { applyChoices, type Choice, type Hunk, type Segment } from '@quire/merge';
+import { titleOf } from '@quire/vault';
 import type { Conflict } from '@quire/sync';
 import { useMemo, useState } from 'react';
-import { formatTime } from './Drawer.tsx';
+import { formatTime } from '../shared/Drawer.tsx';
 
 interface Props {
   conflict: Conflict;

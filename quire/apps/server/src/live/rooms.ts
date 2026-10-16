@@ -1,6 +1,7 @@
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
-import { InvalidPathError, merge3, normalizePath } from '@quire/core';
+import { merge3 } from '@quire/merge';
+import { InvalidPathError, normalizePath } from '@quire/vault';
 import type { DocMeta, RevisionStore, SyncServer } from '@quire/sync';
 import diff from 'fast-diff';
 import * as decoding from 'lib0/decoding';

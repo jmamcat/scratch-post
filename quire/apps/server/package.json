@@ -10,8 +10,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
-    "@quire/core": "workspace:*",
+    "@quire/merge": "workspace:*",
     "@quire/sync": "workspace:*",
+    "@quire/vault": "workspace:*",
     "fast-diff": "^1.3.0",
     "hono": "^4.9.0",
     "lib0": "^0.2.114",

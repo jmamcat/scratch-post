@@ -13,11 +13,13 @@
     "build:web:if-needed": "test -f ../apps/web/dist/index.html || pnpm --filter @quire/web build"
   },
   "dependencies": {
-    "@quire/core": "workspace:*",
+    "@quire/merge": "workspace:*",
+    "@quire/navigate": "workspace:*",
+    "@quire/render": "workspace:*",
     "@quire/sync": "workspace:*",
+    "ws": "^8.18.0",
     "y-websocket": "^3.0.0",
-    "yjs": "^13.6.27",
-    "ws": "^8.18.0"
+    "yjs": "^13.6.27"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",

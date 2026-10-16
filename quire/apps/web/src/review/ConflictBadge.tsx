@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { Icon } from '../components/Icon.tsx';
+import { Icon } from '../shared/Icon.tsx';
 import type { ConflictStore } from './conflicts.ts';
 
 /** Status bar badge with the open conflict count, always visible (R-RVW-02). */
