@@ -166,6 +166,8 @@ export class SyncClient {
         if (!local) continue;
         const { meta, text } = await this.transport.doc(ch.path, ch.rev);
         await this.store.put({ ...local, baseRev: meta.rev, baseText: text });
+        // The text did not change, but the base did: listeners holding a copy must reload it.
+        changed.push(ch.path);
         continue;
       }
       if (local && isDirty(local)) continue;
