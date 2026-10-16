@@ -57,4 +57,5 @@ Reason: ...
 ```
 
 A new capability's delta contains only `ADDED Requirements` plus the front matter and
-purpose paragraph. On archive, an agent applies the deltas to `spec/` mechanically.
+purpose paragraph. On archive, `bin/archive-change.py` applies the deltas to `spec/`
+mechanically and moves the change to `changes/archive/`.

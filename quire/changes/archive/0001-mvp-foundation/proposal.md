@@ -1,7 +1,7 @@
 ---
 id: 0001-mvp-foundation
 play: new-system
-status: done
+status: archived
 created: 2026-10-16
 references: [obsidian, notion, confluence, joplin, silverbullet]
 capabilities: [vault, render, navigate, merge, sync, review, live, platforms]

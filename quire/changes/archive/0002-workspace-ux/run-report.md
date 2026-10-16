@@ -124,8 +124,9 @@ coordinator (P06 and P03 by the missing dependency, P07 by live attribution).
 - **Living specs never received deltas.** `quire/spec/` holds only `STEPS.md`; the 0001
   and 0002 deltas are still in their change folders, and neither change is archived. The
   scenario generator reads active changes, so nothing breaks, but the "current truth" is
-  spread across change folders. Left for direction: archive both now (a mechanical merge),
-  or keep changes active until a release.
+  spread across change folders. **Owner direction after the run: archive both now.** Done
+  with the new `playbook/bin/archive-change.py` (0001, then 0002); the generated scenarios
+  are identical before and after (89).
 
 ## Spec drift
 

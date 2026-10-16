@@ -26,7 +26,7 @@ Version: see `VERSION`. Changes: `CHANGELOG.md`.
 | [`modules/usage`](modules/usage/) | A ledger of tokens, credits and time per slice, mapped to harness and model, so builds and pull requests can be benchmarked. | optional |
 | [`amendments/`](amendments/) | How the playbook changes itself, only with evidence that the change is better. | always applies |
 | [`adapters/`](adapters/) | Notes for specific harnesses and model tiers. Never required. | optional |
-| [`bin/`](bin/) | Small scripts (bash and Python 3, no dependencies): `gate.sh`, `spec-scenarios.py`, `check-structure.py`, `packet-prompt.sh`, `run-lanes.sh`, `refs.sh`, `usage.py`. | optional |
+| [`bin/`](bin/) | Small scripts (bash and Python 3, no dependencies): `gate.sh`, `spec-scenarios.py`, `check-structure.py`, `packet-prompt.sh`, `run-lanes.sh`, `refs.sh`, `usage.py`, `archive-change.py`. | optional |
 | [`templates/`](templates/) | Proposal, packet and run report templates. | always |
 
 ## Binding a project

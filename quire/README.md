@@ -7,8 +7,8 @@ Edits made anywhere, online or offline, converge; anything that cannot merge saf
 to a review inbox instead of being lost.
 
 Built with the RefSpec playbook: see `../playbook/`, the reference set in `../references/`,
-the specs in `changes/0001-mvp-foundation/` (moved to `spec/` when archived), and the
-code map in `ARCHITECTURE.md`.
+the living specs in `spec/` (finished changes are in `changes/archive/`), and the code map
+in `ARCHITECTURE.md`.
 
 ## Layout
 

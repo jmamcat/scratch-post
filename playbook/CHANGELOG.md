@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.0 (2026-10-16)
+
+- Amendment 0007: `bin/archive-change.py` applies a change's spec deltas to the living specs
+  and archives the change; fold back checks the generated scenarios did not change.
+
 ## 1.6.0 (2026-10-16)
 
 - Amendment 0006: `P00` declares new packages in their consumers' manifests; workers stop

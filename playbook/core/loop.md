@@ -53,5 +53,6 @@ what counts as a scenario and `core/verification.md` for evidence.
 - If the usage module is on, record a ledger row after each large slice (packet of size M
   or more, a wave, research) and one for the change as a whole (`modules/usage`).
 - Write the run report (`core/decisions.md`), with its Usage section when the module is on.
-- Merge spec deltas into the living specs; move the change to `changes/archive/`.
+- Merge spec deltas into the living specs and move the change to `changes/archive/`
+  (`bin/archive-change.py <change-id>`); the generated scenarios must not change.
 - If the playbook caused waste or confusion, open an amendment (`amendments/README.md`).

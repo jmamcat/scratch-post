@@ -5,7 +5,9 @@ syntax: `format.md`.
 
 - `specs/<capability>/spec.md`: the current truth for one capability.
 - `changes/<id>/spec/<capability>/spec.md`: ADDED, MODIFIED and REMOVED requirements for a change.
-- On archive, deltas are applied to the living specs mechanically.
+- On archive, deltas are applied to the living specs mechanically:
+  `bin/archive-change.py <change-id>` (try `--dry-run` first), then regenerate scenarios and
+  confirm the same set comes out.
 
 Capabilities are the shared vocabulary of the whole playbook: spec folders, code modules
 (`modules/structure`, rule S2) and scenario tags (`modules/scenarios`) all use the same IDs.
