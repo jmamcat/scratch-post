@@ -7,6 +7,7 @@
     "generate": "uv run ../../playbook/bin/spec-scenarios.py --check && bddgen",
     "test": "pnpm build:web:if-needed && pnpm generate && playwright test",
     "system": "pnpm generate && playwright test --grep @system",
+    "ux": "pnpm generate && QUIRE_UX=1 playwright test --workers 1",
     "deploy": "pnpm generate && QUIRE_DEPLOY=1 playwright test --workers 1",
     "ui": "pnpm generate && playwright test --grep @ui",
     "approve": "pnpm generate && QUIRE_APPROVE=1 playwright test --grep @R-RND-00",

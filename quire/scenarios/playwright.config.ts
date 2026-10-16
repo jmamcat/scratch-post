@@ -15,8 +15,9 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 5_000 },
   workers: process.env.CI ? 2 : 3,
-  // @deploy scenarios build and run containers; they run only through `pnpm scenarios:deploy`.
-  ...(process.env.QUIRE_DEPLOY ? { grep: /@deploy/ } : { grepInvert: /@deploy/ }),
+  // @deploy scenarios build and run containers (`pnpm scenarios:deploy`); @gate-ux scores every
+  // screen in every theme for several minutes (`pnpm scenarios:ux`). Neither runs by default.
+  ...(process.env.QUIRE_DEPLOY ? { grep: /@deploy/ } : process.env.QUIRE_UX ? { grep: /@gate-ux/ } : { grepInvert: /@deploy|@gate-ux/ }),
   reporter: [['list']],
   use: {
     launchOptions: process.env.PLAYWRIGHT_BROWSERS_PATH ? {} : { executablePath: '/opt/pw-browsers/chromium' },

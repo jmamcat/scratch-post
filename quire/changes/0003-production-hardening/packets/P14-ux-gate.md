@@ -23,7 +23,22 @@ Implements R-PLT-08 (`quire/changes/0003-production-hardening/spec/platforms/spe
 the scorer from P12: in every theme, light and dark, the standard screens have no serious or
 critical accessibility violations, meet WCAG AA contrast, reflow at 320 px, show focus on
 every focusable control, and score at least 85 per screen and 70 per category. Runs last,
-when every screen exists and no other packet is editing the web app.
+when every screen exists and no other packet is editing the web app (you are the only worker
+running).
+
+What the P12 report found (read `P12-ux-scorer.md` and its decisions first):
+
+- `scrollable-region-focusable` (serious, 140 states): the editor's `.cm-scroller` scrolls but
+  cannot take keyboard focus.
+- `link-in-text-block` (serious, 20 reading states): links in paragraphs differ by colour only.
+- Focus visible (80 states): Tab into the note editor shows no change (its cursor may sit in
+  the hidden front matter); on narrow screens with the sidebar open, focus reaches controls
+  behind the overlay (`focus-obscured`, 90 states).
+- `page-has-heading-one` (moderate, 70 states).
+- Floors: every graph state is below 85 (75.9 to 80.9), mostly graph labels under 12 px;
+  Interaction is below 70 in the narrow Folders and Review states.
+
+The R-PLT-08 scenario now runs only in the `ux` gate (tag `@gate-ux`), not in `scenarios`.
 
 ## Contract
 
@@ -42,6 +57,6 @@ playbook/bin/gate.sh ux
 playbook/bin/gate.sh scenarios
 ```
 
-Every scenario passes, R-PLT-08 included.
+`gate.sh ux` passes (R-PLT-08 included) and every scenario in `gate.sh scenarios` passes.
 
 ## Decisions log

@@ -50,6 +50,8 @@ Layer: ui
 
 #### Scenario: Every theme passes
 
+Tags: @gate-ux
+
 - **GIVEN** a cloud server
 - **AND** device `pixel` with the demo notes
 - **THEN** in every theme the standard screens on `pixel` pass the UX gate

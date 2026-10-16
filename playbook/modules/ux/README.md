@@ -65,9 +65,11 @@ A rule or metric is scored in exactly one category.
    ratchet. If the engine versions differ from the baseline, show the deltas without gating
    and re-baseline in a separate commit.
 
-The project's `ux` gate runs the ratchet, so it stays green while known failures are being
-fixed and turns red on any regression. The spec requirement for the UX gate (a scenario)
-runs all three parts.
+The project's `ux` gate runs the ratchet over the full matrix, so it stays green while known
+failures are being fixed and turns red on any regression. The spec requirement for the UX gate
+(a scenario) runs all three parts on a subset that fits the everyday scenarios gate (for
+example every theme and scheme at the desktop viewport, the phone viewport in one theme, one
+CLS sample), against the same baseline.
 
 ## Baseline
 
@@ -101,10 +103,12 @@ A score alone is never evidence that a threshold is right.
 ## Pitfalls
 
 - **Flakiness.** Fixed viewport, scale, locale, time zone and seed data; wait for the app's
-  ready signal, fonts and a quiet DOM; disable animations and hide the caret in screenshots;
-  wait two frames after each Tab before taking the focused picture. Everything else is
-  deterministic for a given DOM. CLS from a single load is noisy on a busy machine; take the
-  median of three loads when the ratchet trips on it.
+  ready signal, fonts and a quiet DOM; stop CSS animations and transitions and hide the caret
+  while taking screenshots; give text fields and editors a moment after each Tab to draw
+  their own cursor. Take CLS as the median of three loads. Give every parallel worker its own
+  server: shared state (another worker's device showing as a live collaborator) changes what
+  is on screen. Run the gate twice after approving: "No state total moved" is the check that
+  the runner is deterministic.
 - **Dynamic content.** Virtualised lists and editors only render what is visible: measure
   line length on rendered blocks, and score menus and dialogs as their own states.
 - **Widgets that keep Tab** (code editors): the runner presses the widget's documented way

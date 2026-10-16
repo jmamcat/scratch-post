@@ -211,4 +211,4 @@ browser edits reach the server through live rooms that flush 1.5 s after typing 
 | --- | --- |
 | `the web app is built` / `the first-load JavaScript is under N kB gzip` / `... does not include "pkg"` | the production build's entry chunk and its static imports |
 | `device "d" with the demo notes` | (`@ui`) a device after the demo seed is pushed |
-| `in every theme the standard screens on "d" pass the UX gate` | (`@ui`) UX scorer over every theme, light and dark |
+| `in every theme the standard screens on "d" pass the UX gate` | (`@ui`, tag `@gate-ux`: runs in the `ux` gate only) UX scorer over every theme, light and dark |

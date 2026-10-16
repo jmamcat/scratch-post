@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r typecheck",
     "scenarios": "pnpm --filter @quire/scenarios test",
     "scenarios:system": "pnpm --filter @quire/scenarios system",
+    "scenarios:ux": "pnpm build:web && pnpm --filter @quire/scenarios run ux",
     "scenarios:deploy": "pnpm --filter @quire/scenarios run deploy",
     "scenarios:ui": "pnpm build:web && pnpm --filter @quire/scenarios ui",
     "scenarios:approve": "pnpm --filter @quire/scenarios approve",

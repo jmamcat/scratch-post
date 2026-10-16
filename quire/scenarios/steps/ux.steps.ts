@@ -20,11 +20,12 @@ Given('device {string} with the demo notes', async ({ world }, name: string) => 
 });
 
 Then('in every theme the standard screens on {string} pass the UX gate', async ({ world, $testInfo }, d: string) => {
-  // Kept inside the everyday scenarios gate (about 5 minutes): every theme, light and dark, at
+  // Kept inside the everyday scenarios gate (about 5 to 7 minutes): every theme, light and dark, at
   // the desktop viewport; the phone viewport and the 320 px reflow check in the default theme,
   // light; one CLS sample and a short settle. `pnpm -C quire ux` runs the full matrix with three
   // CLS samples (D-P12-10).
-  $testInfo.setTimeout(8 * 60_000);
+  // About 7 minutes on a busy 4-core machine with tracing on; the limit leaves room for load.
+  $testInfo.setTimeout(10 * 60_000);
   const { page } = appDevice(world, d);
   expect(await offeredThemes(page), 'the scorer covers every theme the app offers').toEqual([...quireApp.themes]);
   await prepareContext(page);
