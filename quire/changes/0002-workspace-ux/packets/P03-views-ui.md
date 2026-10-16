@@ -17,7 +17,7 @@ reads:
   - quire/scenarios/steps/sidebar.steps.ts
 size: M
 revision: 1
-status: doing
+status: done
 claimed_by: claude-code/tier-B
 ---
 
@@ -86,4 +86,32 @@ playbook/bin/gate.sh scenarios "@R-VIEW-0"
 
 All 7 views scenarios pass.
 
+## Acceptance result
+
+- `vite build` (QUIRE_WEB_DIST=/tmp/quire-web-P03): ok. `@quire/web typecheck`: clean.
+- `gate.sh scenarios "@R-VIEW-0"`: 7 passed (R-VIEW-01, 02, 03, 04, 05 x2, 06).
+- Also: `pnpm deps` no violations; structure check 0 violations.
+- Initially blocked on `@quire/views` missing from apps/web/package.json (not owned); the coordinator added it. Verified in the meantime with a scratch alias config outside the repo.
+
 ## Decisions log
+
+- **D-P03-1** · confidence: med
+  - Question: the "Moving a card" scenario has one column (`todo`) and moves to `done`; where does `done` come from.
+  - Did: for the `status` key the move select also offers starter columns `todo`, `doing`, `done` not yet used, plus `No status` last (removes the key). Other keys offer existing columns and `No <key>`.
+  - Why: R-VIEW-05 scenario requires moving to a column that does not exist yet; no UI for naming new columns is in the contract.
+  - Reverse: `STARTER_COLUMNS` and `targets` in `apps/web/src/views/BoardView.tsx`.
+- **D-P03-2** · confidence: med
+  - Question: which column a note lacking server revision metadata takes in Timeline.
+  - Did: treated as changed now (Today).
+  - Why: a just-created local note has no head meta until the server refresh; `groupByTime` would otherwise put it in Older and move it a moment later.
+  - Reverse: `modifiedAt: m?.at ?? now.toISOString()` in `TimelineView.tsx`.
+- **D-P03-3** · confidence: med
+  - Question: Tags DOM for nodes with children.
+  - Did: each node is a `section[data-group=name]` holding its own `button[data-item=name]` with `[data-count]` first, then child sections in a `ul`; a click calls `onTag(fullTag)`. Root tags are also `data-item` buttons. No collapse/expand.
+  - Why: satisfies `[data-group="idea"] [data-item="raw"]` and the first-`[data-count]` step for every level.
+  - Reverse: `TagsView.tsx`.
+- **D-P03-4** · confidence: high
+  - Question: Board property keys and errors.
+  - Did: keys are all front matter keys in the vault plus `status` (default, first); `setProperty` errors show in a `role=alert` line.
+  - Why: contract and P02 decision D-P02-5.
+  - Reverse: `BoardView.tsx`.

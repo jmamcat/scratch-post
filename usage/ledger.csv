@@ -12,3 +12,4 @@ date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_rea
 2026-10-16,0002-workspace-ux,P05,claude-code,m2,B,1,,,,,98445,,,4.0,"done, 2/2 scenarios first pass",harness-subagent-report,26 tool uses
 2026-10-16,0002-workspace-ux,P07,claude-code,m3,C,1,,,,,116725,,,4.0,"blocked, 2/3; coordinator unblocked (D-P07-1), 8/8",harness-subagent-report,31 tool uses
 2026-10-16,0002-workspace-ux,P06,claude-code,m3,C,1,,,,,129991,,,4.9,blocked on missing web dependency (P00 gap); 3/3 after coordinator fix,harness-subagent-report,26 tool uses
+2026-10-16,0002-workspace-ux,P03,claude-code,m2,B,1,,,,,95098,,,7.7,"done, 7/7 after coordinator added the web dependency",harness-subagent-report,35 tool uses
