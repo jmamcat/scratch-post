@@ -2,10 +2,11 @@
 playbook: playbook
 version: 1
 target: quire
-modules: [specs, scenarios, structure, references, demo]
+modules: [specs, scenarios, structure, references, demo, usage]
 specs: quire/spec
 changes: quire/changes
 references: references
+usage: usage                  # token and credit ledger (modules/usage)
 scenarios_out: quire/scenarios/.features
 check: pnpm -C quire check
 scenarios: pnpm -C quire scenarios

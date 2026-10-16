@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (2026-10-16)
+
+- Amendment 0005: optional `modules/usage`, a ledger of tokens, credits and time per slice
+  mapped to harness and model (`bin/usage.py`), with a Usage section in run reports.
+
 ## 1.4.0 (2026-10-16)
 
 - Amendment 0004: Acceptance names gates through `bin/gate.sh`; mid-run policy changes

@@ -53,6 +53,10 @@ Write or update the scenarios the packet's requirements name before or with the 
 Run the gates named in the packet's Acceptance (`bin/gate.sh`). Paste the summary. Set
 `status: done`.
 
+Usage module on: when a packet of size M or larger (or a wave, or a research task) finishes,
+the coordinator appends its row with `bin/usage.py add`, using the numbers the harness
+reported for that worker. Workers do not need to know their own cost.
+
 ## 5. Merge
 
 The coordinator merges packet branches in dependency order and reruns `check` after each.
@@ -64,7 +68,7 @@ commits, code or comments.
 
 ## 6. Report and fold back
 
-Run both gates on the merged result, write the run report, merge spec deltas into the living
+Run both gates on the merged result, record the change's usage row (if the usage module is on), write the run report, merge spec deltas into the living
 specs, archive the change, open amendments for playbook friction.
 
 ## Running packets with any CLI

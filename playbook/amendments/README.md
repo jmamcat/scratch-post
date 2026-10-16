@@ -26,7 +26,8 @@ Metrics, all available from packets and run reports:
 - decision records per packet, and how many a human reversed,
 - blocked packets, and redirections in replies to run reports,
 - scenarios added versus scenarios that later failed in a different change (escaped defects),
-- wall-clock and token cost where the harness reports them.
+- wall-clock and token cost where the harness reports them (`usage/ledger.csv` when the
+  usage module is on; `bin/usage.py report --by model` compares tiers).
 
 An amendment is better if it improves at least one metric and worsens none beyond noise
 (for replays: no metric worse by more than 10 percent).

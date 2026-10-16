@@ -13,6 +13,15 @@ result: complete | partial | blocked
 | --- | --- | --- | --- |
 | P01 | <harness/model> | parallel with P02, P03 / sequential | no / yes (decision D-...) |
 
+## Usage
+
+Rows of `usage/ledger.csv` for this change (`playbook/bin/usage.py report --change <id> --by scope`)
+and the totals by model (`--by model`). Say where the numbers came from and which are missing.
+
+| Scope | Harness | Model (alias, tier) | Total tokens | Credits | Wall minutes | Outcome |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| P01 | <harness> | <alias> (A) | <n or empty> | <n unit or empty> | <n> | done, first pass |
+
 ## Summary
 
 What shipped, in three to six bullets. Each bullet names the packet(s).

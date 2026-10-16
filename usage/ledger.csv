@@ -1,0 +1,13 @@
+date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_read_tokens,cache_write_tokens,total_tokens,credits,credit_unit,wall_minutes,outcome,source,notes
+2026-10-16,0001-mvp-foundation,research:references-confluence,claude-code,m1,A,1,,,,,130972,,,7.8,"done, reference folder written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:references-obsidian,claude-code,m1,A,1,,,,,248459,,,12.1,"done, reference folder written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:references-notion,claude-code,m1,A,1,,,,,183573,,,14.0,"done, reference folder written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:references-joplin-silverbullet,claude-code,m1,A,1,,,,,301759,,,18.0,"done, two reference folders written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:testing,claude-code,m1,A,1,,,,,101494,,,4.4,"done, scenario tooling chosen",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:structure,claude-code,m1,A,1,,,,,65560,,,1.8,"done, structure standard sources",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,P01,claude-code,m1,A,1,,,,,152574,,,12.9,done,harness-subagent-report,
+2026-10-16,0001-mvp-foundation,P07+P08,claude-code,m1,A,1,,,,,307115,,,34.3,"done, web shell and live review",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,coordinator,claude-code,m1,A,1,,,,,,,,,66/66 scenarios,unknown,coordinator session tokens not reported per slice; other packets were run by the coordinator
+2026-10-16,0002-workspace-ux,P02,claude-code,m2,B,1,,,,,89200,,,2.8,"done, typechecks first pass",harness-subagent-report,15 tool uses
+2026-10-16,0002-workspace-ux,P05,claude-code,m2,B,1,,,,,98445,,,4.0,"done, 2/2 scenarios first pass",harness-subagent-report,26 tool uses
+2026-10-16,0002-workspace-ux,P07,claude-code,m3,C,1,,,,,116725,,,4.0,"blocked, 2/3; coordinator unblocked (D-P07-1), 8/8",harness-subagent-report,31 tool uses
