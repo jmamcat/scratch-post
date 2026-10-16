@@ -19,7 +19,8 @@ reads:
   - quire/scenarios/**
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-B
 ---
 
 # First-load budget and App split
