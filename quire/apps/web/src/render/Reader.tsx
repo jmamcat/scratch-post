@@ -11,14 +11,17 @@ interface Props {
   onTag: (tag: string) => void;
   className?: string;
   label?: string;
+  /** When set, task checkboxes are clickable and report their source line (R-RND-09). */
+  onToggleTask?: (line: number) => void;
 }
 
 /** Reading view: the note rendered with `@quire/render` (raw HTML escaped, R-RND-06). */
-export function Reader({ text, resolve, onInternalLink, onTag, className, label }: Props) {
-  const html = useMemo(
-    () => renderMarkdown(text, { resolve: (t) => (t === '' ? null : resolve(t)), href: (p, h) => noteHash(p, h) }),
-    [text, resolve],
-  );
+export function Reader({ text, resolve, onInternalLink, onTag, className, label, onToggleTask }: Props) {
+  const html = useMemo(() => {
+    const out = renderMarkdown(text, { resolve: (t) => (t === '' ? null : resolve(t)), href: (p, h) => noteHash(p, h) });
+    // The renderer disables checkboxes; enable them only where a toggle can be written back.
+    return onToggleTask ? out.replace(/(<input type="checkbox" class="task-list-item-checkbox"[^>]*?) disabled>/g, '$1>') : out;
+  }, [text, resolve, onToggleTask]);
   const props = useMemo(() => Object.entries(splitFrontmatter(text).data ?? {}), [text]);
   return (
     <div
@@ -26,6 +29,12 @@ export function Reader({ text, resolve, onInternalLink, onTag, className, label 
       aria-label={label ?? 'Reading view'}
       role="document"
       onClick={(e) => {
+        const box = e.target as HTMLElement;
+        if (onToggleTask && box instanceof HTMLInputElement && box.classList.contains('task-list-item-checkbox')) {
+          e.preventDefault();
+          onToggleTask(Number(box.dataset['line']));
+          return;
+        }
         const a = (e.target as HTMLElement).closest('a');
         if (!a) return;
         const href = a.getAttribute('href') ?? '';

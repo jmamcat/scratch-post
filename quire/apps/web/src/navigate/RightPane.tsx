@@ -1,15 +1,17 @@
 import { extractHeadings, extractTags } from '@quire/render';
-import { splitFrontmatter, titleOf } from '@quire/vault';
-import { useMemo } from 'react';
+import { titleOf } from '@quire/vault';
+import { type ReactNode, useMemo } from 'react';
 import type { Workspace } from '../sync/index.ts';
+import { GraphView } from './graph/GraphView.tsx';
 
-export type RightTab = 'backlinks' | 'outgoing' | 'outline' | 'properties';
+export type RightTab = 'backlinks' | 'outgoing' | 'outline' | 'properties' | 'graph';
 
 const TABS: Array<{ id: RightTab; label: string }> = [
   { id: 'backlinks', label: 'Backlinks' },
   { id: 'outgoing', label: 'Outgoing' },
   { id: 'outline', label: 'Outline' },
   { id: 'properties', label: 'Properties' },
+  { id: 'graph', label: 'Graph' },
 ];
 
 interface Props {
@@ -22,9 +24,11 @@ interface Props {
   onOpenLink: (target: string, from: string, heading?: string) => void;
   onHeading: (line: number, slug: string) => void;
   onTag: (tag: string) => void;
+  /** The properties editor for the open note (vault capability, R-VLT-07). */
+  properties: (text: string) => ReactNode;
 }
 
-/** Right pane: backlinks, outgoing links (R-NAV-01), outline (R-NAV-06), properties (R-RND-07). */
+/** Right pane: backlinks, outgoing links (R-NAV-01), outline (R-NAV-06), properties (R-VLT-07), local graph (R-NAV-09). */
 export function RightPane(props: Props) {
   const { ws, path, tab } = props;
   return (
@@ -57,7 +61,6 @@ function Panel(props: Props & { path: string; text: string }) {
   const backlinks = useMemo(() => (tab === 'backlinks' ? ws.links.backlinks(path, ws.notes()) : []), [tab, path, version, ws]);
   const outgoing = useMemo(() => (tab === 'outgoing' ? ws.links.outgoing(path, text) : []), [tab, path, text, ws, version]);
   const headings = useMemo(() => (tab === 'outline' ? extractHeadings(text) : []), [tab, text]);
-  const fm = useMemo(() => (tab === 'properties' ? splitFrontmatter(text) : null), [tab, text]);
   const tags = useMemo(() => (tab === 'properties' ? extractTags(text) : []), [tab, text]);
 
   if (tab === 'backlinks') {
@@ -128,21 +131,13 @@ function Panel(props: Props & { path: string; text: string }) {
     );
   }
 
-  const entries = Object.entries(fm?.data ?? {});
+  if (tab === 'graph') {
+    return <GraphView ws={ws} version={version} focus={path} depth={2} onOpen={props.onOpen} />;
+  }
+
   return (
     <>
-      {entries.length === 0 && fm?.raw == null && <p className="muted">No properties.</p>}
-      {fm?.raw != null && fm.data === null && <p className="muted">Front matter is not a YAML map.</p>}
-      {entries.length > 0 && (
-        <dl className="props">
-          {entries.map(([k, v]) => (
-            <div key={k} className="prop">
-              <dt>{k}</dt>
-              <dd>{renderValue(v)}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      {props.properties(text)}
       {tags.length > 0 && (
         <>
           <h3 className="pane-heading">Tags</h3>
@@ -162,26 +157,4 @@ function Panel(props: Props & { path: string; text: string }) {
 function folder(path: string): string {
   const i = path.lastIndexOf('/');
   return i < 0 ? '' : path.slice(0, i);
-}
-
-function renderValue(v: unknown) {
-  if (Array.isArray(v)) {
-    return (
-      <span className="chips">
-        {v.map((x, i) => (
-          <span key={i} className="chip static">
-            {scalar(x)}
-          </span>
-        ))}
-      </span>
-    );
-  }
-  return scalar(v);
-}
-
-function scalar(v: unknown): string {
-  if (v === null || v === undefined) return '';
-  if (v instanceof Date) return v.toISOString().slice(0, 10);
-  if (typeof v === 'object') return JSON.stringify(v);
-  return String(v);
 }

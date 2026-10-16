@@ -1,0 +1,13 @@
+{
+  "name": "@quire/views",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure grouping of notes into views: domains, tags, timeline, board columns, link graph.",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p ." },
+  "dependencies": {
+    "@quire/render": "workspace:*",
+    "@quire/vault": "workspace:*"
+  }
+}

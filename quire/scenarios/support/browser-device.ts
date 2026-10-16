@@ -74,7 +74,9 @@ export class BrowserDevice implements Device {
   }
 
   async search(query: string): Promise<void> {
-    await this.page.getByRole('tab', { name: 'Search' }).click();
+    const switcher = this.page.getByRole('combobox', { name: 'Sidebar view' });
+    if (!(await switcher.isVisible())) await this.page.getByRole('button', { name: 'Toggle left sidebar' }).click();
+    await switcher.selectOption({ label: 'Search' });
     await this.page.getByRole('searchbox', { name: 'Search notes' }).or(this.page.getByLabel('Search notes')).first().fill(query);
   }
 

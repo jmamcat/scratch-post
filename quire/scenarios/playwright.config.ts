@@ -6,6 +6,8 @@ const testDir = defineBddConfig({
   features: '.features/*.feature',
   steps: ['support/world.ts', 'steps/*.ts'],
   outputDir: '.features-gen',
+  // An undefined step fails its scenario when it runs; it is never skipped.
+  missingSteps: 'fail-on-run',
 });
 
 export default defineConfig({

@@ -103,3 +103,26 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `N devices make M random edits while going on and offline, with seed S` | seeded random run |
 | `every device matches the cloud server` | convergence |
 | `the run produced at least one review item` | the run exercised collisions |
+
+## Views, editing modes and themes (change 0002, `@ui`)
+
+| Phrase | Meaning |
+| --- | --- |
+| `"d" switches the sidebar to "View"` | pick a sidebar view: Folders, Search, Recent, Changes, Domains, Tags, Timeline, Board |
+| `the sidebar on "d" shows the "View" view` | the switcher shows that view |
+| `the sidebar on "d" shows "title" under "Group"` | a note (by title) inside a group of the current view |
+| `the sidebar on "d" lists "title" first` | first entry of a list view |
+| `the sidebar on "d" shows the tag "t" with N notes` | Tags view count |
+| `the sidebar on "d" shows "title" changed by "device"` | Changes view row |
+| `"d" moves "title" to the "Column" column` | Board: change the grouping property |
+| `"d" reloads the app` | reload the page |
+| `"d" puts the cursor on the line "text"` | click into that line of the editor |
+| `the editor on "d" shows "t" as a heading without "#"` | Live Preview heading |
+| `the editor on "d" shows "t" in bold without "**"` | Live Preview emphasis |
+| `the editor on "d" shows the text "t"` | the raw text is visible in the editor |
+| `"d" clicks the task "label"` | toggle a checkbox in the open view |
+| `"d" clicks "p" in the graph` / `the graph on "d" shows a link from "a" to "b"` / `the graph on "d" shows N notes` | global graph |
+| `the local graph on "d" shows "p"` / `... does not show "p"` | right-pane local graph |
+| `"d" sets the property "k" to "v"` / `"d" adds the property "k" with "v"` / `"d" removes the property "k"` | properties pane |
+| `"d" picks the theme "Name"` / `the app on "d" uses the theme "Name"` | themes |
+| `in every theme the headings on "d" look different from each other` | H1, H2, H3 differ in every theme |

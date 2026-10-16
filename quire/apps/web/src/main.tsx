@@ -1,10 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
-import { loadSettings } from './platforms/index.ts';
+import { applyTheme, loadSettings, loadTheme } from './platforms/index.ts';
 import { Workspace } from './sync/index.ts';
 import './styles.css';
 
+applyTheme(loadTheme());
 const ws = new Workspace(loadSettings());
 void ws.start();
 // Exposed for debugging from the browser console.

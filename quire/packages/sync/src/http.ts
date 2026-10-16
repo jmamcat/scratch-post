@@ -32,6 +32,11 @@ export class HttpTransport implements Transport {
     return this.call('GET', `/api/doc?${q}`);
   }
 
+  /** Heads of every note that exists (newest revision per path). */
+  docs(): Promise<DocMeta[]> {
+    return this.call('GET', '/api/docs');
+  }
+
   history(path: string): Promise<DocMeta[]> {
     return this.call('GET', `/api/history?${new URLSearchParams({ path })}`);
   }

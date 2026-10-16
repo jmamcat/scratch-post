@@ -2,6 +2,7 @@ import { HttpTransport } from '@quire/sync';
 import { useState } from 'react';
 import { type Settings, trimUrl } from './settings.ts';
 import { Modal } from '../shared/Modal.tsx';
+import { ThemePicker } from './themes/ThemePicker.tsx';
 
 interface Props {
   settings: Settings;
@@ -62,6 +63,7 @@ export function SettingsDialog({ settings, pending, onSave, onClose }: Props) {
           <input value={device} onChange={(e) => setDevice(e.target.value)} autoComplete="off" spellCheck={false} />
           <small className="muted">Shown in version history, conflicts and live cursors.</small>
         </label>
+        <ThemePicker />
         {changedServer && (
           <p className="notice" role="note">
             Switching servers replaces this device's copy with the new server's notes.

@@ -1,13 +1,8 @@
 import { expect } from '@playwright/test';
-import { BrowserDevice } from '../support/browser-device.ts';
-import { Then, When, type World } from '../support/world.ts';
+import { appDevice } from '../support/app.ts';
+import { Then, When } from '../support/world.ts';
 
-/** UI-only steps: they need a device driven through the web app (@ui scenarios). */
-function app(world: World, name: string): BrowserDevice {
-  const d = world.device(name);
-  if (!(d instanceof BrowserDevice)) throw new Error(`"${name}" is not a browser device; tag the requirement "Layer: ui"`);
-  return d;
-}
+const app = appDevice;
 
 const today = () => {
   const d = new Date();

@@ -15,6 +15,7 @@ spec capabilities in `spec/` and `changes/*/spec/` (structure rule S2).
 | `packages/navigate` | navigate | Link resolution, link index, offline search |
 | `packages/merge` | merge | Three-way merge with collision tiers |
 | `packages/sync` | sync | Sync protocol, server push handler, client engine, HTTP transport |
+| `packages/views` | views | Pure grouping: domains, tag tree, timeline, board columns, link graph |
 | `apps/server/src/vault` | vault | SQLite revision log, vault folder mirror, read routes |
 | `apps/server/src/sync` | sync | Push and change feed routes, local node replicator |
 | `apps/server/src/review` | review | Conflict routes |
@@ -27,7 +28,8 @@ spec capabilities in `spec/` and `changes/*/spec/` (structure rule S2).
 | `apps/web/src/navigate` | navigate | File tree, switcher, palette, search, right pane |
 | `apps/web/src/review` | review | Conflict badge, inbox, note banner |
 | `apps/web/src/live` | live | Live co-editing in the editor |
-| `apps/web/src/platforms` | platforms | Settings (server URL, token, device name) |
+| `apps/web/src/platforms` | platforms | Settings (server URL, token, device name), themes |
+| `apps/web/src/views` | views | Sidebar views: Recent, Domains, Tags, Timeline, Board |
 | `apps/web/src/shared` | shared | UI primitives, router, preferences |
 | `apps/android` | platforms | Capacitor wrapper around the web build |
 | `scenarios` | (verification) | Spec scenarios run at the system boundary and in the browser |
@@ -43,6 +45,7 @@ Enforced by `.dependency-cruiser.cjs` (`pnpm deps`).
 | `packages/render` | `vault` |
 | `packages/navigate` | `vault`, `render` |
 | `packages/sync` | `vault`, `merge` |
+| `packages/views` | `vault`, `render` |
 | `apps/server/src/*` | any package; other server capabilities through their `index.ts`; `shared/` |
 | `apps/web/src/*` | any package; other web capabilities through their `index.ts`; `shared/` |
 | `*/shared` | packages only |

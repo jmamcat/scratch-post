@@ -3,12 +3,18 @@ import { EditorView } from '@codemirror/view';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { Workspace } from '../sync/index.ts';
 import { baseExtensions, minimalChange } from './editor-setup.ts';
+import { livePreview } from './live-preview/index.ts';
 
 /** Marks transactions that apply text the workspace already has (sync, rebase). */
 export const External = Annotation.define<boolean>();
 
 /** Slot for the live co-editing binding (P08), reconfigured per session. */
 export const collabSlot = new Compartment();
+
+/** Slot for the editing mode: Live Preview (default, R-RND-08) or plain source. */
+const modeSlot = new Compartment();
+
+export type EditorMode = 'live' | 'source';
 
 export interface EditorHandle {
   view: EditorView;
@@ -22,19 +28,24 @@ interface Props {
   ws: Workspace;
   path: string;
   hidden: boolean;
+  mode: EditorMode;
   onOpenLink: (target: string, from: string, heading?: string) => void;
   onHandle?: (h: EditorHandle | null) => void;
   /** True while a live room owns the text; workspace text updates are then ignored. */
   isLive?: () => boolean;
 }
 
-/** Source-mode Markdown editor (CodeMirror 6). Every change goes to the local copy. */
-export function NoteEditor({ ws, path, hidden, onOpenLink, onHandle, isLive }: Props) {
+/** Markdown editor (CodeMirror 6) in Live Preview or source mode. Every change goes to the local copy. */
+export function NoteEditor({ ws, path, hidden, mode, onOpenLink, onHandle, isLive }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const pathRef = useRef(path);
   const props = useRef({ onOpenLink, isLive });
   props.current = { onOpenLink, isLive };
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const modeExtension = (m: EditorMode) =>
+    m === 'live' ? livePreview({ onOpenLink: (target, heading) => props.current.onOpenLink(target, pathRef.current, heading) }) : [];
 
   const makeState = (text: string) =>
     EditorState.create({
@@ -42,6 +53,7 @@ export function NoteEditor({ ws, path, hidden, onOpenLink, onHandle, isLive }: P
       extensions: [
         baseExtensions(),
         collabSlot.of([]),
+        modeSlot.of(modeExtension(modeRef.current)),
         EditorView.updateListener.of((u) => {
           if (!u.docChanged || u.transactions.some((t) => t.annotation(External))) return;
           ws.write(pathRef.current, u.state.doc.toString());
@@ -113,5 +125,9 @@ export function NoteEditor({ ws, path, hidden, onOpenLink, onHandle, isLive }: P
     if (!hidden) viewRef.current?.requestMeasure();
   }, [hidden]);
 
-  return <div ref={host} className="editor-host" hidden={hidden} />;
+  useEffect(() => {
+    viewRef.current?.dispatch({ effects: modeSlot.reconfigure(modeExtension(mode)) });
+  }, [mode]);
+
+  return <div ref={host} className={`editor-host ${mode === 'live' ? 'is-live-preview' : 'is-source'}`} hidden={hidden} />;
 }

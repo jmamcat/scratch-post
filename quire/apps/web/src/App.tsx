@@ -1,22 +1,22 @@
-import { extractHeadings } from '@quire/render';
+import { extractHeadings, toggleTask } from '@quire/render';
 import { titleOf } from '@quire/vault';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { type Command, formatHotkey, matchesHotkey } from './navigate/index.ts';
 import { CommandPalette } from './navigate/index.ts';
-import { type EditorHandle, NoteEditor } from './vault/index.ts';
-import { FileTree } from './navigate/index.ts';
+import { type EditorHandle, type EditorMode, NoteEditor, PropertiesEditor } from './vault/index.ts';
 import { Icon } from './shared/Icon.tsx';
 import { InlineTitle } from './vault/index.ts';
 import { ConfirmDialog, PromptDialog } from './shared/Modal.tsx';
 import { QuickSwitcher } from './navigate/index.ts';
 import { headingSlug, Reader } from './render/index.ts';
 import { RightPane, type RightTab } from './navigate/index.ts';
-import { SearchPane } from './navigate/index.ts';
+import { GraphView } from './navigate/index.ts';
+import { SIDEBAR_VIEWS, Sidebar, type SidebarView } from './Sidebar.tsx';
 import { SettingsDialog } from './platforms/index.ts';
 import { StatusBar } from './sync/index.ts';
 import { dailyNotePath, folderOf, joinPath, toFolderPath, toNotePath, untitledPath } from './vault/index.ts';
 import { usePref } from './shared/use-pref.ts';
-import { clearRoute, navigate, noteHash, useRoute } from './shared/router.ts';
+import { GRAPH_HASH, clearRoute, navigate, noteHash, useRoute } from './shared/router.ts';
 import { saveSettings, type Settings } from './platforms/index.ts';
 import { loadPref, savePref } from './shared/use-pref.ts';
 import type { Workspace } from './sync/index.ts';
@@ -49,7 +49,8 @@ export function App({ ws }: { ws: Workspace }) {
   // On narrow screens the sidebars start closed and their state is not remembered.
   const [leftOpen, setLeftOpen] = useState(() => !isNarrow() && loadPref('leftOpen', true));
   const [rightOpen, setRightOpen] = useState(() => !isNarrow() && loadPref('rightOpen', true));
-  const [leftTab, setLeftTab] = useState<'files' | 'search'>('files');
+  const [leftView, setLeftView] = usePref<SidebarView>('leftView', 'files');
+  const [editorMode, setEditorMode] = usePref<EditorMode>('editorMode', 'live');
   const [query, setQuery] = useState('');
   const [rightTab, setRightTab] = usePref<RightTab>('rightTab', 'backlinks');
   const [recent, setRecent] = usePref<string[]>('recent', []);
@@ -109,9 +110,9 @@ export function App({ ws }: { ws: Workspace }) {
 
   const showTag = useCallback((tag: string) => {
     setLeftOpen(true);
-    setLeftTab('search');
+    setLeftView('search');
     setQuery(`tag:${tag}`);
-  }, []);
+  }, [setLeftView]);
 
   useEffect(() => {
     if (route.kind === 'tag') showTag(route.tag);
@@ -153,6 +154,17 @@ export function App({ ws }: { ws: Workspace }) {
     return null;
   };
 
+  /** Every edit made outside the editor (restore, properties, board, task clicks) goes
+   *  through the editor when the note is open, so a live room sees it too. */
+  const editText = useCallback(
+    (p: string, t: string) => {
+      if (editor.current && editor.current.path === p) editor.current.replaceText(t);
+      else ws.write(p, t);
+      ws.syncSoon(300);
+    },
+    [ws],
+  );
+
   const saveAndReload = (s: Settings) => {
     saveSettings(s);
     void ws.flush().then(() => location.reload());
@@ -174,9 +186,13 @@ export function App({ ws }: { ws: Workspace }) {
         hotkeys: ['Mod+Shift+F'],
         run: () => {
           setLeftOpen(true);
-          setLeftTab('search');
+          setLeftView('search');
         },
       },
+      { id: 'graph', name: 'Open graph view', hotkeys: ['Mod+G'], run: () => (location.hash = GRAPH_HASH) },
+      { id: 'mode', name: 'Toggle Live Preview/Source mode', run: () => setEditorMode((m) => (m === 'live' ? 'source' : 'live')) },
+      { id: 'theme', name: 'Change theme', run: () => setDialog({ kind: 'settings' }) },
+      ...SIDEBAR_VIEWS.map((v) => ({ id: `view-${v.id}`, name: `Show ${v.label} in sidebar`, run: () => (setLeftOpen(true), setLeftView(v.id)) })),
       { id: 'sync', name: 'Sync now', run: () => void ws.syncNow() },
       { id: 'settings', name: 'Open settings', hotkeys: ['Mod+,'], run: () => setDialog({ kind: 'settings' }) },
       { id: 'left', name: 'Toggle left sidebar', run: () => setLeftOpen((v) => !v) },
@@ -184,7 +200,7 @@ export function App({ ws }: { ws: Workspace }) {
       { id: 'review', name: 'Open review inbox', run: () => setDrawer({ kind: 'review', focus: null }) },
       { id: 'history', name: 'Show version history', run: () => setDrawer({ kind: 'history' }), enabled: () => exists },
     ],
-    [ws, newNote, dailyNote, exists, path, setReading],
+    [ws, newNote, dailyNote, exists, path, setReading, setLeftView, setEditorMode],
   );
 
   const commandsRef = useRef(commands);
@@ -214,43 +230,25 @@ export function App({ ws }: { ws: Workspace }) {
   const folder = path ? folderOf(path) : '';
   return (
     <div className={`app ${leftOpen ? 'left-open' : ''} ${rightOpen ? 'right-open' : ''}`}>
-      <nav className="left-pane" aria-label="Vault">
-        <div className="pane-toolbar">
-          <div className="segmented" role="tablist" aria-label="Sidebar view">
-            <button type="button" role="tab" aria-selected={leftTab === 'files'} className={leftTab === 'files' ? 'active' : ''} onClick={() => setLeftTab('files')} aria-label="Files" title="Files">
-              <Icon name="files" />
-            </button>
-            <button type="button" role="tab" aria-selected={leftTab === 'search'} className={leftTab === 'search' ? 'active' : ''} onClick={() => setLeftTab('search')} aria-label="Search" title="Search">
-              <Icon name="search" />
-            </button>
-          </div>
-          <span className="spacer" />
-          <button type="button" className="icon-button" aria-label="New note" title="New note" onClick={() => newNote()}>
-            <Icon name="newNote" />
-          </button>
-          <button type="button" className="icon-button" aria-label="New folder" title="New folder" onClick={() => setDialog({ kind: 'new-folder' })}>
-            <Icon name="newFolder" />
-          </button>
-          <button type="button" className="icon-button" aria-label="Open today's daily note" title="Open today's daily note" onClick={dailyNote}>
-            <Icon name="calendar" />
-          </button>
-        </div>
-        <div className="pane-body">
-          {leftTab === 'files' ? (
-            <FileTree paths={snap.paths} active={exists ? path : null} pending={(p) => ws.isPending(p)} onOpen={(p) => open(p)} onNewNote={(f) => newNote(f)} />
-          ) : (
-            <SearchPane ws={ws} version={snap.version} query={query} onQuery={setQuery} onOpen={(p) => open(p)} />
-          )}
-        </div>
-        <div className="pane-footer">
-          <button type="button" className="icon-button" aria-label="Open settings" title="Settings" onClick={() => setDialog({ kind: 'settings' })}>
-            <Icon name="settings" />
-          </button>
-          <button type="button" className="icon-button" aria-label="Open command palette" title="Command palette" onClick={() => setDialog({ kind: 'palette' })}>
-            <Icon name="command" />
-          </button>
-        </div>
-      </nav>
+      <Sidebar
+        ws={ws}
+        paths={snap.paths}
+        version={snap.version}
+        active={exists ? path : null}
+        view={leftView}
+        onView={setLeftView}
+        query={query}
+        onQuery={setQuery}
+        recent={recent}
+        onOpen={(p) => open(p)}
+        onNewNote={(f) => newNote(f)}
+        onNewFolder={() => setDialog({ kind: 'new-folder' })}
+        onDaily={dailyNote}
+        onTag={showTag}
+        onEdit={editText}
+        onSettings={() => setDialog({ kind: 'settings' })}
+        onPalette={() => setDialog({ kind: 'palette' })}
+      />
       {leftOpen && <div className="scrim" onClick={() => setLeftOpen(false)} aria-hidden="true" />}
 
       <main className="main">
@@ -290,14 +288,18 @@ export function App({ ws }: { ws: Workspace }) {
           </button>
         </header>
 
-        {exists && path ? (
+        {route.kind === 'graph' ? (
+          <div className="view-content graph-content">
+            <GraphView ws={ws} version={snap.version} onOpen={(p) => open(p)} />
+          </div>
+        ) : exists && path ? (
           <div className="view-content">
             {(() => {
               const open = conflictSnap.open.find((c) => c.path === path);
               return open ? <NoteBanner conflict={open} onReview={(id) => setDrawer({ kind: 'review', focus: id })} /> : null;
             })()}
             <InlineTitle path={path} focusSignal={titleFocus} onRename={rename} onDone={() => setTimeout(() => editor.current?.view.focus(), 0)} />
-            <NoteEditor ws={ws} path={path} hidden={reading} onOpenLink={openLink} onHandle={(h) => {
+            <NoteEditor ws={ws} path={path} hidden={reading} mode={editorMode} onOpenLink={openLink} onHandle={(h) => {
                 editor.current = h;
                 setHandle(h);
               }}
@@ -314,6 +316,7 @@ export function App({ ws }: { ws: Workspace }) {
                     if (np) createAndOpen(np);
                   }}
                   onTag={showTag}
+                  onToggleTask={(line) => editText(path, toggleTask(text ?? '', line))}
                 />
               </div>
             )}
@@ -340,6 +343,7 @@ export function App({ ws }: { ws: Workspace }) {
           onOpen={(p) => open(p)}
           onOpenLink={openLink}
           onTag={showTag}
+          properties={(t) => <PropertiesEditor text={t} onChange={(next) => path && editText(path, next)} />}
           onHeading={(line, slug) => {
             if (reading) document.getElementById(slug)?.scrollIntoView({ block: 'start' });
             else editor.current?.scrollToLine(line);
@@ -359,12 +363,7 @@ export function App({ ws }: { ws: Workspace }) {
         <HistoryDrawer
           ws={ws}
           path={path}
-          onRestore={(t) => {
-            // Restore is an ordinary edit: through the editor (and its live room) when open.
-            if (editor.current && editor.current.path === path) editor.current.replaceText(t);
-            else ws.write(path, t);
-            ws.syncSoon(300);
-          }}
+          onRestore={(t) => editText(path, t)}
           onClose={() => setDrawer(null)}
         />
       )}

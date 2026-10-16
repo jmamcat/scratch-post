@@ -1,6 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
-export type Route = { kind: 'none' } | { kind: 'note'; path: string; heading?: string } | { kind: 'tag'; tag: string };
+export type Route = { kind: 'none' } | { kind: 'note'; path: string; heading?: string } | { kind: 'tag'; tag: string } | { kind: 'graph' };
+
+/** Hash of the global graph view (R-NAV-08). Never a note path: notes end in `.md`. */
+export const GRAPH_HASH = '#/~graph';
 
 function decode(s: string, fn: (s: string) => string): string {
   try {
@@ -18,6 +21,7 @@ export function parseHash(hash: string): Route {
   const rawPath = at < 0 ? rest : rest.slice(0, at);
   const path = decode(rawPath, decodeURIComponent);
   if (!path) return { kind: 'none' };
+  if (path === '~graph') return { kind: 'graph' };
   if (path.startsWith('tag/') && !path.toLowerCase().endsWith('.md')) return { kind: 'tag', tag: path.slice(4) };
   const route: Route = { kind: 'note', path };
   if (at >= 0 && rest.length > at + 1) route.heading = decode(rest.slice(at + 1), decodeURIComponent);
