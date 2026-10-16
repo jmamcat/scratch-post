@@ -69,6 +69,10 @@ deterministic and must not need a model at test time.
   requirements without one.
 - Steps assert observable outcomes (what a user sees, what a client receives, what is on
   disk), never internal state.
+- Every indicator a person relies on to know the state of their data (sync status, pending
+  marks, conflict counts, offline banners) has at least one `@ui` scenario that reads it
+  from the screen. A `@system` driver that reads the client's own store cannot see bugs in
+  how that state reaches the screen (amendment 0001).
 - Each scenario starts from a fresh system (new data directory, new ports).
 - Mutation testing (Stryker, mutmut, go-mutesting) from time to time checks that the
   scenarios catch real bugs. Optional.

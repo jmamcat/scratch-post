@@ -203,3 +203,30 @@ Grounding: JOP-F-028, OBS-F-166
 - **THEN** within 5 seconds `nas` has `offline.md` reading `written while the cloud was down\n`
 - **WHEN** the cloud server comes back
 - **THEN** within 10 seconds the cloud server has `offline.md` reading `written while the cloud was down\n`
+
+### Requirement R-SYN-10: Sync state is visible
+
+The client SHALL show, at all times, whether it is synced, offline or has changes waiting, and SHALL mark each note that has unsynced changes.
+
+Layer: ui
+
+#### Scenario: Pending while offline, synced after
+
+- **GIVEN** a cloud server
+- **AND** device `pixel`
+- **AND** `pixel` has `a.md` reading `one\n`
+- **WHEN** `pixel` goes offline
+- **AND** `pixel` sets `a.md` to `two\n`
+- **THEN** `pixel` sees the sync status `Offline`
+- **AND** `pixel` shows `a.md` as pending sync
+- **WHEN** `pixel` comes back online
+- **THEN** `pixel` sees the sync status `Synced`
+- **AND** `pixel` shows `a.md` as synced
+
+#### Scenario: Leaving a live note leaves nothing pending
+
+- **GIVEN** a cloud server
+- **AND** device `pixel`
+- **WHEN** `pixel` has `b.md` reading `# B\n`
+- **AND** `pixel` has `a.md` reading `see [[b]]\n`
+- **THEN** `pixel` sees the sync status `Synced`

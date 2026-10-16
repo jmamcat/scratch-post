@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 (2026-10-16)
+
+- Amendment 0001: state indicators need a `@ui` scenario (counterexample from Quire 0001).
+
 ## 1.0.0 (2026-10-16)
 
 - Playbook split out of the first project into a project-agnostic folder with a
