@@ -26,7 +26,8 @@ reads:
   - playbook/modules/hardening/README.md
 size: M
 revision: 1
-status: todo
+status: doing
+claimed_by: claude-code/tier-B
 ---
 
 # Container image, Compose stack, uv

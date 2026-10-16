@@ -35,6 +35,7 @@ const BUILT_IN: [name: string, kind: Kind, help: string][] = [
   ['quire_live_connections', 'gauge', 'Live editing connections.'],
   ['quire_backup_last_success_timestamp_seconds', 'gauge', 'Unix time of the last successful backup, 0 if none.'],
   ['quire_db_bytes', 'gauge', 'Size of quire.db and its write-ahead log in bytes.'],
+  ['quire_backups_total', 'counter', 'Backup bundles written, by kind (full or incremental).'],
 ];
 
 export function createMetrics(): Registry {
