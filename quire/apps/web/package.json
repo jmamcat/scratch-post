@@ -22,6 +22,7 @@
     "@quire/render": "workspace:*",
     "@quire/sync": "workspace:*",
     "@quire/vault": "workspace:*",
+    "@quire/views": "workspace:*",
     "d3-force": "^3.0.0",
     "idb": "^8.0.3",
     "react": "^19.1.0",

@@ -16,7 +16,8 @@ Right after a large slice, by the coordinator:
 | research or reference work done by sub-agents | `research:<topic>` |
 | the end of a change (or a pull request) | `change` (or `pr-<number>`), the change's total |
 
-Small packets roll into their wave or change row. Never block on missing numbers: record
+Small packets may roll into their wave or change row; when the harness reports each worker
+separately anyway, a row per packet costs nothing and compares better. Never block on missing numbers: record
 what the harness reports, leave the rest empty, and say where the numbers came from.
 
 ## Where

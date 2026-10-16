@@ -109,6 +109,9 @@ importers:
       '@quire/vault':
         specifier: workspace:*
         version: link:../../packages/vault
+      '@quire/views':
+        specifier: workspace:*
+        version: link:../../packages/views
       d3-force:
         specifier: ^3.0.0
         version: 3.0.0
