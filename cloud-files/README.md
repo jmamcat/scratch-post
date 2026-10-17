@@ -9,7 +9,7 @@ sources of truth: the specs, change folders and run reports win where they diffe
 | `prompts/` | Packet prompts sent to worker agents: `P01`, `P07`, `P08` (MVP), `0002-*` (workspace UX), `0003-*` (production hardening). `*.full.md` are the resent versions with the coordinator addendum folded in |
 | `addenda/` | Coordinator notes added to prompts between waves |
 | `commit-messages/` | Drafted commit messages, attribution lines removed |
-| `notes/` | 0003 P11 decisions, UX gate reports, a LinkedIn draft |
+| `notes/` | 0003 P11 decisions, UX gate reports, cloud session billing, a LinkedIn draft |
 | `ENVIRONMENT.md` | The cloud machine, tools, network and GitHub settings the sessions ran on |
 
 Left out on purpose:

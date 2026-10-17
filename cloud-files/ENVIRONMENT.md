@@ -9,7 +9,7 @@ credentials are left out on purpose.
 | Item | Value |
 | --- | --- |
 | Product | Claude Code on the web (claude.ai), a cloud session followed from the Claude app |
-| Billing | Free cloud credit, $250, nearly spent by 2026-10-17 (see `usage/ledger.csv`) |
+| Billing | Free cloud credit, $250, nearly spent by 2026-10-17 (see `usage/ledger.csv`). Afterwards sessions use the subscription's plan limits; see `notes/cloud-billing.md` |
 | Lifetime | Ephemeral container. The repo is cloned fresh at start; anything not pushed is lost when the container is reclaimed. A restart keeps the disk but stops background processes, the Docker daemon included |
 | Permission mode | Auto: a classifier approves or blocks each tool call. It blocked a scan of home folders and a copy of scratchpad files into the public repo until the owner approved it |
 | Time zone | UTC |
