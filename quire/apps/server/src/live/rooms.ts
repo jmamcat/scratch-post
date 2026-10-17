@@ -3,7 +3,6 @@ import type { Duplex } from 'node:stream';
 import { merge3 } from '@quire/merge';
 import { InvalidPathError, normalizePath } from '@quire/vault';
 import type { DocMeta, RevisionStore, SyncServer } from '@quire/sync';
-import diff from 'fast-diff';
 import * as decoding from 'lib0/decoding';
 import * as encoding from 'lib0/encoding';
 import { type WebSocket, WebSocketServer } from 'ws';
@@ -11,6 +10,7 @@ import * as awarenessProtocol from 'y-protocols/awareness';
 import * as syncProtocol from 'y-protocols/sync';
 import * as Y from 'yjs';
 import { sha256 } from '../shared/hash.ts';
+import { replaceText } from './text.ts';
 
 /** What live rooms need from the server they run in. */
 export interface LiveDeps {
@@ -59,9 +59,10 @@ interface Room {
 }
 
 /** Yjs rooms speaking the y-websocket protocol (R-LIV-01..03). */
-export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: number } = {}): LiveRooms {
+export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: number; maxTextBytes?: number } = {}): LiveRooms {
   const idleMs = opts.idleMs ?? 1500;
   const maxMs = opts.maxMs ?? 10_000;
+  const maxTextBytes = opts.maxTextBytes ?? Number.POSITIVE_INFINITY;
   const rooms = new Map<string, Room>();
   const wss = new WebSocketServer({ noServer: true });
   const devices = new WeakMap<WebSocket, string>();
@@ -142,6 +143,11 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
     room.firstPendingAt = null;
     const live = room.text.toString();
     if (live === room.committedText) return;
+    if (tooLarge(live)) {
+      // Never commit past the limit (R-ACC-06); the message handler normally undoes it first.
+      replaceText(room.doc, room.text, room.committedText, SERVER_ORIGIN);
+      return;
+    }
 
     const head = q.store.head(room.path);
     let text = live;
@@ -153,25 +159,13 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
     const meta = q.store.commit(room.path, text, room.lastDevice ?? 'live', sha256(text));
     room.baseRev = meta.rev;
     room.committedText = text;
-    if (text !== live) setRoomText(room, text);
+    if (text !== live) replaceText(room.doc, room.text, text, SERVER_ORIGIN);
     q.committed(room.path, text, meta);
   }
 
-  function setRoomText(room: Room, next: string): void {
-    const cur = room.text.toString();
-    if (cur === next) return;
-    room.doc.transact(() => {
-      let pos = 0;
-      for (const [op, chunk] of diff(cur, next)) {
-        if (op === diff.EQUAL) pos += chunk.length;
-        else if (op === diff.DELETE) room.text.delete(pos, chunk.length);
-        else {
-          room.text.insert(pos, chunk);
-          pos += chunk.length;
-        }
-      }
-    }, SERVER_ORIGIN);
-  }
+  const tooLarge = (text: string) => Buffer.byteLength(text, 'utf8') > maxTextBytes;
+  /** Whether a message could take the room over the limit: UTF-16 units are at most 3 bytes, inserts at most the message size. */
+  const nearLimit = (room: Room, msgBytes: number) => room.text.length * 3 + msgBytes > maxTextBytes;
 
   const rooms_: LiveRooms = {
     attach(server: Server) {
@@ -215,7 +209,7 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
       const merged = live === room.committedText ? next : merge3(room.committedText, live, next).text;
       room.baseRev = meta.rev;
       room.committedText = next;
-      setRoomText(room, merged);
+      replaceText(room.doc, room.text, merged, SERVER_ORIGIN);
       if (merged !== next) schedule(room);
     },
 
@@ -252,8 +246,15 @@ export function createLiveRooms(q: LiveDeps, opts: { idleMs?: number; maxMs?: nu
         const enc = encoding.createEncoder();
         const type = decoding.readVarUint(dec);
         if (type === MESSAGE_SYNC) {
+          const before = nearLimit(room, msg.byteLength) ? room.text.toString() : null;
           encoding.writeVarUint(enc, MESSAGE_SYNC);
           syncProtocol.readSyncMessage(dec, enc, room.doc, ws);
+          if (before !== null && tooLarge(room.text.toString())) {
+            // Undo it in the room so every device converges on the earlier text (R-ACC-06).
+            replaceText(room.doc, room.text, before, SERVER_ORIGIN);
+            ws.close(4413, 'note too large');
+            return;
+          }
           if (encoding.length(enc) > 1) send(ws, encoding.toUint8Array(enc));
         } else if (type === MESSAGE_AWARENESS) {
           awarenessProtocol.applyAwarenessUpdate(room.awareness, decoding.readVarUint8Array(dec), ws);

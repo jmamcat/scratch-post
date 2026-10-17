@@ -73,6 +73,7 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `within N seconds "d" sees "p" reading "t"` | the device's live text |
 | `"d" is listening to the event stream` / `the event stream announces a commit of "p" by "x"` | SSE |
 | `"d" loses its live connection` / `"d" reconnects` | drop and restore the live room only |
+| `"d" pastes N KiB at the end of "p"` | one live insert of N KiB |
 
 ## Rendering and the app (`@ui` unless noted)
 
@@ -155,6 +156,7 @@ browser edits reach the server through live rooms that flush 1.5 s after typing 
 | `a request from the origin "o" is allowed` / `... is not allowed` | CORS preflight for the note list |
 | `the app page and the note list carry the security headers` | CSP with `frame-ancestors 'none'`, nosniff, no-referrer |
 | `"d" tries to save a note of N MiB` / `the request is rejected with status N` | size limits |
+| `a cloud server that allows notes of at most N KiB` | `QUIRE_MAX_NOTE_BYTES` |
 
 ### Versioning and backup
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Live rooms honour `QUIRE_MAX_NOTE_BYTES` (R-ACC-06, change 0005). An edit that takes a
+  note over the limit is undone in the room, and its connection is closed with code 4413.
+  Nothing oversized reaches the revision log.
+- Compose builds no longer need a filesystem grant when no CA file is given (the
+  `extra_ca` secret defaults to `deploy/no-extra-ca.pem`).
+
 ## 0.1.0 (2026-10-17)
 
 The first stable point: a Markdown store and renderer with Obsidian defaults, a cloud server,

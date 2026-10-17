@@ -40,14 +40,15 @@ These need a person: an account, a device, money, or a decision.
 Ordered by value for the credit it costs. Do one at a time, as a single agent, with one full
 gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or PR).
 
-1. [ ] **CI `deploy` job fails on `main`.**
-   - Cause: it never installs Chromium, which the deploy scenario launches.
-   - Fix: install the browser in that job, then verify with a manual workflow run on the
-     branch.
-2. [ ] **Cap live-room edits at `QUIRE_MAX_NOTE_BYTES`** (0003 known gap).
-   - Today only HTTP bodies are capped; a live room accepts any size.
-   - Needs a spec delta on R-ACC (size limits) and a scenario.
-3. [ ] **Change 0005: local nodes replicate attachments and renames** (R-SYN-09 known
+1. [ ] **CI `deploy` and `ux` jobs fail on `main`.** Fixes are pushed (`211f2f9`,
+   `2ac2f82`); a manual run on the branch is verifying them. Three causes:
+   - the deploy job never installed Chromium, which every scenario launches;
+   - Compose's bake builder refuses the `/dev/null` default of the `extra_ca` secret;
+   - the runner lacks Inter, which the UI font stack resolves to where the UX baseline was
+     approved.
+2. [x] **Cap live-room edits at `QUIRE_MAX_NOTE_BYTES`** (0003 known gap). Change 0005,
+   R-ACC-06 "Oversized live edit".
+3. [ ] **Change 0006: local nodes replicate attachments and renames** (R-SYN-09 known
    limitation).
    - Teach `sync/replicator.ts` to move files and send renames as renames, so cloud history
      follows them.
@@ -72,5 +73,11 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
    - working documents kept in the repo (`cloud-files/`);
    - budget-aware pacing;
    - environment facts recorded once (`cloud-files/ENVIRONMENT.md`).
-8. [ ] **Node 24 runtime.** Move the image and CI from Node 22 to Node 24 LTS once
+8. [ ] **Tell the person why a live edit was refused.** When a room closes with 4413, the
+   web app shows "This note is over the size limit" instead of silently reverting (0005
+   D-0005-3).
+9. [ ] **Fonts in the UX gate's engines.** Record the font the UI stack resolves to next to
+   axe, Color.js, Playwright and Chromium, so a machine with other fonts shows "engines
+   differ" instead of a typography drop. Re-approve the baseline once.
+10. [ ] **Node 24 runtime.** Move the image and CI from Node 22 to Node 24 LTS once
    `node:sqlite` behaves the same. Run every gate; record any difference.

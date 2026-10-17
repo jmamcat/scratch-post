@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.1 (2026-10-17)
+
+- `bin/archive-change.py` stages the change folder before `git mv`, so a change that was
+  never committed archives in one run. Before, the move failed after the living specs
+  were already written.
+
 ## 1.9.0 (2026-10-17)
 
 - Amendment 0009: the readiness review in `modules/hardening` gains a Continuity area (gates

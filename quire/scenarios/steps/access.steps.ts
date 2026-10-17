@@ -146,6 +146,10 @@ Then('the app page and the note list carry the security headers', async ({ world
 
 // ---- limits (R-ACC-06) ----
 
+Given('a cloud server that allows notes of at most {int} KiB', async ({ world }, kib: number) => {
+  await world.startCloud(undefined, { QUIRE_MAX_NOTE_BYTES: String(kib * 1024) });
+});
+
 When('{string} tries to save a note of {int} MiB', async ({ world }, d: string, mib: number) => {
   const device = world.systemDevice(d);
   world.lastError = null;
