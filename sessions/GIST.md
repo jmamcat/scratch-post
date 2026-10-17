@@ -61,7 +61,7 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0005.
 - **Docker daemon.** It is not started after a container restart. Run `dockerd` in the
   background first.
 - **Docker Hub.** It is rate limited. Use
-  `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim`.
+  `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:24-bookworm-slim`.
 - **TLS inspection.** The proxy inspects TLS, so `docker build` needs the `extra_ca` build
   secret (`deploy/README.md`).
 - **Tag pushes.** They are refused (403). Branch pushes work.

@@ -74,5 +74,6 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
 9. [x] **Fonts in the UX gate's engines.** The gate records which platform fonts the UI
    and code stacks resolve to. The re-approved baseline changed only its engines line
    (`ui Inter, mono DejaVu Sans Mono`).
-10. [ ] **Node 24 runtime.** Move the image and CI from Node 22 to Node 24 LTS once
-   `node:sqlite` behaves the same. Run every gate; record any difference.
+10. [x] **Node 24 runtime.** Image, Compose default and CI on Node 24. Locally on 24.22.0:
+    check green, scenarios 136/136, deploy green on `node:24-bookworm-slim`. `node:sqlite`
+    no longer prints its experimental warning. Node 22.13+ still works (`engines`).

@@ -27,7 +27,7 @@ in `ARCHITECTURE.md`.
 
 ## Run it
 
-Requires Node 22.13+ and pnpm 10.
+Requires Node 24 (22.13+ still works) and pnpm 10.
 
 ```sh
 pnpm install

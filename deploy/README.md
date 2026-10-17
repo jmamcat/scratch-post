@@ -25,7 +25,7 @@ curl http://127.0.0.1:8787/api/health
 
 The server refuses to start with no token at all and says so in `docker compose logs cloud`.
 The cloud service is published on `127.0.0.1:8787` only; see "TLS" to serve it to others.
-If Docker Hub rate limits the build, set `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim` in `.env`.
+If Docker Hub rate limits the build, set `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:24-bookworm-slim` in `.env`.
 
 ## Adding tokens
 
