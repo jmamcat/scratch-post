@@ -4,20 +4,18 @@ The running handoff for whoever picks this repository up next, person or agent. 
 the end of every working turn that changes state: what is true now, what is open, what to do
 first. Keep it short; history lives in git, change folders and run reports.
 
-## Now (2026-10-17, 11:45 UTC)
+## Now (2026-10-17, 14:30 UTC)
 
 - **`main`** is at `c21dce2` (PR #4 squash-merged): Quire 0.1.0 plus every agent item in
   `sessions/NEXT.md`.
-  - CI fixes; changes 0005 to 0007.
-  - Node 24; structure splits.
-  - UX gate records its fonts; Dependabot; Android APK job.
-  - Playbook 1.10.0.
-- **Specs.** 12 capabilities, 91 requirements, 138 scenarios.
-- **CI.**
-  - PR #4: "check and scenarios" green.
-  - Manual run 12: deploy, ux and the Android APK green on the same code.
-- **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** restarts from `main` for
-  each new piece of work.
+- **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** carries change 0008
+  (templates and the slash menu), archived and not yet in a PR.
+  - Templates: insert at the cursor and new note from a template, with `{{title}}`,
+    `{{date}}`, `{{time}}` and formats; properties merge.
+  - Slash menu: `/` at the start of a line or after a space; block inserts and commands.
+  - Gates locally: check green, scenarios 142/142, ux passes with the baseline unchanged.
+- **Specs.** 12 capabilities, 94 requirements, 144 scenarios.
+- The branch restarts from `main` for each new piece of work once its PR merges.
 
 ## Open
 
@@ -32,8 +30,9 @@ first. Keep it short; history lives in git, change folders and run reports.
    target `5adae66`).
 2. **Make the repository private.** The owner will do this. `cloud-files/` includes a
    LinkedIn draft.
-3. **Choose the next features** (`sessions/NEXT.md`, human step 3). No agent work is left
-   that does not need an owner decision.
+3. **Choose the next features** (`sessions/NEXT.md`, human step 3). Templates and the slash
+   menu are done; the rest of that list waits on the owner.
+4. **PR for 0008.** Not opened yet; the owner asks for it.
 
 ## Budget
 
@@ -55,7 +54,7 @@ playbook/bin/gate.sh deploy   # needs Docker
 playbook/bin/gate.sh ux       # about 10 minutes
 ```
 
-Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0008.
+Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0009.
 
 ## Environment quirks (cloud agent containers)
 
@@ -74,3 +73,4 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0008.
 | 2026-10-16 | Playbook, references, Quire MVP; changes 0001 to 0003 (workspace UX, production hardening) |
 | 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; PR #3 merged (action bumps, run report, this gist, `cloud-files/`); tag push refused, left to the owner |
 | 2026-10-17 | `sessions/NEXT.md`; CI deploy and ux fixed; changes 0005 to 0007; Dependabot; Node 24; PR #4 merged |
+| 2026-10-17 | Change 0008 (templates and the slash menu) on the branch |

@@ -66,7 +66,7 @@ Nothing blocked.
 | new scenarios before the code | 4 of 6 failed. The 2 guards ("Escape keeps the text", "Not inside a word") passed with no menu, as they should; once the menu existed, "Escape keeps the text" also checks that the menu was open first |
 | scenarios | 142 passed (3.3m) |
 | R-PLT-07 first-load budget | passes. The first build failed it: `App.tsx` imported the template helpers, which pulled CodeMirror into the first load (391 kB). `loadTemplateActions` loads them on first use |
-| ux | VERIFY |
+| ux | R-PLT-08 passes (11 passed, 10.3m); ratchet gated, baseline unchanged; engines record `ui Inter, mono DejaVu Sans Mono` |
 
 ## Playbook friction
 

@@ -1,7 +1,7 @@
 ---
 id: 0008-templates-and-slash-menu
 play: add-feature
-status: proposed
+status: archived
 created: 2026-10-17
 references: [obsidian, notion, confluence]
 capabilities: [vault]
