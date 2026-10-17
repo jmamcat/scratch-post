@@ -15,6 +15,7 @@ This repository is bound to the **RefSpec playbook** by `playbook.yaml`. Start w
 | `cloud-files/` | Working documents from the cloud agent sessions (packet prompts, notes) |
 | `sessions/GIST.md` | Session gist: current state, open items, how to resume. Read it first |
 | `sessions/NEXT.md` | Next steps: what the owner must do, and the ordered list of agent work |
+| `sessions/LEARNINGS.md` | What earlier sessions learned: budget, scenarios, front end, CI, cloud container |
 
 ## Gates
 

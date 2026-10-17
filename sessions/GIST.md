@@ -4,7 +4,7 @@ The running handoff for whoever picks this repository up next, person or agent. 
 the end of every working turn that changes state: what is true now, what is open, what to do
 first. Keep it short; history lives in git, change folders and run reports.
 
-## Now (2026-10-17, 14:30 UTC)
+## Now (2026-10-17, 15:00 UTC, session closed)
 
 - **`main`** is at `c21dce2` (PR #4 squash-merged): Quire 0.1.0 plus every agent item in
   `sessions/NEXT.md`.
@@ -54,7 +54,7 @@ playbook/bin/gate.sh deploy   # needs Docker
 playbook/bin/gate.sh ux       # about 10 minutes
 ```
 
-Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0009.
+Read `AGENTS.md`, `sessions/LEARNINGS.md`, then `playbook/README.md`. The next change number is 0009.
 
 ## Environment quirks (cloud agent containers)
 
@@ -74,3 +74,4 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0009.
 | 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; PR #3 merged (action bumps, run report, this gist, `cloud-files/`); tag push refused, left to the owner |
 | 2026-10-17 | `sessions/NEXT.md`; CI deploy and ux fixed; changes 0005 to 0007; Dependabot; Node 24; PR #4 merged |
 | 2026-10-17 | Change 0008 (templates and the slash menu) on the branch |
+| 2026-10-17 | `sessions/LEARNINGS.md`; session closed with everything pushed |
