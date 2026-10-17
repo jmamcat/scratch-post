@@ -71,7 +71,7 @@ export function renderReport(score: AppScore, v: Verdict, opts: { approved?: boo
   const contrastOk = states.filter((s) => s.hard.contrast?.pass).length;
   const lines: string[] = [];
   lines.push('# UX report', '');
-  lines.push(`Generated ${new Date().toISOString()} by \`pnpm -C quire ux\`. Engines: axe ${score.engines.axe}, Color.js ${score.engines.colorjs}, Playwright ${score.engines.playwright}, Chromium ${score.engines.chromium}.`);
+  lines.push(`Generated ${new Date().toISOString()} by \`pnpm -C quire ux\`. Engines: axe ${score.engines.axe}, Color.js ${score.engines.colorjs}, Playwright ${score.engines.playwright}, Chromium ${score.engines.chromium}. Fonts: ${score.engines.fonts}.`);
   lines.push(`${states.length} states. App total **${all}**, lowest state **${low.total}** (${low.id}). WCAG contrast at 100% in ${contrastOk} of ${states.length} states.`);
   if (score.missing.length) lines.push(`Screens not in this build: ${score.missing.join(', ')}.`);
   lines.push('');
