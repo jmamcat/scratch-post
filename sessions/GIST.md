@@ -4,26 +4,20 @@ The running handoff for whoever picks this repository up next, person or agent. 
 the end of every working turn that changes state: what is true now, what is open, what to do
 first. Keep it short; history lives in git, change folders and run reports.
 
-## Now (2026-10-17, 11:15 UTC)
+## Now (2026-10-17, 11:45 UTC)
 
-- **`main`** is at `141cf42`: Quire 0.1.0 plus PR #3.
-- **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** is ahead of `main` with
-  every agent item in `sessions/NEXT.md` (all ten ticked). No PR yet.
-  - CI fixes: deploy and ux green (manual runs 9 and 10).
-  - Changes 0005 to 0007: the live-room size limit, local node attachments and renames,
-    and the refused-edit message.
-  - Structure: four oversized files split.
-  - CI: Dependabot, plus an on-demand Android debug APK (green in run 10).
-  - UX gate: records its fonts.
-  - Node 24 everywhere; Node 22.13+ still works.
-  - Playbook 1.10.0 (amendment 0010).
-- **Specs.** 12 capabilities, 91 requirements, 138 scenarios. Local on Node 24: check
-  green, scenarios 136/136, deploy green. Last UX approve: 180 states, unchanged scores.
-- **CI on the branch.** Manual run 12 on `fdef7e9`, all four jobs green on Node 24:
-  - check and scenarios;
-  - deploy;
-  - ux, with log line `fonts ui Inter, mono DejaVu Sans Mono; ratchet gated`;
-  - android APK.
+- **`main`** is at `c21dce2` (PR #4 squash-merged): Quire 0.1.0 plus every agent item in
+  `sessions/NEXT.md`.
+  - CI fixes; changes 0005 to 0007.
+  - Node 24; structure splits.
+  - UX gate records its fonts; Dependabot; Android APK job.
+  - Playbook 1.10.0.
+- **Specs.** 12 capabilities, 91 requirements, 138 scenarios.
+- **CI.**
+  - PR #4: "check and scenarios" green.
+  - Manual run 12: deploy, ux and the Android APK green on the same code.
+- **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** restarts from `main` for
+  each new piece of work.
 
 ## Open
 
@@ -38,8 +32,8 @@ first. Keep it short; history lives in git, change folders and run reports.
    target `5adae66`).
 2. **Make the repository private.** The owner will do this. `cloud-files/` includes a
    LinkedIn draft.
-3. **Review and merge the branch.** It carries the CI fixes and changes 0005 to 0007.
-   The agent opens a PR when asked.
+3. **Choose the next features** (`sessions/NEXT.md`, human step 3). No agent work is left
+   that does not need an owner decision.
 
 ## Budget
 
@@ -79,4 +73,4 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0008.
 | --- | --- |
 | 2026-10-16 | Playbook, references, Quire MVP; changes 0001 to 0003 (workspace UX, production hardening) |
 | 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; PR #3 merged (action bumps, run report, this gist, `cloud-files/`); tag push refused, left to the owner |
-| 2026-10-17 | `sessions/NEXT.md`; CI deploy and ux fixed; changes 0005 to 0007; Dependabot |
+| 2026-10-17 | `sessions/NEXT.md`; CI deploy and ux fixed; changes 0005 to 0007; Dependabot; Node 24; PR #4 merged |
