@@ -20,7 +20,9 @@ When('{string} types {string} at the end of {string}', async ({ world }, d: stri
 });
 
 When('{string} pastes {int} KiB at the end of {string}', async ({ world }, d: string, kib: number, path: string) => {
-  world.systemDevice(d).insertLive(path, 'end', 'x'.repeat(kib * 1024));
+  const body = 'x'.repeat(kib * 1024);
+  if (world.layer === 'ui') await world.device(d).append(path, body);
+  else world.systemDevice(d).insertLive(path, 'end', body);
 });
 
 When('{string} loses its live connection', async ({ world }, d: string) => {

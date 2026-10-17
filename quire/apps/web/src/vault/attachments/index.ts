@@ -5,6 +5,8 @@ import type { EditorView } from '@codemirror/view';
 import { attachmentExtension, insertAttachment } from './editor-extension.ts';
 import { AttachmentEngine } from './engine.ts';
 
+export { notify } from './alerts.ts';
+
 /** Attachments in the app (R-VLT-12). Contract fixed by 0003/P00. */
 export interface Attachments {
   /** Editor extension: drop, paste and pick files into the attachment folder and embed them. */

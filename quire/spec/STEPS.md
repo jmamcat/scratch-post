@@ -74,7 +74,7 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `within N seconds "d" sees "p" reading "t"` | the device's live text |
 | `"d" is listening to the event stream` / `the event stream announces a commit of "p" by "x"` | SSE |
 | `"d" loses its live connection` / `"d" reconnects` | drop and restore the live room only |
-| `"d" pastes N KiB at the end of "p"` | one live insert of N KiB |
+| `"d" pastes N KiB at the end of "p"` | one live insert of N KiB (`@ui`: one insert in the editor) |
 
 ## Rendering and the app (`@ui` unless noted)
 
