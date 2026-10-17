@@ -31,7 +31,7 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: quire/package.json
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -42,7 +42,7 @@ jobs:
       - run: playbook/bin/gate.sh check
       - run: playbook/bin/gate.sh scenarios
       - if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: scenario-results
           path: quire/scenarios/test-results
@@ -58,7 +58,7 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: quire/package.json
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -79,7 +79,7 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: quire/package.json
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -92,7 +92,7 @@ jobs:
       - run: sudo apt-get install -y --no-install-recommends fonts-inter
       - run: playbook/bin/gate.sh ux
       - if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ux-report
           path: |
@@ -111,12 +111,12 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: quire/package.json
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: quire/pnpm-lock.yaml
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -127,7 +127,7 @@ jobs:
       - run: pnpm -C quire --filter @quire/android exec cap sync android
       - run: ./gradlew assembleDebug --no-daemon
         working-directory: quire/apps/android/android
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: quire-debug-apk
           path: quire/apps/android/android/app/build/outputs/apk/debug/app-debug.apk
