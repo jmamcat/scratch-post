@@ -16,7 +16,7 @@ These need a person: an account, a device, money, or a decision.
      per push or PR; the weekly `deploy` plus `ux` run costs about 20.
 3. **Choose the next features.** The agent list below covers gaps and quality only. Pick
    from the deferred features, and an agent writes the change proposal:
-   - templates and a slash menu;
+   - [x] templates and a slash menu (change 0008);
    - note transclusion (`![[note]]` embeds of notes, not files);
    - database views with formulas (Notion and Bases style);
    - Canvas;
