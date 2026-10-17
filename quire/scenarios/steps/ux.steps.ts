@@ -5,7 +5,7 @@ import { SystemDevice } from '../support/system-device.ts';
 import { Given, Then } from '../support/world.ts';
 import { gateFailures, judge, readBaseline } from '../ux/gate.ts';
 import { demoNotes, offeredThemes, quireApp } from '../ux/quire.ts';
-import { renderReport } from '../ux/report.ts';
+import { enginesLine, renderReport } from '../ux/report.ts';
 import { prepareContext, scoreApp } from '../ux/score.ts';
 
 // R-PLT-08: the UX scorer (scenarios/ux, playbook/modules/ux) over every theme, light and dark,
@@ -36,6 +36,7 @@ Then('in every theme the standard screens on {string} pass the UX gate', async (
   const verdict = judge(score, readBaseline());
   const report = $testInfo.outputPath('ux-report.md');
   writeFileSync(report, renderReport(score, verdict));
+  console.log(`UX engines: ${enginesLine(score, verdict)}`);
   const failures = gateFailures(verdict);
   expect(failures, `UX gate (report: ${report}):\n${failures.slice(0, 40).join('\n')}`).toEqual([]);
 });

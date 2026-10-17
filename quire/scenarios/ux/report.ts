@@ -64,6 +64,13 @@ function metricLines(s: StateScore): string {
   return out.join('\n');
 }
 
+/** One line for logs: the engines, and whether the ratchet was gated against the baseline. */
+export function enginesLine(score: AppScore, v: Verdict): string {
+  const e = score.engines;
+  const engines = `axe ${e.axe}, Color.js ${e.colorjs}, Playwright ${e.playwright}, Chromium ${e.chromium}, fonts ${e.fonts}`;
+  return v.enginesChanged.length ? `${engines}; differ from the baseline (${v.enginesChanged.join('; ')}): ratchet not gated` : `${engines}; ratchet gated`;
+}
+
 export function renderReport(score: AppScore, v: Verdict, opts: { approved?: boolean } = {}): string {
   const states = score.states;
   const all = mean(states.map((s) => s.total));
