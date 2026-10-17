@@ -14,7 +14,7 @@ first. Keep it short; history lives in git, change folders and run reports.
   - the 0004 run report's Verification table filled in;
   - this gist added;
   - scratchpad working docs copied into `cloud-files/`.
-  - No PR yet.
+  - PR #3 open; merge once CI is green.
 
 ## Open
 
@@ -22,7 +22,7 @@ first. Keep it short; history lives in git, change folders and run reports.
    owner does it: `git tag -a v0.1.0 5adae66 -m "Quire 0.1.0" && git push origin v0.1.0`, or
    create the release in the GitHub UI.
 2. **Make the repository private.** The owner will do this.
-3. **Open a PR** for this branch when the owner asks.
+3. **PR #3**: merge once "check and scenarios" is green.
 
 ## Budget
 
