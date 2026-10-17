@@ -15,9 +15,15 @@ export interface LocalDoc {
   renamedFrom?: string;
 }
 
+/** Where a pulled document came from; stores that keep history (a local node) use it. */
+export interface PutOrigin {
+  /** The pulled head is the first revision of a rename from this path (R-VLT-09). */
+  renamedFrom?: string;
+}
+
 export interface LocalStore {
   get(path: string): Promise<LocalDoc | undefined>;
-  put(doc: LocalDoc): Promise<void>;
+  put(doc: LocalDoc, origin?: PutOrigin): Promise<void>;
   remove(path: string): Promise<void>;
   all(): Promise<LocalDoc[]>;
   getCursor(): Promise<number>;
@@ -268,7 +274,8 @@ export class SyncClient {
       if (text === null) {
         if (local) await this.store.remove(ch.path);
       } else {
-        await this.store.put({ path: ch.path, text, baseRev: meta.rev, baseText: text, deleted: false });
+        const origin = !local && meta.renamedFrom ? { renamedFrom: meta.renamedFrom } : undefined;
+        await this.store.put({ path: ch.path, text, baseRev: meta.rev, baseText: text, deleted: false }, origin);
       }
       changed.push(ch.path);
       report.pulled += 1;

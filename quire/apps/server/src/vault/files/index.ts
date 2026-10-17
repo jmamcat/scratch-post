@@ -32,6 +32,11 @@ export interface Files {
   routes(app: Hono): void;
   /** Write (or remove) a file revision's bytes in the vault folder; called for every file commit. */
   mirror(meta: DocMeta): void;
+  /** The same writes the routes make, for the local node's replicator (R-SYN-09). */
+  put(path: string, bytes: Uint8Array, baseRev: number | null, device: string): Promise<PushResult>;
+  remove(path: string, baseRev: number | null, device: string): Promise<PushResult>;
+  /** Bytes stored under a content hash, or null. */
+  blob(hash: string): Uint8Array | null;
 }
 
 const HASH = /^[0-9a-f]{64}$/;
@@ -195,6 +200,12 @@ export function createFiles(deps: FileDeps): Files {
 
   return {
     mirror,
+    put: (path, bytes, baseRev, device) => put(checkFilePath(path), bytes, baseRev, device),
+    remove: (path, baseRev, device) => del(checkFilePath(path), baseRev, device),
+    blob(hash) {
+      const file = blobPath(config.dataDir, hash);
+      return HASH.test(hash) && existsSync(file) ? new Uint8Array(readFileSync(file)) : null;
+    },
     routes(app) {
       app.put('/api/files', async (c) => {
         const path = checkFilePath(requirePath(c));

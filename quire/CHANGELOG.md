@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Local nodes (0006)
+
+- Local nodes replicate attachments both ways and keep their bytes, so the node's clients
+  open files without the cloud.
+- A rename made on a node, or upstream, arrives as a rename: on both servers the history
+  of the new path includes the revisions made under the old one. This lifts both 0.1.0
+  limits of R-SYN-09.
+
 ### Fixes
 
 - Live rooms honour `QUIRE_MAX_NOTE_BYTES` (R-ACC-06, change 0005). An edit that takes a

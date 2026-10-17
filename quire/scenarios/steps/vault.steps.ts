@@ -22,6 +22,12 @@ Then('the history of {string} lists {int} revisions, newest first', async ({ wor
   expect([...revs].sort((a, b) => b - a)).toEqual(revs);
 });
 
+Then('the history of {string} on {string} lists {int} revisions', async ({ world }, path: string, node: string, n: number) => {
+  const res = await fetch(`${world.server(node).url}/api/history?${new URLSearchParams({ path })}`);
+  expect(res.ok, `no history of ${path} on ${node}`).toBe(true);
+  expect(await res.json()).toHaveLength(n);
+});
+
 When('{string} restores the oldest revision of {string}', async ({ world }, d: string, path: string) => {
   const device = world.device(d);
   const transport = world.observer().transport;

@@ -48,11 +48,9 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
      approved.
 2. [x] **Cap live-room edits at `QUIRE_MAX_NOTE_BYTES`** (0003 known gap). Change 0005,
    R-ACC-06 "Oversized live edit".
-3. [ ] **Change 0006: local nodes replicate attachments and renames** (R-SYN-09 known
-   limitation).
-   - Teach `sync/replicator.ts` to move files and send renames as renames, so cloud history
-     follows them.
-   - Then remove the limitation text from the README, `deploy/README.md` and the CHANGELOG.
+3. [x] **Change 0006: local nodes replicate attachments and renames** (R-SYN-09 known
+   limitation). Three new R-SYN-09 scenarios; the README and deployment guide no longer
+   list the limits.
 4. [ ] **Split the five files over the 300-line soft limit** (structure warning S8). No
    behaviour change; scenarios must stay green.
    - `apps/web/src/sync/workspace.ts` (417)

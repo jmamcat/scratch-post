@@ -1,5 +1,7 @@
-import { HttpTransport, type LocalDoc, type LocalStore, type RevisionStore, SyncClient, type SyncReport, type SyncServer, type Transport } from '@quire/sync';
+import { HttpTransport, type LocalDoc, type LocalStore, type PutOrigin, type RevisionStore, SyncClient, type SyncReport, type SyncServer, type Transport } from '@quire/sync';
 import type { EventHub } from '../shared/events.ts';
+import type { Files } from '../vault/index.ts';
+import { NodeFiles } from './node-files.ts';
 
 /** A revision store that also keeps small key-value records (the upstream bases). */
 export interface ReplicaStore extends RevisionStore {
@@ -14,6 +16,7 @@ export interface ReplicatorDeps {
   store: ReplicaStore;
   sync: SyncServer;
   events: EventHub;
+  files: Pick<Files, 'put' | 'remove' | 'blob'>;
 }
 
 export interface Replicator {
@@ -62,17 +65,32 @@ class NodeStore implements LocalStore {
       return base ? { path, text: '', baseRev: base.rev, baseText: base.text, deleted: true } : undefined;
     }
     const text = this.q.store.text(head.rev) ?? '';
-    return { path, text, baseRev: base?.rev ?? null, baseText: base?.text ?? null, deleted: false };
+    const doc: LocalDoc = { path, text, baseRev: base?.rev ?? null, baseText: base?.text ?? null, deleted: false };
+    const from = base ? undefined : this.renamedFrom(path);
+    if (from) doc.renamedFrom = from;
+    return doc;
   }
 
-  async put(doc: LocalDoc): Promise<void> {
+  /** Where a path never sent upstream was renamed from on this node, if upstream knows that path (R-VLT-09). */
+  private renamedFrom(path: string): string | undefined {
+    const first = this.q.store
+      .history(path)
+      .filter((m) => m.path === path)
+      .at(-1);
+    const from = first?.renamedFrom;
+    return from && this.base(from) ? from : undefined;
+  }
+
+  async put(doc: LocalDoc, origin?: PutOrigin): Promise<void> {
     this.setBase(doc.path, { rev: doc.baseRev, text: doc.baseText });
     if (doc.deleted) return;
     const head = this.q.store.head(doc.path);
     const headText = head && !head.deleted ? this.q.store.text(head.rev) : null;
     if (headText === doc.text) return;
     const baseRev = this.seen.has(doc.path) ? this.seen.get(doc.path)! : (head?.rev ?? null);
-    const [res] = await this.q.sync.push({ device: 'upstream', items: [{ path: doc.path, baseRev, text: doc.text }] });
+    // A rename made upstream stays a rename here, so this node's history follows it too.
+    const renamedFrom = origin?.renamedFrom && (!head || head.deleted) ? { renamedFrom: origin.renamedFrom } : {};
+    const [res] = await this.q.sync.push({ device: 'upstream', items: [{ path: doc.path, baseRev, text: doc.text, ...renamedFrom }] });
     this.seen.set(doc.path, res?.meta.rev ?? null);
   }
 
@@ -85,7 +103,7 @@ class NodeStore implements LocalStore {
   }
 
   async all(): Promise<LocalDoc[]> {
-    // Attachments do not replicate through a local node yet (D-C-1 in the 0003 run report).
+    // Attachments replicate through NodeFiles, not as notes.
     const paths = new Set(this.q.store.heads().filter((m) => m.kind !== 'file').map((m) => m.path));
     for (const key of this.q.store.kvKeys(BASE_PREFIX)) paths.add(key.slice(BASE_PREFIX.length));
     const docs: LocalDoc[] = [];
@@ -114,11 +132,9 @@ export function createReplicator(
   const intervalMs = opts.intervalMs ?? 10_000;
   const debounceMs = opts.debounceMs ?? 1_000;
   const maxBackoffMs = opts.maxBackoffMs ?? 60_000;
-  const client = new SyncClient({
-    store: new NodeStore(q),
-    transport: upstream.transport ?? new HttpTransport(upstream.url, upstream.token),
-    device: upstream.device,
-  });
+  const transport = upstream.transport ?? new HttpTransport(upstream.url, upstream.token);
+  const client = new SyncClient({ store: new NodeStore(q), transport, device: upstream.device });
+  if (transport instanceof HttpTransport) client.files = new NodeFiles(q.store, q.files, transport, upstream.device);
 
   let timer: NodeJS.Timeout | null = null;
   let failures = 0;

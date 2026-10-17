@@ -58,12 +58,10 @@ It serves its own clients, replicates with the cloud every 10 s and after local 
 and keeps working while the cloud is unreachable. You can open `~/quire/vault` in
 Obsidian at the same time; edits made there are picked up.
 
-**Known limitations (0.1.0, R-SYN-09).** A local node replicates notes only. Attachments
-are not replicated: files its clients add stay on the node, and files added on the cloud do
-not reach the node's clients. A rename made on a local node reaches the cloud as a new note
-plus a deletion, so the cloud's history of that note starts at the rename (edits made
-elsewhere still follow the rename). Attach files through the cloud server if every device
-should see them.
+**What a local node replicates (R-SYN-09).** Notes and attachments, both ways. The node
+keeps the bytes of every attachment, so its clients open files without the cloud. Renames
+arrive as renames on both sides, so a note's history survives a rename made on either.
+(0.1.0 replicated notes only.)
 
 ### Android
 
