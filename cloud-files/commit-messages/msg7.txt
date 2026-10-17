@@ -1,0 +1,7 @@
+0002-workspace-ux: run report with usage; playbook 1.6.0 (amendment 0006)
+
+All packets done; check green and 88 of 88 scenarios pass. The R-RND-07
+step reads the property input's value now that P06 makes it editable.
+Amendment 0006: P00 declares new packages in consumers' manifests;
+workers stop only their own processes, by process id.
+

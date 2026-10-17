@@ -1,0 +1,5 @@
+0003-production-hardening: checkpoint of in-progress wave 1 packets
+
+Snapshot so work in progress is not only in the container; P01, P02,
+P05, P06 and P10 are still marked doing.
+

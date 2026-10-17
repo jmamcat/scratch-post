@@ -1,0 +1,9 @@
+0003-production-hardening/P00: specs, vocabulary, schema v2, extension points
+
+Spec deltas for access, backup, ops, vault and platforms (131 scenarios
+from 90 requirements), step vocabulary, schema migrations with version
+2, protocol fields for files, renames and change sets, module stubs with
+fixed contracts (access, ops, backup, files, attachments, vault history,
+offline), the quire CLI, and scenario support for tokens, prepared data
+folders and the deploy gate. All 88 earlier scenarios still pass.
+

@@ -1,0 +1,9 @@
+Playbook 1.5.0: usage ledger per slice, mapped to harness and model
+
+Amendment 0005 adds the optional usage module: usage/ledger.csv with one
+row per large slice (tokens, credits, wall time, outcome, source),
+model aliases in usage/models.yaml and bin/usage.py to add rows and
+report totals by change, model, harness, scope or tier. Run reports gain
+a Usage section; adapters/harnesses.md says where each harness reports
+its numbers. Backfilled with the sub-agent reports from 0001 and 0002.
+

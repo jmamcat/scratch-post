@@ -1,0 +1,7 @@
+0003-production-hardening: later packets; playbook hardening and environments notes
+
+Packets P03, P04, P07 to P09 and P11 to P14. Playbook: modules/hardening
+(a production-readiness review where every item becomes a requirement
+with a scenario) and adapters/environments.md (uv, Docker, Compose,
+sandboxed environments).
+
