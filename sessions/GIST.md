@@ -4,19 +4,23 @@ The running handoff for whoever picks this repository up next, person or agent. 
 the end of every working turn that changes state: what is true now, what is open, what to do
 first. Keep it short; history lives in git, change folders and run reports.
 
-## Now (2026-10-17, 10:30 UTC)
+## Now (2026-10-17, 10:50 UTC)
 
 - **`main`** is at `141cf42`: Quire 0.1.0 plus PR #3.
 - **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** is ahead of `main` with
-  agent work from `sessions/NEXT.md`. No PR yet.
-  - CI fixes: deploy and ux are green again (manual run 9).
-  - 0005: live rooms honour the note size limit (R-ACC-06).
-  - 0006: local nodes replicate attachments and renames (R-SYN-09).
-  - 0007: the app says why an oversized live edit was undone (R-LIV-06).
-  - Dependabot config; playbook 1.9.1 (archive script fix).
-- **Specs.** 12 capabilities, 91 requirements, 138 scenarios. Local: check green,
-  scenarios 136/136; `deploy` and `ux` run only in their own gates.
-- **Next agent work.** `sessions/NEXT.md` items 4, 5, 7, 9 and 10.
+  every agent item in `sessions/NEXT.md` (all ten ticked). No PR yet.
+  - CI fixes: deploy and ux green (manual runs 9 and 10).
+  - Changes 0005 to 0007: the live-room size limit, local node attachments and renames,
+    and the refused-edit message.
+  - Structure: four oversized files split.
+  - CI: Dependabot, plus an on-demand Android debug APK (green in run 10).
+  - UX gate: records its fonts.
+  - Node 24 everywhere; Node 22.13+ still works.
+  - Playbook 1.10.0 (amendment 0010).
+- **Specs.** 12 capabilities, 91 requirements, 138 scenarios. Local on Node 24: check
+  green, scenarios 136/136, deploy green. Last UX approve: 180 states, unchanged scores.
+- **In flight.** A manual CI run on the branch (`fdef7e9`) verifying Node 24 and the fonts
+  line in CI.
 
 ## Open
 
