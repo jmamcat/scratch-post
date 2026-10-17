@@ -14,6 +14,7 @@ This repository is bound to the **RefSpec playbook** by `playbook.yaml`. Start w
 | `remote-projects/` | Unrelated starter scaffold, kept for later |
 | `cloud-files/` | Working documents from the cloud agent sessions (packet prompts, notes) |
 | `sessions/GIST.md` | Session gist: current state, open items, how to resume. Read it first |
+| `sessions/NEXT.md` | Next steps: what the owner must do, and the ordered list of agent work |
 
 ## Gates
 
@@ -39,4 +40,5 @@ Python tooling (the playbook scripts) runs through `uv run playbook/bin/<script>
 - Folders under `quire/packages`, `quire/apps/*/src` are capability names from the specs.
 - `references/*/upstream/` are read-only submodules; Joplin is AGPL: study, never copy.
 - No screenshots of closed-source products in git. No model names in code or commits.
-- Update `sessions/GIST.md` at the end of every turn that changes state.
+- Update `sessions/GIST.md` at the end of every turn that changes state, and tick
+  `sessions/NEXT.md` items as they ship.

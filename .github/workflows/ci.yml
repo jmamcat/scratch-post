@@ -64,6 +64,8 @@ jobs:
           cache-dependency-path: quire/pnpm-lock.yaml
       - uses: astral-sh/setup-uv@v7
       - run: pnpm -C quire install --frozen-lockfile
+      # The scenario runner launches Chromium for every scenario, the deploy one included.
+      - run: pnpm -C quire --filter @quire/scenarios exec playwright install --with-deps chromium
       - run: playbook/bin/gate.sh deploy
 
   ux:
