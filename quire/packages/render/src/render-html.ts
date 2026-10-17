@@ -3,7 +3,8 @@
  */
 import type { Options, RendererRule } from 'markdown-it';
 import { splitFrontmatter } from '@quire/vault';
-import { md, withoutComments, type CalloutMeta, type WikiMeta } from './parser.ts';
+import { md, type CalloutMeta, type WikiMeta } from './parser.ts';
+import { withoutComments } from './source-ranges.ts';
 import { calloutBase, decodeHref, slugify, IMAGE_EXTENSIONS, impliedPath, isVaultHref, knownExtension } from './syntax.ts';
 
 export interface RenderOptions {
