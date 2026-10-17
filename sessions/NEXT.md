@@ -64,14 +64,8 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
 6. [x] **Dependency hygiene.** `pnpm audit` found nothing. `.github/dependabot.yml` sends
    weekly grouped updates for npm (`quire/`) and GitHub Actions. The UX gate's pinned
    engines are left for manual bumps. The uv tooling has no dependencies to track.
-7. [ ] **Playbook amendment 0010: handoff and budget.** Write the evidence from this run
-   into the playbook:
-   - session gist and next-steps files as a module;
-   - working documents kept in the repo (`cloud-files/`);
-   - budget-aware pacing;
-   - environment facts recorded once (`cloud-files/ENVIRONMENT.md`);
-   - from 0007: a runner that builds the system under test rebuilds when sources change;
-   - from the CI fixes: gate baselines depend on installed fonts.
+7. [x] **Playbook amendment 0010: handoff and gate environments.** Playbook 1.10.0:
+   `modules/handoff`, plus rules in hardening, ux and scenarios.
 8. [x] **Tell the person why a live edit was refused.** Change 0007, R-LIV-06.
 9. [ ] **Fonts in the UX gate's engines.** Record the font the UI stack resolves to next to
    axe, Color.js, Playwright and Chromium, so a machine with other fonts shows "engines

@@ -25,6 +25,7 @@ Version: see `VERSION`. Changes: `CHANGELOG.md`.
 | [`modules/demo`](modules/demo/) | Making each change demo-able: seed data, one command to run, a walkthrough. | optional |
 | [`modules/hardening`](modules/hardening/) | The production-readiness review: access, secrets, data safety, offline, observability, deployment, load, budgets; each item becomes a requirement with a scenario. | before production |
 | [`modules/ux`](modules/ux/) | A 0-100 readability and UX scorer with hard checks, floors and a baseline ratchet, so UI changes carry evidence. | when there is a UI |
+| [`modules/handoff`](modules/handoff/) | Resumable work: a session gist, a next-steps list split into human and agent work, and the working documents a session would lose. | when sessions are short or budgets finite |
 | [`modules/usage`](modules/usage/) | A ledger of tokens, credits and time per slice, mapped to harness and model, so builds and pull requests can be benchmarked. | optional |
 | [`amendments/`](amendments/) | How the playbook changes itself, only with evidence that the change is better. | always applies |
 | [`adapters/`](adapters/) | Notes for specific harnesses, model tiers and environments (uv, Docker, Compose). Never required. | optional |

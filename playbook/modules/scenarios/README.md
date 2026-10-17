@@ -74,5 +74,8 @@ deterministic and must not need a model at test time.
   from the screen. A `@system` driver that reads the client's own store cannot see bugs in
   how that state reaches the screen (amendment 0001).
 - Each scenario starts from a fresh system (new data directory, new ports).
+- A runner that builds the system under test (a web bundle, an image) rebuilds when any
+  of its sources is newer than the build, not only when the build is missing. Otherwise
+  the scenarios pass against yesterday's code (amendment 0010).
 - Mutation testing (Stryker, mutmut, go-mutesting) from time to time checks that the
   scenarios catch real bugs. Optional.

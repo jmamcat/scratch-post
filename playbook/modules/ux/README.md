@@ -78,6 +78,12 @@ CLS sample), against the same baseline.
 Axe rules that pass are counted, not listed. One line per state and category keeps a
 re-approval readable as a diff.
 
+**The baseline is only as portable as the fonts.** A font stack that names system fonts
+resolves differently on each machine. Line length, line count and wrapping then move with
+it, and so does every text metric. Install in CI the fonts that the machine which approved
+the baseline used (or ship the font with the product), and name them in the CI file next
+to the install step (amendment 0010).
+
 **Approving a new baseline** follows the scenarios module's approved-outputs pattern:
 
 1. Run the gate (`ux`) and read the report: every change in it must be intended.
