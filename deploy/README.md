@@ -115,6 +115,16 @@ plus a deletion, so the cloud's history of that note starts at the rename (edits
 elsewhere still follow the rename). Attach files through the cloud server if every device
 should see them.
 
+**Building behind a TLS-inspecting proxy.** Point `QUIRE_BUILD_CA` at the proxy's CA
+certificate (PEM). The build reads it as the `extra_ca` secret, for the install steps only;
+it never lands in the image. When the file lives outside this folder, newer Compose
+releases ask for a filesystem grant, so also set `BUILDX_BAKE_ENTITLEMENTS_FS=0` for that
+build:
+
+```sh
+QUIRE_BUILD_CA=/path/to/ca.pem BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose build cloud
+```
+
 ## TLS
 
 The `tls` profile puts Caddy in front of the cloud service and gets certificates for your host

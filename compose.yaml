@@ -87,7 +87,9 @@ services:
 
 secrets:
   extra_ca:
-    file: ${QUIRE_BUILD_CA:-/dev/null}
+    # An empty file inside the project by default: Compose's bake builder refuses paths
+    # outside it (such as /dev/null) without an explicit grant.
+    file: ${QUIRE_BUILD_CA:-./deploy/no-extra-ca.pem}
 
 volumes:
   quire-data:

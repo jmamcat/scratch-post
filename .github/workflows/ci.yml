@@ -86,10 +86,15 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - run: pnpm -C quire install --frozen-lockfile
       - run: pnpm -C quire --filter @quire/scenarios exec playwright install --with-deps chromium
+      # The UI font stack resolves to Inter where the baseline was approved; without it the
+      # runner falls back to Liberation Sans and every line length (category C) shifts.
+      - run: sudo apt-get install -y --no-install-recommends fonts-inter
       - run: playbook/bin/gate.sh ux
       - if: always()
         uses: actions/upload-artifact@v6
         with:
           name: ux-report
-          path: quire/scenarios/ux/report.md
+          path: |
+            quire/scenarios/ux/report.md
+            quire/scenarios/test-results/**/ux-report.md
           retention-days: 30
