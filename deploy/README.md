@@ -108,12 +108,10 @@ cloud service, and keeps its data in the `quire-local-data` volume. To replicate
 somewhere else, run the image with `QUIRE_MODE=local`, `QUIRE_UPSTREAM=https://...` and
 `QUIRE_UPSTREAM_TOKEN=...`.
 
-**Known limitations (0.1.0, R-SYN-09).** A local node replicates notes only. Attachments
-are not replicated: files its clients add stay on the node, and files added on the cloud do
-not reach the node's clients. A rename made on a local node reaches the cloud as a new note
-plus a deletion, so the cloud's history of that note starts at the rename (edits made
-elsewhere still follow the rename). Attach files through the cloud server if every device
-should see them.
+**What a local node replicates (R-SYN-09).** Notes and attachments, both ways. The node
+keeps the bytes of every attachment, so its clients open files without the cloud. Renames
+arrive as renames on both sides, so a note's history survives a rename made on either.
+(0.1.0 replicated notes only.)
 
 **Building behind a TLS-inspecting proxy.** Point `QUIRE_BUILD_CA` at the proxy's CA
 certificate (PEM). The build reads it as the `extra_ca` secret, for the install steps only;
