@@ -10,6 +10,7 @@ sources of truth: the specs, change folders and run reports win where they diffe
 | `addenda/` | Coordinator notes added to prompts between waves |
 | `commit-messages/` | Drafted commit messages, attribution lines removed |
 | `notes/` | 0003 P11 decisions, UX gate reports, a LinkedIn draft |
+| `ENVIRONMENT.md` | The cloud machine, tools, network and GitHub settings the sessions ran on |
 
 Left out on purpose:
 
