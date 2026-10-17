@@ -1,7 +1,7 @@
 ---
 id: 0004-release-0.1.0
 play: fix-bug
-status: in-progress
+status: archived
 created: 2026-10-17
 references: []
 capabilities: [access, ops, sync]

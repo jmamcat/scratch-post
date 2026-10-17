@@ -178,7 +178,9 @@ The server SHALL expose the list of heads changed after a given `rev` cursor, an
 
 ### Requirement R-SYN-09: Local node replication
 
-A server in local mode SHALL replicate its heads with an upstream server as a sync client, retrying with backoff while the upstream is unreachable, and SHALL keep serving its own clients meanwhile.
+A server in local mode SHALL replicate its note heads with an upstream server as a sync client, retrying with backoff while the upstream is unreachable, and SHALL keep serving its own clients meanwhile.
+
+Known limitations (0.1.0): attachments (R-VLT-11) are not replicated through a local node, so files its clients add stay on the node and files added upstream do not reach them; and a rename made on a local node reaches the upstream as a new note plus a deletion, so the upstream's history of that note starts at the rename (edits still follow the rename, R-VLT-09).
 
 Grounding: JOP-F-028, OBS-F-166
 

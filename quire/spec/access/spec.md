@@ -31,7 +31,7 @@ Layer: system
 
 ### Requirement R-ACC-02: Named tokens
 
-The server SHALL accept up to 32 named access tokens, one per person or device, created, listed and revoked with `quire tokens add|list|revoke <name>`, stored only as SHA-256 hashes and compared in constant time; a revoked token SHALL stop working at once, and live connections opened with it SHALL close within 5 seconds. `QUIRE_TOKEN` stays valid as the token named `admin`.
+The server SHALL accept up to 32 named access tokens, one per person or device, created, listed and revoked with `quire tokens add|list|revoke <name>`, stored only as SHA-256 hashes and compared in constant time; a revoked token SHALL stop working at once, and live connections and event streams opened with it SHALL close within 5 seconds. `QUIRE_TOKEN` stays valid as the token named `admin`.
 
 Layer: system
 
@@ -58,6 +58,15 @@ Layer: system
 - **GIVEN** a cloud server that requires the token `s3cret`
 - **AND** 32 tokens are added
 - **THEN** adding the token `one-more` as `extra` is refused
+
+#### Scenario: Revoking closes event streams
+
+- **GIVEN** a cloud server that requires the token `s3cret`
+- **AND** the token `tablet-token` is added as `tablet`
+- **AND** device `tablet` using the token `tablet-token`
+- **AND** `tablet` is listening to the event stream
+- **WHEN** the token `tablet` is revoked
+- **THEN** within 5 seconds the event stream of `tablet` has closed
 
 ### Requirement R-ACC-03: No secrets in URLs
 
