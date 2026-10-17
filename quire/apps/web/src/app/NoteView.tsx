@@ -3,7 +3,7 @@ import { type ComponentProps, type RefObject, useCallback, useEffect, useMemo, u
 import { Reader } from '../render/index.ts';
 import { NoteBanner } from '../review/index.ts';
 import type { Workspace } from '../sync/index.ts';
-import { type Attachments, type EditorHandle, type EditorMode, InlineTitle, NoteEditor, toNotePath, useAttachments } from '../vault/index.ts';
+import { type Attachments, type EditorHandle, type EditorMode, InlineTitle, NoteEditor, slashMenu, toNotePath, useAttachments } from '../vault/index.ts';
 
 interface Props {
   ws: Workspace;
@@ -26,6 +26,8 @@ interface Props {
   onOpenLink: (target: string, from: string, heading?: string) => void;
   onTag: (tag: string) => void;
   onEditText: (path: string, text: string) => void;
+  /** Runs a palette command by id; the slash menu's command entries use it (R-VLT-15). */
+  runCommand: (id: string) => void;
 }
 
 /** The open note: banner, inline title, editor and (when reading) the rendered note. */
@@ -38,7 +40,9 @@ export default function NoteView(p: Props) {
   }, [attachments]);
   const pathNow = useRef(path);
   pathNow.current = path;
-  const attachmentExtension = useMemo(() => attachments.editorExtension(() => pathNow.current), [attachments]);
+  const runCommand = useRef(p.runCommand);
+  runCommand.current = p.runCommand;
+  const extensions = useMemo(() => [attachments.editorExtension(() => pathNow.current), slashMenu((id) => runCommand.current(id))], [attachments]);
   const resolve = useCallback((t: string) => ws.links.resolve(t, path), [ws, path, p.paths]);
   return (
     <div className="view-content">
@@ -52,7 +56,7 @@ export default function NoteView(p: Props) {
         onOpenLink={p.onOpenLink}
         onHandle={p.onHandle}
         isLive={() => ws.client.isLive(path)}
-        extensions={attachmentExtension}
+        extensions={extensions}
       />
       {reading && (
         <div className="reader-scroll">

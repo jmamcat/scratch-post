@@ -93,6 +93,10 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `"d" searches for "q"` / `the search results on "d" list "p" first` | search |
 | `"d" presses "Ctrl+O"` / `"d" types "t" and presses Enter` | keyboard |
 | `"d" runs the command "name"` | command palette |
+| `the clock on "d" reads "YYYY-MM-DD HH:mm"` | fixed browser time (local) |
+| `"d" types "t" in "p"` | open the note, cursor at the end, type key by key |
+| `"p" on "d" contains "t"` | the device's copy includes the text (polls) |
+| `the slash menu on "d" offers "label"` / `the slash menu on "d" is closed` | the editor's "Insert" listbox |
 | `"d" sees "p" open` / `"d" sees today's daily note open` | the open note |
 | `"d" sees the sync status "s"` / `the conflicts badge on "d" shows N` | status bar |
 | `"d" sees the banner "t"` | note banner |

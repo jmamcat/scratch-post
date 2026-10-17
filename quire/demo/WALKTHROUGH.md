@@ -62,6 +62,17 @@ names itself (bottom left), like `calm-lynx-23`.
 2. Pick the oldest revision, check the preview, **Restore**. The note returns to the seed
    text as a new revision; the history keeps every version. [R-VLT-06]
 
+## 8. Templates and the slash menu
+
+1. Create a note (**Ctrl/Cmd+N**), click into the editor and type `/`. The **Insert** menu
+   lists headings, lists, a task, quote, code block, callout, table and divider; type `task`
+   and press Enter for a task. [R-VLT-15]
+2. On a new line, type `/template`, press Enter and pick **Meeting** (from the seed's
+   `templates/` folder). The title and today's date are filled in, and the note gains the
+   `meeting` tag. [R-VLT-13]
+3. Run **New note from template** from the command palette and pick **Meeting** again: a new
+   untitled note opens with it. [R-VLT-14]
+
 ## Stop
 
 Ctrl+C in the terminal stops both servers. The next `pnpm -C quire demo` starts from fresh

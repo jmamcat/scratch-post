@@ -19,6 +19,7 @@ export function SettingsDialog({ settings, pending, onSave, onClose }: Props) {
   const [device, setDevice] = useState(settings.device);
   // Where pasted, dropped and picked files go (R-VLT-12); read again by vault/attachments for every file.
   const [attachmentFolder, setAttachmentFolder] = useState(() => loadPref<string>('attachmentFolder', 'attachments/'));
+  const [templateFolder, setTemplateFolder] = useState(() => loadPref<string>('templateFolder', 'templates/'));
   const [check, setCheck] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -50,6 +51,7 @@ export function SettingsDialog({ settings, pending, onSave, onClose }: Props) {
           e.preventDefault();
           if (!urlOk || !device.trim()) return;
           savePref('attachmentFolder', attachmentFolder.trim());
+          savePref('templateFolder', templateFolder.trim());
           onSave({ serverUrl: trimUrl(serverUrl), token: token.trim(), device: device.trim() });
         }}
       >
@@ -71,6 +73,11 @@ export function SettingsDialog({ settings, pending, onSave, onClose }: Props) {
           <span>Attachment folder</span>
           <input value={attachmentFolder} onChange={(e) => setAttachmentFolder(e.target.value)} autoComplete="off" spellCheck={false} placeholder="attachments/" />
           <small className="muted">New pasted, dropped and picked files go here. Leave empty for the top of the vault.</small>
+        </label>
+        <label className="field">
+          <span>Template folder</span>
+          <input value={templateFolder} onChange={(e) => setTemplateFolder(e.target.value)} autoComplete="off" spellCheck={false} placeholder="templates/" />
+          <small className="muted">Notes in this folder are offered by Insert template and the slash menu.</small>
         </label>
         <ThemePicker />
         {changedServer && (

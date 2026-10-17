@@ -6,7 +6,7 @@ import { type ConflictStore } from '../review/index.ts';
 import { ConfirmDialog, PromptDialog } from '../shared/Modal.tsx';
 import { clearRoute } from '../shared/router.ts';
 import type { Workspace } from '../sync/index.ts';
-import { toFolderPath } from '../vault/index.ts';
+import { TemplatePicker, toFolderPath } from '../vault/index.ts';
 import type { Dialog, DrawerState } from './dialog-state.ts';
 import { LazyHistoryDrawer, LazyReviewDrawer, LazySettingsDialog, LazyVaultHistory } from './lazy-views.tsx';
 
@@ -29,6 +29,7 @@ interface Props {
   onCreate: (path: string) => void;
   onNewNote: (folder: string) => void;
   onEditText: (path: string, text: string) => void;
+  onTemplate: (mode: 'insert' | 'new', templatePath: string) => void;
 }
 
 const saveAndReload = (ws: Workspace, s: Settings) => {
@@ -53,6 +54,14 @@ export function AppDialogs(p: Props) {
       )}
       {dialog?.kind === 'switcher' && <QuickSwitcher paths={p.paths} recent={p.recent} onOpen={p.onOpen} onCreate={p.onCreate} onClose={closeDialog} />}
       {dialog?.kind === 'palette' && <CommandPalette commands={p.commands} onClose={closeDialog} />}
+      {dialog?.kind === 'template' && (
+        <TemplatePicker
+          paths={p.paths}
+          label={dialog.mode === 'insert' ? 'Insert template' : 'New note from template'}
+          onPick={(t) => p.onTemplate(dialog.mode, t)}
+          onClose={closeDialog}
+        />
+      )}
       {dialog?.kind === 'settings' && (
         <LazySettingsDialog settings={ws.settings} pending={p.pending} onSave={(s) => saveAndReload(ws, s)} onClose={closeDialog} />
       )}

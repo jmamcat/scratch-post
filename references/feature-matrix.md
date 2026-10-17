@@ -42,11 +42,11 @@ cited here are untriaged; triage happens when a change touches their area.
 | Math | defer | | OBS-F-018 | NOT-F-012 | | JOP-F-004 | | Needs KaTeX bundle decision |
 | Mermaid | defer | | OBS-F-019 | NOT-F-011 | CNF-F-037 | JOP-F-004 | | |
 | Raw HTML | reject | 0001 | OBS-F-022 | NOT-F-028 | | JOP-F-005 | | Escaped for safety (R-RND-06); revisit with a sanitizer |
-| Slash menu | defer | | OBS-F-080 | NOT-F-029 | CNF-F-003 | | | Top Notion parity item for the next change |
+| Slash menu | adopt | 0008 | OBS-F-080 | NOT-F-029 | CNF-F-003 | | | Block inserts plus the template and attachment commands; Notion's actions and colours rejected (not Markdown) |
 | Block drag handles | reject | | | NOT-F-031 | CNF-F-004 | | | Text editor, not block editor |
 | Columns, tabs, colors | reject | | | NOT-F-015, NOT-F-016, NOT-F-018 | CNF-F-021 | | | Not representable in Markdown |
 | Status lozenge, date element, mentions | defer | | | NOT-F-033, NOT-F-071 | CNF-F-017, CNF-F-018, CNF-F-019 | | | Candidate inline syntax later |
-| Templates with variables | defer | | OBS-F-084 | NOT-F-080 | CNF-F-081, CNF-F-084 | | | |
+| Templates with variables | adopt | 0008 | OBS-F-084 | NOT-F-080 | CNF-F-081, CNF-F-084 | | | Obsidian's variables and property merge; prompted variables deferred |
 
 ## Navigation
 

@@ -8,7 +8,7 @@ import { useLayoutState, useNarrow } from './app/layout-state.ts';
 import { useCommands } from './app/use-commands.ts';
 import { useNavigation } from './app/use-navigation.ts';
 import { ConflictBadge, ConflictStore } from './review/index.ts';
-import type { Attachments, EditorHandle } from './vault/index.ts';
+import { type Attachments, type EditorHandle, loadTemplateActions } from './vault/index.ts';
 import { Sidebar } from './Sidebar.tsx';
 import { useRoute } from './shared/router.ts';
 import { StatusBar, type Workspace } from './sync/index.ts';
@@ -137,6 +137,7 @@ export function App({ ws }: { ws: Workspace }) {
             onOpenLink={nav.openLink}
             onTag={nav.showTag}
             onEditText={editText}
+            runCommand={(id) => commands.find((c) => c.id === id)?.run()}
           />
         ) : (
           <EmptyState
@@ -191,6 +192,12 @@ export function App({ ws }: { ws: Workspace }) {
         onCreate={(p) => createAndOpen(p)}
         onNewNote={newNote}
         onEditText={editText}
+        onTemplate={(mode, t) =>
+          void loadTemplateActions().then((m) => {
+            if (mode === 'new') open(m.newNoteFromTemplate(ws, snap.paths, t));
+            else if (editor.current) m.insertTemplateInEditor(ws, editor.current, t);
+          })
+        }
       />
     </div>
   );

@@ -7,3 +7,5 @@ export * from './changelog/ChangesView.tsx';
 export * from './live-preview/index.ts';
 export * from './properties/PropertiesEditor.tsx';
 export * from './attachments/index.ts';
+export * from './templates/index.ts';
+export * from './slash/index.ts';

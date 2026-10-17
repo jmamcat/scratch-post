@@ -59,6 +59,13 @@ export function useCommands(i: Inputs): Command[] {
       { id: 'history', name: 'Show version history', run: () => setDrawer({ kind: 'history' }), enabled: () => exists },
       { id: 'vault-history', name: 'Open vault history', run: () => setDrawer({ kind: 'vault-history' }) },
       {
+        id: 'insert-template',
+        name: 'Insert template',
+        run: () => setDialog({ kind: 'template', mode: 'insert' }),
+        enabled: () => exists && !reading,
+      },
+      { id: 'new-from-template', name: 'New note from template', run: () => setDialog({ kind: 'template', mode: 'new' }) },
+      {
         id: 'attach',
         name: 'Insert attachment',
         run: () => i.editor.current && i.attachmentsRef.current?.insert(i.editor.current.view, () => i.editor.current?.path ?? ''),

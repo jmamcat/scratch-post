@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Templates and the slash menu (0008)
+
+- Templates: notes in `templates/` (a setting), inserted with **Insert template**. `{{title}}`,
+  `{{date}}`, `{{time}}` and `{{date:FORMAT}}` are filled in, and the template's properties
+  are merged into the note's.
+- **New note from template** starts an untitled note from one.
+- The slash menu: `/` at the start of a line or after a space offers headings, lists, a
+  task, quote, code block, callout, table, divider, and the template and attachment
+  commands.
+
 ### Local nodes (0006)
 
 - Local nodes replicate attachments both ways and keep their bytes, so the node's clients
