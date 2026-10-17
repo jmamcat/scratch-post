@@ -28,8 +28,10 @@ These need a person: an account, a device, money, or a decision.
    - a token per person and device (`quire token create`);
    - backups copied off the host;
    - one restore drill on the real data.
-5. **Try Android on a phone.** Once an agent produces a debug APK (agent item 5), install
-   it, use it offline, sync, and report what breaks.
+5. **Try Android on a phone.** Get the debug APK from a manual "ci" run (Actions,
+   "ci", "Run workflow", then the run's `quire-debug-apk` artifact). Install it with
+   `adb install app-debug.apk` or by opening the file on the phone. Use it offline, sync,
+   and report what breaks.
 6. **Merge agent PRs**, or tell the agent it may merge once CI is green.
 7. **Watch the credit.** When the cloud credit runs out, sessions stop. Everything is pushed,
    so a new session resumes from `sessions/GIST.md`.
@@ -60,9 +62,9 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
 
    `apps/web/src/sync/workspace.ts` (417) stays: it is one stateful class, and the pieces
    that could move save about 36 lines. Split it when a change next adds to it.
-5. [ ] **Android debug APK in CI.** A `workflow_dispatch` job builds the Capacitor wrapper
-   (JDK and Android SDK on the runner) and uploads an unsigned debug APK. Device testing
-   stays with the owner (human step 5).
+5. [x] **Android debug APK in CI.** The `android debug APK` job runs on demand: Actions,
+   "ci", "Run workflow". It uploads `quire-debug-apk` (kept 14 days). First run: green,
+   1.5 minutes of Gradle.
 6. [x] **Dependency hygiene.** `pnpm audit` found nothing. `.github/dependabot.yml` sends
    weekly grouped updates for npm (`quire/`) and GitHub Actions. The UX gate's pinned
    engines are left for manual bumps. The uv tooling has no dependencies to track.
