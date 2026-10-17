@@ -1,0 +1,5 @@
+
+---
+Coordinator notes (added after wave 1):
+- P02 is done. Read its Decisions log in quire/changes/0002-workspace-ux/packets/P02-views-package.md before using @quire/views or setProperty. In particular: setProperty throws Error('front matter is not a valid YAML map') on invalid front matter (catch it and show the message); neighbourhood() recomputes degree over the kept edges only (use the full graph's degree for node size if you want it).
+- Other workers run servers in parallel. Never use pkill/killall by pattern. Stop only processes you started, by PID.

@@ -1,0 +1,8 @@
+
+---
+Coordinator notes for change 0003:
+- The machine has 4 cores and other workers run scenarios at the same time. Before you call a scenario failure real, rerun that scenario alone once (playbook/bin/gate.sh scenarios "@R-XXX-NN"). Timeouts under load are not your bug unless they repeat when run alone.
+- Never stop processes by name pattern (pkill, killall). Stop only processes you started, by PID.
+- Builds of the web app go to your own QUIRE_WEB_DIST folder, as the Acceptance shows; never build into apps/web/dist while others run.
+- Do not add npm dependencies or edit package.json files; if you need one, stop and log a decision record. Do not commit to git.
+- Other packets running now: P08 offline, P12 UX scorer, P13 load. Their files are theirs. A Docker daemon is already running in this container (started by the coordinator); `mirror.gcr.io/library/node:22-bookworm-slim` is already pulled. Docker builds use the CPU heavily: the load packet P13 measures timings, so run `docker build` at most twice in total and keep the image build cache.

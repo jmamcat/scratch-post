@@ -1,0 +1,5 @@
+0002-workspace-ux: checkpoint of in-progress packets P01, P03, P04, P06
+
+Snapshot so work in progress is not only in the container; these
+packets are still marked doing.
+

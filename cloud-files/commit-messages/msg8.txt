@@ -1,0 +1,6 @@
+0002-workspace-ux: Board can name a new column
+
+R-VIEW-05 gains a scenario: "New column…" in a card's move menu asks for a
+name and moves the card there, for any grouping property. Steps for
+naming a column and picking the grouping property. 89 of 89 pass.
+

@@ -1,0 +1,7 @@
+0002-workspace-ux: wave 1 packets P02, P05, P07; live commits name the editing device
+
+P02 adds the @quire/views grouping functions and setProperty. P05 adds
+five themes with distinct heading styles. P07 adds the Changes view and
+search operators. The live room now commits with the device of the last
+connection that edited it, which unblocks R-VLT-08 (D-P07-1).
+

@@ -1,0 +1,35 @@
+- **D-P11-1** · confidence: med
+  - Question: `playbook/bin/gate.sh deploy` failed before any step: `pnpm --filter @quire/scenarios deploy` runs pnpm's built-in `deploy` command, not the script.
+  - Did: `quire/package.json` script `scenarios:deploy` now calls `... run deploy` (a borrowed file, edited for a reason beyond its listed "uv" one, but Acceptance cannot pass without it).
+  - Why: the deploy gate is part of this packet's Acceptance.
+  - Reverse: rename the script in `quire/scenarios/package.json` (for example `deploy:stack`) and point `scenarios:deploy` at it.
+- **D-P11-2** · confidence: med
+  - Question: the image build in this sandbox failed with SELF_SIGNED_CERT_IN_CHAIN (corepack could not download pnpm through the TLS-inspecting proxy).
+  - Did: the Dockerfile accepts an optional build secret `extra_ca` (used as `NODE_EXTRA_CA_CERTS` only during `pnpm install`, never stored in the image); `compose.yaml` passes the file named by `QUIRE_BUILD_CA` (default `/dev/null`, ignored); the deploy steps set `QUIRE_BUILD_CA` from `QUIRE_BUILD_CA` or else the test process's `NODE_EXTRA_CA_CERTS`, so the Acceptance command works unchanged here.
+  - Why: `adapters/environments.md` says to record environment workarounds; no secret reaches the image.
+  - Reverse: delete the `secrets` blocks in `compose.yaml`, the two `--mount=type=secret` lines in `Dockerfile` and the `ca` lines in `deploy.steps.ts`. Consider a note in `playbook/adapters/environments.md` (not owned here).
+- **D-P11-3** · confidence: med
+  - Question: "the cloud service gets `QUIRE_TRUST_PROXY=1`" in the `tls` profile; Compose cannot set a variable on one service only when a profile is active.
+  - Did: `QUIRE_TRUST_PROXY: ${QUIRE_TRUST_PROXY:-0}` on `cloud`; README and `.env.example` tell the operator to set `QUIRE_TRUST_PROXY=1` (and optionally `COMPOSE_PROFILES=tls`) in `.env` for TLS.
+  - Why: a default of 1 would let direct clients spoof `X-Forwarded-For` for the failed-login throttle.
+  - Reverse: default to `1` in `compose.yaml` if TLS is the main deployment, or add a `compose.tls.yaml` override.
+- **D-P11-4** · confidence: med
+  - Question: which address the cloud port is published on.
+  - Did: `${QUIRE_BIND:-127.0.0.1}:${QUIRE_HOST_PORT:-8787}:8787`, loopback by default (local node 8788). `QUIRE_BIND=0.0.0.0` serves the network without TLS.
+  - Why: hardening module, "defaults are the product"; Caddy reaches the cloud service over the Compose network.
+  - Reverse: change the default of `QUIRE_BIND` in `compose.yaml`.
+- **D-P11-5** · confidence: med
+  - Question: the server runs TypeScript through `tsx` (no compile step exists).
+  - Did: the image keeps `tsx` (a production dependency of the server) and the `quire` shim runs `cli.ts` through it; `init: true` in Compose. The runtime stage holds production dependencies, `packages/`, `apps/server` and the built web app only (369 MB).
+  - Why: adding a server build step would touch packages owned by others.
+  - Reverse: add a bundling step in a later change and shrink the image.
+- **D-P11-6** · confidence: high
+  - Question: how the stack reads its env file when the gate needs a generated one.
+  - Did: `env_file: path: ${QUIRE_ENV_FILE:-.env}, required: false`; the gate writes a temp env file, sets `QUIRE_ENV_FILE`, passes `--env-file`, a unique project name and a unique image tag, and removes the tag afterwards. With no `.env` the server refuses to start.
+  - Reverse: plain `env_file: .env`.
+- **D-P11-7** · confidence: high
+  - Question: `.dockerignore` versus the pnpm lockfile.
+  - Did: `quire/scenarios/package.json` and `quire/apps/android/package.json` are re-included, because `pnpm install --frozen-lockfile` needs every workspace project; the rest of those folders is excluded.
+- **D-P11-8** · confidence: high
+  - Question: `QUIRE_DOMAIN` for the `caddy` service.
+  - Did: default `localhost`; a required variable broke every `compose` command when the profile was unused (found by the gate).

@@ -1,0 +1,5 @@
+0002-workspace-ux/P06: editable properties pane; web app depends on @quire/views
+
+P00 left @quire/views out of @quire/web's dependencies, which blocked
+P06's build. R-VLT-07 passes 3 of 3. Usage row recorded.
+

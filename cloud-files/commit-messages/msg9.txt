@@ -1,0 +1,8 @@
+Archive 0001 and 0002 into the living specs; playbook 1.7.0
+
+New playbook/bin/archive-change.py applies a change's spec deltas to
+the living specs and moves the change to changes/archive/ (amendment
+0007). quire/spec/ now holds nine capability specs with 66
+requirements; the generated scenarios are identical before and after.
+Check is green and 89 of 89 scenarios pass.
+

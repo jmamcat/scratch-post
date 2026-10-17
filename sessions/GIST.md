@@ -12,7 +12,8 @@ first. Keep it short; history lives in git, change folders and run reports.
 - **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** (from `5adae66`):
   - CI actions bumped to Node 24 majors;
   - the 0004 run report's Verification table filled in;
-  - this gist added.
+  - this gist added;
+  - scratchpad working docs copied into `cloud-files/`.
   - No PR yet.
 
 ## Open
@@ -21,14 +22,7 @@ first. Keep it short; history lives in git, change folders and run reports.
    owner does it: `git tag -a v0.1.0 5adae66 -m "Quire 0.1.0" && git push origin v0.1.0`, or
    create the release in the GitHub UI.
 2. **Make the repository private.** The owner will do this.
-3. **Bring session working docs into `sessions/`.** These docs sit in the agent's
-   scratchpad, which is outside the repo:
-   - packet prompts and coordinator addenda for 0002 and 0003;
-   - commit message drafts;
-   - UX reports and the LinkedIn draft.
-   
-   Copying them needs the owner's go-ahead in the session.
-4. **Open a PR** for this branch when the owner asks.
+3. **Open a PR** for this branch when the owner asks.
 
 ## Budget
 
@@ -67,4 +61,4 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0005.
 | Date | What |
 | --- | --- |
 | 2026-10-16 | Playbook, references, Quire MVP; changes 0001 to 0003 (workspace UX, production hardening) |
-| 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; action bumps, run report, this gist |
+| 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; action bumps, run report, this gist, `cloud-files/` |

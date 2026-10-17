@@ -12,6 +12,7 @@ This repository is bound to the **RefSpec playbook** by `playbook.yaml`. Start w
 | `quire/changes/` | Change folders with proposals, spec deltas and packets |
 | `quire/scenarios/` | The scenario suite (generated from specs, run with playwright-bdd) |
 | `remote-projects/` | Unrelated starter scaffold, kept for later |
+| `cloud-files/` | Working documents from the cloud agent sessions (packet prompts, notes) |
 | `sessions/GIST.md` | Session gist: current state, open items, how to resume. Read it first |
 
 ## Gates
