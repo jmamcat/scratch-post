@@ -1,6 +1,6 @@
 import { merge3 } from '@quire/merge';
 import type { ChangeFeed, DocMeta, PushItem, PushRequest, PushResult } from './protocol.ts';
-import type { SyncServer } from './server.ts';
+import { pushBatches } from './push-batches.ts';
 
 export interface LocalDoc {
   path: string;
@@ -15,9 +15,15 @@ export interface LocalDoc {
   renamedFrom?: string;
 }
 
+/** Where a pulled document came from; stores that keep history (a local node) use it. */
+export interface PutOrigin {
+  /** The pulled head is the first revision of a rename from this path (R-VLT-09). */
+  renamedFrom?: string;
+}
+
 export interface LocalStore {
   get(path: string): Promise<LocalDoc | undefined>;
-  put(doc: LocalDoc): Promise<void>;
+  put(doc: LocalDoc, origin?: PutOrigin): Promise<void>;
   remove(path: string): Promise<void>;
   all(): Promise<LocalDoc[]>;
   getCursor(): Promise<number>;
@@ -268,7 +274,8 @@ export class SyncClient {
       if (text === null) {
         if (local) await this.store.remove(ch.path);
       } else {
-        await this.store.put({ path: ch.path, text, baseRev: meta.rev, baseText: text, deleted: false });
+        const origin = !local && meta.renamedFrom ? { renamedFrom: meta.renamedFrom } : undefined;
+        await this.store.put({ path: ch.path, text, baseRev: meta.rev, baseText: text, deleted: false }, origin);
       }
       changed.push(ch.path);
       report.pulled += 1;
@@ -281,77 +288,4 @@ function withoutRename(d: LocalDoc): LocalDoc {
   if (d.renamedFrom === undefined) return d;
   const { renamedFrom: _, ...rest } = d;
   return rest;
-}
-
-export class MemoryLocalStore implements LocalStore {
-  private docs = new Map<string, LocalDoc>();
-  private cursor = 0;
-
-  async get(path: string): Promise<LocalDoc | undefined> {
-    const d = this.docs.get(path);
-    return d ? { ...d } : undefined;
-  }
-
-  async put(doc: LocalDoc): Promise<void> {
-    this.docs.set(doc.path, { ...doc });
-  }
-
-  async remove(path: string): Promise<void> {
-    this.docs.delete(path);
-  }
-
-  async all(): Promise<LocalDoc[]> {
-    return [...this.docs.values()].map((d) => ({ ...d }));
-  }
-
-  async getCursor(): Promise<number> {
-    return this.cursor;
-  }
-
-  async setCursor(n: number): Promise<void> {
-    this.cursor = n;
-  }
-}
-
-/** Transport that calls a SyncServer in-process, with JSON round-tripping like a real network. */
-export function memoryTransport(server: SyncServer, opts: { online?: () => boolean } = {}): Transport {
-  const check = () => {
-    if (opts.online && !opts.online()) throw new Error('offline');
-  };
-  const wire = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
-  return {
-    async push(req) {
-      check();
-      return wire(await server.push(wire(req)));
-    },
-    async changes(since) {
-      check();
-      return wire(server.changes(since));
-    },
-    async doc(path, rev) {
-      check();
-      return wire(server.doc(path, rev));
-    },
-  };
-}
-
-/** Largest push request body the client builds; the server accepts more (R-ACC-06). */
-const MAX_BATCH_BYTES = 1024 * 1024;
-const MAX_BATCH_ITEMS = 200;
-
-/** Splits pushes in order into batches under MAX_BATCH_BYTES; a larger note goes alone. */
-function* pushBatches(docs: LocalDoc[]): Generator<LocalDoc[]> {
-  let batch: LocalDoc[] = [];
-  let bytes = 0;
-  for (const d of docs) {
-    const size = d.deleted ? 64 : d.text.length * 3 + 64;
-    if (batch.length && (bytes + size > MAX_BATCH_BYTES || batch.length >= MAX_BATCH_ITEMS)) {
-      yield batch;
-      batch = [];
-      bytes = 0;
-    }
-    batch.push(d);
-    bytes += size;
-  }
-  if (batch.length) yield batch;
 }

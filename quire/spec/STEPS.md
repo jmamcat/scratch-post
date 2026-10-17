@@ -61,6 +61,7 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `the vault folder has "p" reading "t"` / `the vault folder has no "p"` | file on the cloud server's disk |
 | `another program writes "t" to "p" in the vault folder` | edit outside Quire |
 | `the history of "p" lists N revisions, newest first` | revision list |
+| `the history of "p" on "nas" lists N revisions` | a local node's revision list |
 | `"d" restores the oldest revision of "p"` | restore |
 | `a request for the note list without a token is refused` / `... with the token succeeds` / `the health check without a token succeeds` | token rule |
 
@@ -73,6 +74,7 @@ with its own local store; on `@ui` scenarios it is a browser running the web app
 | `within N seconds "d" sees "p" reading "t"` | the device's live text |
 | `"d" is listening to the event stream` / `the event stream announces a commit of "p" by "x"` | SSE |
 | `"d" loses its live connection` / `"d" reconnects` | drop and restore the live room only |
+| `"d" pastes N KiB at the end of "p"` | one live insert of N KiB (`@ui`: one insert in the editor) |
 
 ## Rendering and the app (`@ui` unless noted)
 
@@ -155,6 +157,7 @@ browser edits reach the server through live rooms that flush 1.5 s after typing 
 | `a request from the origin "o" is allowed` / `... is not allowed` | CORS preflight for the note list |
 | `the app page and the note list carry the security headers` | CSP with `frame-ancestors 'none'`, nosniff, no-referrer |
 | `"d" tries to save a note of N MiB` / `the request is rejected with status N` | size limits |
+| `a cloud server that allows notes of at most N KiB` | `QUIRE_MAX_NOTE_BYTES` |
 
 ### Versioning and backup
 
@@ -200,7 +203,7 @@ browser edits reach the server through live rooms that flush 1.5 s after typing 
 | `"d" adds the file "p" with N bytes from seed S` | deterministic pseudo-random bytes |
 | `"d" has the file "p" with N bytes from seed S` / `the vault folder has the file "p" with N bytes from seed S` | byte-for-byte |
 | `the cloud server stores 1 copy of N bytes from seed S` | content store |
-| `within N seconds the cloud server has the file "p"` | file head exists |
+| `within N seconds the cloud server has the file "p"` / `within N seconds "nas" has the file "p"` | file head exists |
 | `within N seconds "p" on "d" reads "t"` | (`@ui`) polling form |
 | `"d" drops the image "name" into the editor` / `"d" drops a file of N MiB into the editor` | (`@ui`) drag and drop with a generated PNG or blob |
 | `the reading view on "d" shows the image "name" loaded` / `"d" sees the message "t"` | (`@ui`) |

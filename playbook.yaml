@@ -2,7 +2,7 @@
 playbook: playbook
 version: 1
 target: quire
-modules: [specs, scenarios, structure, references, demo, usage, hardening, ux]
+modules: [specs, scenarios, structure, references, demo, usage, hardening, ux, handoff]
 specs: quire/spec
 changes: quire/changes
 references: references

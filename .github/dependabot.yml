@@ -1,0 +1,33 @@
+# Weekly dependency updates, grouped so a week costs at most a few CI runs.
+# Every update PR runs "check and scenarios" like any other pull request.
+version: 2
+updates:
+  - package-ecosystem: npm # pnpm workspace (quire/pnpm-lock.yaml)
+    directory: /quire
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    # The UX gate's engines are pinned; bump them by hand and re-approve the baseline
+    # (playbook/modules/ux).
+    ignore:
+      - dependency-name: '@axe-core/playwright'
+      - dependency-name: colorjs.io
+      - dependency-name: '@playwright/test'
+    commit-message:
+      prefix: deps
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci

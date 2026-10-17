@@ -68,7 +68,11 @@ async function prepare(world: World): Promise<Stack> {
   if (process.env.QUIRE_NODE_IMAGE) env.QUIRE_NODE_IMAGE = process.env.QUIRE_NODE_IMAGE;
   // Behind a TLS-inspecting proxy the build needs the machine's extra CA certificates (as a build secret).
   const ca = process.env.QUIRE_BUILD_CA ?? process.env.NODE_EXTRA_CA_CERTS;
-  if (ca) env.QUIRE_BUILD_CA = ca;
+  if (ca) {
+    env.QUIRE_BUILD_CA = ca;
+    // The CA file lives outside the project, which bake only reads with this check off.
+    env.BUILDX_BAKE_ENTITLEMENTS_FS = '0';
+  }
   const stack: Stack = { project, image, token, port, dir, env, envFile };
   // Always tear down, also when the build or an assertion failed.
   world.cleanups.push(async () => {

@@ -1,10 +1,11 @@
 import { merge3 } from '@quire/merge';
+import { titleOf } from '@quire/vault';
 import { Prec } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { WebsocketProvider } from 'y-websocket';
 import type * as Y from 'yjs';
 import { collabSlot } from '../vault/index.ts';
-import { minimalChange } from '../vault/index.ts';
+import { minimalChange, notify } from '../vault/index.ts';
 import type { Workspace } from '../sync/index.ts';
 
 export type LiveState = 'off' | 'connecting' | 'live';
@@ -161,8 +162,11 @@ export class LiveSession {
     });
     // A refused handshake (spent or expired ticket) never reports "disconnected", and the
     // provider would retry the same URL forever: start a new join with a fresh ticket instead.
-    provider.on('connection-close', () => {
-      if (this.provider !== provider || connectedOnce) return;
+    provider.on('connection-close', (event: CloseEvent | null) => {
+      if (this.provider !== provider) return;
+      // The room undid an edit that took the note over the size limit (R-ACC-06, R-LIV-06).
+      if (event?.code === 4413) notify(`${titleOf(this.path)} is over the size limit, so your last change was undone.`);
+      if (connectedOnce) return;
       this.drop();
       this.retryLater();
     });

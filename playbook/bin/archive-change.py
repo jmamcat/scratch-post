@@ -158,6 +158,9 @@ def main() -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     in_git = subprocess.run(["git", "-C", str(root), "rev-parse"], capture_output=True).returncode == 0
     if in_git:
+        # git mv only moves tracked files: stage the folder first, so a change made in this
+        # session (never committed) moves too.
+        subprocess.run(["git", "-C", str(root), "add", "--", str(change)], check=True)
         subprocess.run(["git", "-C", str(root), "mv", str(change), str(target)], check=True)
     else:
         shutil.move(str(change), str(target))

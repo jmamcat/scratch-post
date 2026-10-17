@@ -9,8 +9,15 @@ syncs with a cloud server or a local node when one is reachable.
 - JDK 21 and Android Studio (or the Android SDK command-line tools) with platform 35.
 - `ANDROID_HOME` set, `adb` on the PATH for installing on a device.
 
-The agent container that produced this scaffold has no Android SDK, so the native
-`android/` project is generated on your machine with the first command below.
+The native `android/` project is not committed; the first command below generates it (CI
+does the same on every build).
+
+## Get a debug APK from CI
+
+Run the "ci" workflow by hand (GitHub, Actions, "ci", "Run workflow"). Its
+`android debug APK` job builds the app and attaches `quire-debug-apk` to the run, kept
+for 14 days. The APK is unsigned for release; install it with `adb install app-debug.apk`
+or by opening it on the phone (allow installs from that source).
 
 ## Build a debug APK
 

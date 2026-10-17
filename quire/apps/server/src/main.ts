@@ -23,7 +23,10 @@ export async function start(config: Config): Promise<Running> {
   const http = await new Promise<Server>((resolve) => {
     const s = serve({ fetch: quire.app.fetch, port: config.port }, () => resolve(s as Server));
   });
-  const live = createLiveRooms({ ...quire, authorize: (url, req) => quire.access.authorizeUpgrade(url, req) });
+  const live = createLiveRooms(
+    { ...quire, authorize: (url, req) => quire.access.authorizeUpgrade(url, req) },
+    { maxTextBytes: config.maxNoteBytes },
+  );
   live.attach(http);
   quire.access.onRevoke((name) => live.closeConnections(name));
   quire.ops.setLiveStats(() => live.stats());

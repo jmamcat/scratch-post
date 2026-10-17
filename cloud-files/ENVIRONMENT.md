@@ -56,6 +56,20 @@ credentials are left out on purpose.
 - **Development branch.** `claude/cloud-credits-github-remote-projects-rtnkko`. Earlier work
   used `feature/test-cloud-utility`.
 
+## CI runners (GitHub Actions)
+
+- **Image.** `ubuntu-24.04`, the same release as the agent container.
+- **Browsers.** Chromium comes from `playwright install --with-deps chromium`. Every job
+  that runs scenarios installs it, the deploy job included.
+- **Fonts.** Inter is not installed by default. The ux job installs `fonts-inter`, because
+  the UX baseline was approved on a machine that has it.
+- **Android.** The SDK is on the image (`ANDROID_HOME`). The `android debug APK` job adds
+  JDK 21 and builds in about 1.5 minutes.
+- **Docker.** Docker and Compose are present. The Compose build defaults the `extra_ca`
+  secret to `deploy/no-extra-ca.pem`, because the bake builder refuses `/dev/null`.
+- **Manual runs.** The agent starts them on its branch with the GitHub tools
+  ("Run workflow"). They verify the slow jobs before a merge.
+
 ## Session settings that shaped the work
 
 - **Parallel agents.** Worker agents ran packet prompts (`prompts/`) in waves; the

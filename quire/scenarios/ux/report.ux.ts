@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 import { gateFailures, judge, readBaseline, REPORT_PATH, writeBaseline } from './gate.ts';
 import { quireApp } from './quire.ts';
-import { renderReport, summaryTable } from './report.ts';
+import { enginesLine, renderReport, summaryTable } from './report.ts';
 import type { AppScore } from './score.ts';
 
 test('report', async () => {
@@ -35,6 +35,7 @@ test('report', async () => {
   if (approve) writeBaseline(score);
 
   console.log(`\n${summaryTable(score)}\n`);
+  console.log(`UX engines: ${enginesLine(score, verdict)}`);
   const failures = gateFailures(verdict);
   console.log(`R-PLT-08 gate: ${failures.length ? `${failures.length} failures (see report)` : 'passes'}`);
   console.log(`Report: ${fileURLToPath(REPORT_PATH)}${approve ? ' (baseline approved)' : ''}`);

@@ -1,5 +1,6 @@
 # Gates from playbook.yaml (playbook/bin/gate.sh): `check` and `scenarios` on every push to main
-# and every pull request; `deploy` (Docker) and `ux` (several minutes) weekly and on demand.
+# and every pull request; `deploy` (Docker) and `ux` (several minutes) weekly and on demand;
+# an Android debug APK on demand.
 name: ci
 
 on:
@@ -32,7 +33,7 @@ jobs:
           package_json_file: quire/package.json
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: quire/pnpm-lock.yaml
       - uses: astral-sh/setup-uv@v7
@@ -59,11 +60,13 @@ jobs:
           package_json_file: quire/package.json
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: quire/pnpm-lock.yaml
       - uses: astral-sh/setup-uv@v7
       - run: pnpm -C quire install --frozen-lockfile
+      # The scenario runner launches Chromium for every scenario, the deploy one included.
+      - run: pnpm -C quire --filter @quire/scenarios exec playwright install --with-deps chromium
       - run: playbook/bin/gate.sh deploy
 
   ux:
@@ -78,16 +81,54 @@ jobs:
           package_json_file: quire/package.json
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: quire/pnpm-lock.yaml
       - uses: astral-sh/setup-uv@v7
       - run: pnpm -C quire install --frozen-lockfile
       - run: pnpm -C quire --filter @quire/scenarios exec playwright install --with-deps chromium
+      # The UI font stack resolves to Inter where the baseline was approved; without it the
+      # runner falls back to Liberation Sans and every line length (category C) shifts.
+      - run: sudo apt-get install -y --no-install-recommends fonts-inter
       - run: playbook/bin/gate.sh ux
       - if: always()
         uses: actions/upload-artifact@v6
         with:
           name: ux-report
-          path: quire/scenarios/ux/report.md
+          path: |
+            quire/scenarios/ux/report.md
+            quire/scenarios/test-results/**/ux-report.md
           retention-days: 30
+
+  android:
+    name: android debug APK
+    # On demand only: the build takes several minutes and needs no gate to pass.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: quire/package.json
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: quire/pnpm-lock.yaml
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: pnpm -C quire install --frozen-lockfile
+      # The runner image ships the Android SDK (ANDROID_HOME); the native project is generated.
+      - run: pnpm -C quire --filter @quire/web build
+      - run: pnpm -C quire --filter @quire/android exec cap add android
+      - run: pnpm -C quire --filter @quire/android exec cap sync android
+      - run: ./gradlew assembleDebug --no-daemon
+        working-directory: quire/apps/android/android
+      - uses: actions/upload-artifact@v6
+        with:
+          name: quire-debug-apk
+          path: quire/apps/android/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

@@ -86,6 +86,8 @@ export interface Engines {
   colorjs: string;
   playwright: string;
   chromium: string;
+  /** Fonts the UI and code stacks resolve to on this machine: text metrics move with them. */
+  fonts: string;
 }
 
 export interface Baseline {

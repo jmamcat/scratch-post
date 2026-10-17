@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.10.0 (2026-10-17)
+
+- Amendment 0010:
+  - new `modules/handoff` (session gist, next steps split into human and agent work, working
+    documents and an environment record);
+  - every CI job green once, with on-demand runs on the branch for workflow changes
+    (`modules/hardening`);
+  - UX baselines name their fonts (`modules/ux`);
+  - scenario runners rebuild stale builds (`modules/scenarios`).
+
+## 1.9.1 (2026-10-17)
+
+- `bin/archive-change.py` stages the change folder before `git mv`, so a change that was
+  never committed archives in one run. Before, the move failed after the living specs
+  were already written.
+
 ## 1.9.0 (2026-10-17)
 
 - Amendment 0009: the readiness review in `modules/hardening` gains a Continuity area (gates

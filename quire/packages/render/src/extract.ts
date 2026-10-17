@@ -4,7 +4,8 @@
  */
 import type { Token } from 'markdown-it';
 import { splitFrontmatter } from '@quire/vault';
-import { blankRanges, codeRanges, commentRanges, inlineText, md, withoutComments } from './parser.ts';
+import { inlineText, md } from './parser.ts';
+import { blankRanges, codeRanges, commentRanges, withoutComments } from './source-ranges.ts';
 import { cleanTag, decodeHref, isVaultHref, parseWikiInner, type Range } from './syntax.ts';
 
 export interface WikiLink {

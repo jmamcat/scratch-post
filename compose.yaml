@@ -15,7 +15,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NODE_IMAGE: ${QUIRE_NODE_IMAGE:-node:22-bookworm-slim}
+        NODE_IMAGE: ${QUIRE_NODE_IMAGE:-node:24-bookworm-slim}
       # Extra CA certificates for the build, when a proxy inspects TLS (QUIRE_BUILD_CA=/path/ca.pem).
       secrets:
         - extra_ca
@@ -87,7 +87,9 @@ services:
 
 secrets:
   extra_ca:
-    file: ${QUIRE_BUILD_CA:-/dev/null}
+    # An empty file inside the project by default: Compose's bake builder refuses paths
+    # outside it (such as /dev/null) without an explicit grant.
+    file: ${QUIRE_BUILD_CA:-./deploy/no-extra-ca.pem}
 
 volumes:
   quire-data:

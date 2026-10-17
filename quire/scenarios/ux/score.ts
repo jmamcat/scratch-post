@@ -165,5 +165,42 @@ function pkgVersion(name: string): string {
 }
 
 export async function engines(page: Page, axe: string): Promise<Engines> {
-  return { axe: axe || pkgVersion('@axe-core/playwright'), colorjs: pkgVersion('colorjs.io'), playwright: pkgVersion('@playwright/test'), chromium: page.context().browser()?.version() ?? 'unknown' };
+  return {
+    axe: axe || pkgVersion('@axe-core/playwright'),
+    colorjs: pkgVersion('colorjs.io'),
+    playwright: pkgVersion('@playwright/test'),
+    chromium: page.context().browser()?.version() ?? 'unknown',
+    fonts: await renderedFonts(page),
+  };
+}
+
+/** The platform font Chromium picks for each of the app's font stacks, e.g. "ui Inter, mono DejaVu Sans Mono". */
+async function renderedFonts(page: Page): Promise<string> {
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    const out: string[] = [];
+    for (const [name, cssVar] of [['ui', '--font-ui'], ['mono', '--font-mono']] as const) {
+      await page.evaluate((v) => {
+        const el = document.createElement('span');
+        el.id = '__ux-font-probe';
+        el.textContent = 'Hamburgefonstiv 0123';
+        el.style.fontFamily = `var(${v})`;
+        document.body.append(el);
+        // Chromium reports platform fonts only after layout: force it and wait a frame.
+        el.getBoundingClientRect();
+        return new Promise<void>((r) => requestAnimationFrame(() => r()));
+      }, cssVar);
+      const { root } = await cdp.send('DOM.getDocument');
+      const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: '#__ux-font-probe' });
+      const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+      await page.evaluate(() => document.getElementById('__ux-font-probe')?.remove());
+      const main = [...fonts].sort((a, b) => b.glyphCount - a.glyphCount)[0];
+      out.push(`${name} ${main?.familyName ?? 'unknown'}`);
+    }
+    return out.join(', ');
+  } finally {
+    await cdp.detach();
+  }
 }

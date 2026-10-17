@@ -64,6 +64,13 @@ function metricLines(s: StateScore): string {
   return out.join('\n');
 }
 
+/** One line for logs: the engines, and whether the ratchet was gated against the baseline. */
+export function enginesLine(score: AppScore, v: Verdict): string {
+  const e = score.engines;
+  const engines = `axe ${e.axe}, Color.js ${e.colorjs}, Playwright ${e.playwright}, Chromium ${e.chromium}, fonts ${e.fonts}`;
+  return v.enginesChanged.length ? `${engines}; differ from the baseline (${v.enginesChanged.join('; ')}): ratchet not gated` : `${engines}; ratchet gated`;
+}
+
 export function renderReport(score: AppScore, v: Verdict, opts: { approved?: boolean } = {}): string {
   const states = score.states;
   const all = mean(states.map((s) => s.total));
@@ -71,7 +78,7 @@ export function renderReport(score: AppScore, v: Verdict, opts: { approved?: boo
   const contrastOk = states.filter((s) => s.hard.contrast?.pass).length;
   const lines: string[] = [];
   lines.push('# UX report', '');
-  lines.push(`Generated ${new Date().toISOString()} by \`pnpm -C quire ux\`. Engines: axe ${score.engines.axe}, Color.js ${score.engines.colorjs}, Playwright ${score.engines.playwright}, Chromium ${score.engines.chromium}.`);
+  lines.push(`Generated ${new Date().toISOString()} by \`pnpm -C quire ux\`. Engines: axe ${score.engines.axe}, Color.js ${score.engines.colorjs}, Playwright ${score.engines.playwright}, Chromium ${score.engines.chromium}. Fonts: ${score.engines.fonts}.`);
   lines.push(`${states.length} states. App total **${all}**, lowest state **${low.total}** (${low.id}). WCAG contrast at 100% in ${contrastOk} of ${states.length} states.`);
   if (score.missing.length) lines.push(`Screens not in this build: ${score.missing.join(', ')}.`);
   lines.push('');

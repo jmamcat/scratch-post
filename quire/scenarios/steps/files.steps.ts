@@ -74,6 +74,11 @@ Then('the cloud server stores {int} copy of {int} bytes from seed {int}', async 
   expect(found).toHaveLength(copies);
 });
 
+Then('within {int} seconds {string} has the file {string}', async ({ world }, seconds: number, node: string, path: string) => {
+  const url = world.server(node).url;
+  await eventually(seconds, async () => (await fetch(`${url}/api/files?${new URLSearchParams({ path })}`)).ok, `${node} has the file ${path}`);
+});
+
 Then('within {int} seconds the cloud server has the file {string}', async ({ world }, seconds: number, path: string) => {
   await eventually(
     seconds,

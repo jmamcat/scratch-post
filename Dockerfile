@@ -1,8 +1,8 @@
 # Quire server image (R-OPS-04). Build from the repository root:
 #   docker build -t quire .
 # Docker Hub rate limits? Point the base at a mirror:
-#   docker build --build-arg NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim -t quire .
-ARG NODE_IMAGE=node:22-bookworm-slim
+#   docker build --build-arg NODE_IMAGE=mirror.gcr.io/library/node:24-bookworm-slim -t quire .
+ARG NODE_IMAGE=node:24-bookworm-slim
 
 # Behind a TLS-inspecting proxy? Build with a secret holding the extra CA certificates (never
 # stored in the image): compose.yaml passes the file named by QUIRE_BUILD_CA.

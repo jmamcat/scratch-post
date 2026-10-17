@@ -25,7 +25,7 @@ curl http://127.0.0.1:8787/api/health
 
 The server refuses to start with no token at all and says so in `docker compose logs cloud`.
 The cloud service is published on `127.0.0.1:8787` only; see "TLS" to serve it to others.
-If Docker Hub rate limits the build, set `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim` in `.env`.
+If Docker Hub rate limits the build, set `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:24-bookworm-slim` in `.env`.
 
 ## Adding tokens
 
@@ -108,12 +108,20 @@ cloud service, and keeps its data in the `quire-local-data` volume. To replicate
 somewhere else, run the image with `QUIRE_MODE=local`, `QUIRE_UPSTREAM=https://...` and
 `QUIRE_UPSTREAM_TOKEN=...`.
 
-**Known limitations (0.1.0, R-SYN-09).** A local node replicates notes only. Attachments
-are not replicated: files its clients add stay on the node, and files added on the cloud do
-not reach the node's clients. A rename made on a local node reaches the cloud as a new note
-plus a deletion, so the cloud's history of that note starts at the rename (edits made
-elsewhere still follow the rename). Attach files through the cloud server if every device
-should see them.
+**What a local node replicates (R-SYN-09).** Notes and attachments, both ways. The node
+keeps the bytes of every attachment, so its clients open files without the cloud. Renames
+arrive as renames on both sides, so a note's history survives a rename made on either.
+(0.1.0 replicated notes only.)
+
+**Building behind a TLS-inspecting proxy.** Point `QUIRE_BUILD_CA` at the proxy's CA
+certificate (PEM). The build reads it as the `extra_ca` secret, for the install steps only;
+it never lands in the image. When the file lives outside this folder, newer Compose
+releases ask for a filesystem grant, so also set `BUILDX_BAKE_ENTITLEMENTS_FS=0` for that
+build:
+
+```sh
+QUIRE_BUILD_CA=/path/to/ca.pem BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose build cloud
+```
 
 ## TLS
 
