@@ -188,6 +188,9 @@ async function renderedFonts(page: Page): Promise<string> {
         el.textContent = 'Hamburgefonstiv 0123';
         el.style.fontFamily = `var(${v})`;
         document.body.append(el);
+        // Chromium reports platform fonts only after layout: force it and wait a frame.
+        el.getBoundingClientRect();
+        return new Promise<void>((r) => requestAnimationFrame(() => r()));
       }, cssVar);
       const { root } = await cdp.send('DOM.getDocument');
       const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: '#__ux-font-probe' });
