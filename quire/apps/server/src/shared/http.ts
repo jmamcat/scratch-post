@@ -2,14 +2,19 @@ import { InvalidPathError } from '@quire/vault';
 import { SyncError } from '@quire/sync';
 import type { Context, ErrorHandler } from 'hono';
 
-/** Maps domain errors to HTTP status codes; everything unknown is a 500. */
-export const onError: ErrorHandler = (err, c) => {
-  if (err instanceof SyncError) return c.json({ error: err.message }, err.status);
-  if (err instanceof InvalidPathError) return c.json({ error: err.message }, 400);
-  if (err instanceof SyntaxError) return c.json({ error: 'invalid JSON body' }, 400);
-  console.error(err);
-  return c.json({ error: 'internal error' }, 500);
-};
+/**
+ * Maps domain errors to HTTP status codes; everything unknown is a 500, logged through
+ * `logError` as one JSON line (R-OPS-02) with the stack but never the request body.
+ */
+export function errorHandler(logError: (msg: string, fields: Record<string, unknown>) => void): ErrorHandler {
+  return (err, c) => {
+    if (err instanceof SyncError) return c.json({ error: err.message }, err.status);
+    if (err instanceof InvalidPathError) return c.json({ error: err.message }, 400);
+    if (err instanceof SyntaxError) return c.json({ error: 'invalid JSON body' }, 400);
+    logError('unhandled error', { route: c.req.routePath, error: err.message, stack: err.stack });
+    return c.json({ error: 'internal error' }, 500);
+  };
+}
 
 export function requirePath(c: Context): string {
   const path = c.req.query('path');

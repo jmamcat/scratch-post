@@ -108,3 +108,17 @@ Then('the metrics include {string}', async ({ world }, metric: string) => {
   const histogram = [`${metric}_bucket`, `${metric}_sum`, `${metric}_count`].some((n) => names.has(n));
   expect(names.has(metric) || histogram, `a sample for ${metric}`).toBe(true);
 });
+
+Then('every line in the cloud server\'s log is a JSON object', async ({ world }) => {
+  const lines = world.requireCloud().output.split('\n').filter((l) => l.trim());
+  expect(lines.length, 'the server wrote nothing').toBeGreaterThan(0);
+  for (const line of lines) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(line);
+    } catch {
+      parsed = undefined;
+    }
+    expect(typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed), `not a JSON object: ${line}`).toBe(true);
+  }
+});

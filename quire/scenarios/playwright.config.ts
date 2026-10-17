@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs';
 import { defineConfig } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
+
+const PINNED_CHROMIUM = '/opt/pw-browsers/chromium';
 
 // Features are generated from the Markdown specs by playbook/bin/spec-scenarios.py.
 const testDir = defineBddConfig({
@@ -20,7 +23,8 @@ export default defineConfig({
   ...(process.env.QUIRE_DEPLOY ? { grep: /@deploy/ } : process.env.QUIRE_UX ? { grep: /@gate-ux/ } : { grepInvert: /@deploy|@gate-ux/ }),
   reporter: [['list']],
   use: {
-    launchOptions: process.env.PLAYWRIGHT_BROWSERS_PATH ? {} : { executablePath: '/opt/pw-browsers/chromium' },
+    // The agent sandbox pins Chromium here; CI and laptops use the browser `playwright install` fetched.
+    launchOptions: !process.env.PLAYWRIGHT_BROWSERS_PATH && existsSync(PINNED_CHROMIUM) ? { executablePath: PINNED_CHROMIUM } : {},
     trace: 'retain-on-failure',
   },
 });

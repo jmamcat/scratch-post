@@ -58,19 +58,33 @@ It serves its own clients, replicates with the cloud every 10 s and after local 
 and keeps working while the cloud is unreachable. You can open `~/quire/vault` in
 Obsidian at the same time; edits made there are picked up.
 
+**Known limitations (0.1.0, R-SYN-09).** A local node replicates notes only. Attachments
+are not replicated: files its clients add stay on the node, and files added on the cloud do
+not reach the node's clients. A rename made on a local node reaches the cloud as a new note
+plus a deletion, so the cloud's history of that note starts at the rename (edits made
+elsewhere still follow the rename). Attach files through the cloud server if every device
+should see them.
+
 ### Android
 
 See `apps/android/README.md`.
 
 ## Configuration
 
+Every setting, with its default and meaning, is in `../deploy/.env.example`. The ones you
+need first:
+
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `QUIRE_DATA_DIR` | `./.data` | SQLite database and `vault/` folder |
+| `QUIRE_DATA_DIR` | `./.data` | SQLite database, `vault/` folder and attachment store |
 | `QUIRE_PORT` | `8787` | HTTP, SSE and WebSocket port |
 | `QUIRE_MODE` | `cloud` | `cloud` or `local` |
-| `QUIRE_DEVICE` | host name | Device name shown on revisions and conflicts |
-| `QUIRE_TOKEN` | none | Require `Authorization: Bearer <token>` |
+| `QUIRE_TOKEN` | none | The `admin` token; without it (or a token added with `quire tokens add`) the server refuses to start |
+| `QUIRE_BACKUP_DIR` | none | Folder for backup bundles; backups are off without it |
 | `QUIRE_UPSTREAM`, `QUIRE_UPSTREAM_TOKEN` | none | Cloud server for `local` mode |
-| `QUIRE_WEB_DIST` | `apps/web/dist` | Built web client to serve |
-| `QUIRE_WATCH` | `1` | Set `0` to stop watching the vault folder |
+| `QUIRE_ALLOWED_ORIGINS` | none | Extra browser origins allowed to call the API, comma separated |
+| `QUIRE_INSECURE_NO_AUTH` | unset | `1` runs with no token, for development only |
+
+Admin commands: `quire tokens add|list|revoke`, `quire backup now|verify|list`,
+`quire restore`, `quire compact` (`apps/server/src/cli.ts`; in Docker, `docker compose exec
+cloud quire ...`).

@@ -1,7 +1,10 @@
+import { existsSync } from 'node:fs';
 // The UX runner (`pnpm -C quire ux`, `pnpm -C quire ux:approve`): one test per theme and colour
 // scheme, each on its own cloud server with the demo seed, then a report test that writes
 // report.md and checks the ratchet against baseline.json.
 import { defineConfig } from '@playwright/test';
+
+const PINNED_CHROMIUM = '/opt/pw-browsers/chromium';
 
 export default defineConfig({
   testDir: '.',
@@ -11,7 +14,8 @@ export default defineConfig({
   globalSetup: './setup.ts',
   reporter: [['list']],
   use: {
-    launchOptions: process.env.PLAYWRIGHT_BROWSERS_PATH ? {} : { executablePath: '/opt/pw-browsers/chromium' },
+    // The agent sandbox pins Chromium here; CI and laptops use the browser `playwright install` fetched.
+    launchOptions: !process.env.PLAYWRIGHT_BROWSERS_PATH && existsSync(PINNED_CHROMIUM) ? { executablePath: PINNED_CHROMIUM } : {},
     deviceScaleFactor: 1,
     locale: 'en-US',
     timezoneId: 'UTC',

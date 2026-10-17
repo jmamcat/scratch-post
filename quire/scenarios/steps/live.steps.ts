@@ -43,7 +43,10 @@ Given('{string} is listening to the event stream', async ({ world }, d: string) 
     try {
       for (;;) {
         const { value, done } = await reader.read();
-        if (done) return;
+        if (done) {
+          closedStreams.add(world);
+          return;
+        }
         buf += decoder.decode(value);
         let i: number;
         while ((i = buf.indexOf('\n\n')) >= 0) {
@@ -54,11 +57,19 @@ Given('{string} is listening to the event stream', async ({ world }, d: string) 
         }
       }
     } catch {
-      // aborted at cleanup
+      // aborted at cleanup, or the server closed the stream
+      closedStreams.add(world);
     }
   })();
   streams.set(world, events);
   world.cleanups.push(() => ctrl.abort());
+});
+
+/** Worlds whose event stream the server ended (R-ACC-02). */
+const closedStreams = new WeakSet<object>();
+
+Then('within {int} seconds the event stream of {string} has closed', async ({ world }, seconds: number, _d: string) => {
+  await eventually(seconds, async () => closedStreams.has(world), 'the event stream to close');
 });
 
 Then('the event stream announces a commit of {string} by {string}', async ({ world }, path: string, by: string) => {

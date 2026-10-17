@@ -8,7 +8,7 @@ import { type Ops, createOps } from './ops/index.ts';
 import { type Config, serveWebClient } from './platforms/index.ts';
 import { reviewRoutes } from './review/index.ts';
 import { EventHub } from './shared/events.ts';
-import { onError } from './shared/http.ts';
+import { errorHandler } from './shared/http.ts';
 import { syncRoutes } from './sync/index.ts';
 import { type Files, SqliteRevisionStore, VaultMirror, createFiles, vaultRoutes } from './vault/index.ts';
 
@@ -65,12 +65,12 @@ export async function createQuireServer(config: Config): Promise<QuireServer> {
     onEvent: (e) => events.emit(e),
   });
 
-  files = createFiles({ config, store, sync, vaultDir, committed, emit: (e) => events.emit(e) });
+  files = createFiles({ config, store, sync, vaultDir, committed, emit: (e) => events.emit(e), logError: (msg, fields) => ops.log.error(msg, fields) });
   const backupDeps: BackupDeps = { config, store, sync, vaultDir, hooks, committed, log: ops.log, metrics: ops.metrics };
 
   const app = new Hono();
   ops.installFirst(app);
-  app.onError(onError);
+  app.onError(errorHandler((msg, fields) => ops.log.error(msg, fields)));
   access.install(app);
   app.get('/api/health', (c) => c.json({ ok: true, mode: config.mode, device: config.device, rev: store.headRev() }));
   ops.routes(app);
@@ -79,7 +79,8 @@ export async function createQuireServer(config: Config): Promise<QuireServer> {
   backupRoutes(app, backupDeps);
   syncRoutes(app, { sync });
   reviewRoutes(app, { store, sync });
-  eventRoutes(app, { events, headRev: () => store.headRev() });
+  const streams = eventRoutes(app, { events, headRev: () => store.headRev() });
+  access.onRevoke((name) => streams.close(name));
   app.all('/api/*', (c) => c.json({ error: 'not found' }, 404));
   serveWebClient(app, config.webDist);
 

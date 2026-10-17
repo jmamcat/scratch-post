@@ -23,6 +23,9 @@ pnpm -C quire demo         # cloud server + local node with seed data
 playbook/bin/gate.sh deploy   # builds the image, runs the Compose stack (needs Docker)
 ```
 
+CI (`.github/workflows/ci.yml`) runs `check` and `scenarios` on every push to `main` and every
+pull request, and `deploy` and `ux` weekly and on demand.
+
 Python tooling (the playbook scripts) runs through `uv run playbook/bin/<script>.py`; the root
 `pyproject.toml` declares it. Deployment: `Dockerfile`, `compose.yaml`, `deploy/README.md`.
 

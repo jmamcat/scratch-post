@@ -1,0 +1,93 @@
+# Gates from playbook.yaml (playbook/bin/gate.sh): `check` and `scenarios` on every push to main
+# and every pull request; `deploy` (Docker) and `ux` (several minutes) weekly and on demand.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: '1'
+
+jobs:
+  gates:
+    name: check and scenarios
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: quire/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: quire/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v6
+      - run: pnpm -C quire install --frozen-lockfile
+      - run: pnpm -C quire --filter @quire/scenarios exec playwright install --with-deps chromium
+      - run: playbook/bin/gate.sh check
+      - run: playbook/bin/gate.sh scenarios
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-results
+          path: quire/scenarios/test-results
+          retention-days: 7
+
+  deploy:
+    name: deploy (container image and Compose stack)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: quire/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: quire/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v6
+      - run: pnpm -C quire install --frozen-lockfile
+      - run: playbook/bin/gate.sh deploy
+
+  ux:
+    name: ux gate
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: quire/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: quire/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v6
+      - run: pnpm -C quire install --frozen-lockfile
+      - run: pnpm -C quire --filter @quire/scenarios exec playwright install --with-deps chromium
+      - run: playbook/bin/gate.sh ux
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ux-report
+          path: quire/scenarios/ux/report.md
+          retention-days: 30

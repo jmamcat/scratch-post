@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.0 (2026-10-17)
+
+- Amendment 0009: the readiness review in `modules/hardening` gains a Continuity area (gates
+  on CI: fast gates on every pull request, slow ones on a schedule).
+
 ## 1.8.1 (2026-10-16)
 
 - `bin/spec-scenarios.py` treats a removed requirement's tombstone as removed, so archiving a

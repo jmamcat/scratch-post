@@ -16,6 +16,8 @@ export function blobPath(dataDir: string, hash: string): string {
 export interface FileDeps {
   /** Announce a server event (file conflicts). */
   emit?(e: ServerEvent): void;
+  /** JSON log (R-OPS-02). */
+  logError?(msg: string, fields: Record<string, unknown>): void;
   config: Config;
   store: SqliteRevisionStore;
   sync: SyncServer;
@@ -108,7 +110,7 @@ export function createFiles(deps: FileDeps): Files {
     try {
       if (!existsSync(inVault(head.path))) mirror(head);
     } catch (e) {
-      console.error(`could not restore ${head.path}`, e);
+      deps.logError?.('could not restore an attachment in the vault folder', { path: head.path, error: e instanceof Error ? e.message : String(e) });
     }
   }
 
