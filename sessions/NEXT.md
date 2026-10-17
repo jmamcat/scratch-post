@@ -71,8 +71,8 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
 7. [x] **Playbook amendment 0010: handoff and gate environments.** Playbook 1.10.0:
    `modules/handoff`, plus rules in hardening, ux and scenarios.
 8. [x] **Tell the person why a live edit was refused.** Change 0007, R-LIV-06.
-9. [ ] **Fonts in the UX gate's engines.** Record the font the UI stack resolves to next to
-   axe, Color.js, Playwright and Chromium, so a machine with other fonts shows "engines
-   differ" instead of a typography drop. Re-approve the baseline once.
+9. [x] **Fonts in the UX gate's engines.** The gate records which platform fonts the UI
+   and code stacks resolve to. The re-approved baseline changed only its engines line
+   (`ui Inter, mono DejaVu Sans Mono`).
 10. [ ] **Node 24 runtime.** Move the image and CI from Node 22 to Node 24 LTS once
    `node:sqlite` behaves the same. Run every gate; record any difference.

@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "engines": {"axe":"4.13.0","colorjs":"0.7.1","playwright":"1.56.1","chromium":"141.0.7390.37"},
+ "engines": {"axe":"4.13.0","colorjs":"0.7.1","playwright":"1.56.1","chromium":"141.0.7390.37","fonts":"ui Inter, mono DejaVu Sans Mono"},
  "states": {
   "board|1280x800|atlas|dark": {
    "total": 93.06,
