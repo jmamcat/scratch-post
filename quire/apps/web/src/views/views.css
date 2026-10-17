@@ -1,0 +1,21 @@
+/* Sidebar views: tag tree and board (R-VIEW-03, R-VIEW-05). Lists share shared/group-list.css. */
+.tag-tree { gap: 0; }
+.tag-node { display: flex; flex-direction: column; }
+.tag-children { list-style: none; margin: 0; padding: 0 0 0 12px; }
+.tag-row { width: 100%; }
+.board-view { display: flex; flex-direction: column; gap: 6px; }
+.board-key { display: flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; }
+.board-key select, .view-move {
+  font: inherit;
+  font-size: 12px;
+  max-width: 110px;
+  padding: 1px 4px;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 4px;
+  background: var(--bg-alt, transparent);
+  color: inherit;
+}
+.view-move { flex: none; }
+.view-error { margin: 0; padding: 4px 10px; font-size: 12px; color: var(--danger, #c0392b); }
+.board-new-column { display: flex; flex: none; gap: 4px; }
+.board-new-column-ok { font: inherit; font-size: 12px; padding: 1px 6px; }

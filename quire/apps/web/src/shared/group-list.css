@@ -1,0 +1,43 @@
+/* Sidebar view switcher and the grouped lists every sidebar view uses (R-VIEW-01). */
+.view-switcher {
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 6px;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  background: var(--bg-secondary, transparent);
+  color: inherit;
+  max-width: 120px;
+}
+.group-list { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+.view-group-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 4px 8px;
+  color: var(--text-muted, #888);
+}
+.view-group ul { list-style: none; margin: 0; padding: 0; }
+.view-group li { display: flex; align-items: center; gap: 4px; }
+.view-item {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 0;
+}
+.view-item:hover, .view-group li.active .view-item { background: var(--bg-hover, rgba(0, 0, 0, 0.05)); }
+.view-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.view-item-detail { font-size: 11px; white-space: nowrap; }
+.view-empty { padding: 8px 12px; }
+.graph-content { padding: 0; height: 100%; }

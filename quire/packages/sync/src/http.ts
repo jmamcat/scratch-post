@@ -1,0 +1,116 @@
+import type { Transport } from './client.ts';
+import type { ChangeFeed, Conflict, ConflictStatus, DocMeta, PushRequest, PushResult, Resolution } from './protocol.ts';
+
+export class HttpError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
+/** fetch-based client for the Quire HTTP API. Works in browsers, WebViews and Node 22. */
+export class HttpTransport implements Transport {
+  constructor(
+    readonly baseUrl: string,
+    private readonly token?: string,
+    private readonly fetchFn: typeof fetch = (...args) => globalThis.fetch(...args),
+  ) {}
+
+  push(req: PushRequest): Promise<PushResult[]> {
+    return this.call('POST', '/api/sync/push', req);
+  }
+
+  changes(since: number): Promise<ChangeFeed> {
+    return this.call('GET', `/api/sync/changes?since=${since}`);
+  }
+
+  doc(path: string, rev?: number): Promise<{ meta: DocMeta; text: string | null }> {
+    const q = new URLSearchParams({ path, ...(rev === undefined ? {} : { rev: String(rev) }) });
+    return this.call('GET', `/api/doc?${q}`);
+  }
+
+  /** Heads of every note that exists (newest revision per path). */
+  docs(): Promise<DocMeta[]> {
+    return this.call('GET', '/api/docs');
+  }
+
+  history(path: string): Promise<DocMeta[]> {
+    return this.call('GET', `/api/history?${new URLSearchParams({ path })}`);
+  }
+
+  conflicts(status?: ConflictStatus): Promise<Conflict[]> {
+    return this.call('GET', `/api/conflicts${status ? `?status=${status}` : ''}`);
+  }
+
+  resolve(id: string, r: Resolution): Promise<PushResult> {
+    return this.call('POST', `/api/conflicts/${encodeURIComponent(id)}/resolve`, r);
+  }
+
+  dismiss(id: string): Promise<Conflict> {
+    return this.call('POST', `/api/conflicts/${encodeURIComponent(id)}/dismiss`);
+  }
+
+  health(): Promise<{ ok: boolean; mode: string; device: string; rev: number }> {
+    return this.call('GET', '/api/health');
+  }
+
+  /** URL for callers that authorize some other way; it never carries the token (R-ACC-03). */
+  url(path: string, params: Record<string, string> = {}): string {
+    const s = new URLSearchParams(params).toString();
+    return `${this.baseUrl}${path}${s ? `?${s}` : ''}`;
+  }
+
+  /**
+   * Query parameters that authorize one event stream or live connection: a single-use ticket
+   * from `POST /api/tickets` (R-ACC-03). Call it again for every new connection.
+   */
+  async streamParams(): Promise<Record<string, string>> {
+    if (!this.token) return {};
+    const { ticket } = await this.request<{ ticket: string; expiresAt: string }>('POST', '/api/tickets');
+    return { ticket };
+  }
+
+  /** Full URL for one event stream connection, authorized by `streamParams`. */
+  async streamUrl(path: string, params: Record<string, string> = {}): Promise<string> {
+    const q = new URLSearchParams({ ...params, ...(await this.streamParams()) }).toString();
+    return `${this.baseUrl}${path}${q ? `?${q}` : ''}`;
+  }
+
+  /** Headers that authenticate a request (for callers that build their own fetch, such as uploads). */
+  authHeaders(): Record<string, string> {
+    return this.token ? { authorization: `Bearer ${this.token}` } : {};
+  }
+
+  /** Any JSON API call, for capabilities that add routes (vault history, files, tickets). */
+  request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    return this.call(method, path, body);
+  }
+
+  /** The fetch this transport uses, so other clients share its test hooks. */
+  get fetcher(): typeof fetch {
+    return this.fetchFn;
+  }
+
+  private async call<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const headers: Record<string, string> = { ...this.authHeaders() };
+    if (body !== undefined) headers['content-type'] = 'application/json';
+    const res = await this.fetchFn(`${this.baseUrl}${path}`, {
+      method,
+      headers,
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    if (!res.ok) {
+      let message = res.statusText;
+      try {
+        message = ((await res.json()) as { error?: string }).error ?? message;
+      } catch {
+        // keep statusText
+      }
+      throw new HttpError(res.status, message);
+    }
+    return (await res.json()) as T;
+  }
+}

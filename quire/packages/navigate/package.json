@@ -1,0 +1,17 @@
+{
+  "name": "@quire/navigate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Link resolution and offline full-text search.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@quire/render": "workspace:*",
+    "@quire/vault": "workspace:*"
+  }
+}

@@ -1,0 +1,35 @@
+date,change,scope,harness,model,tier,agents,input_tokens,output_tokens,cache_read_tokens,cache_write_tokens,total_tokens,credits,credit_unit,wall_minutes,outcome,source,notes
+2026-10-16,0001-mvp-foundation,research:references-confluence,claude-code,m1,A,1,,,,,130972,,,7.8,"done, reference folder written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:references-obsidian,claude-code,m1,A,1,,,,,248459,,,12.1,"done, reference folder written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:references-notion,claude-code,m1,A,1,,,,,183573,,,14.0,"done, reference folder written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:references-joplin-silverbullet,claude-code,m1,A,1,,,,,301759,,,18.0,"done, two reference folders written",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:testing,claude-code,m1,A,1,,,,,101494,,,4.4,"done, scenario tooling chosen",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,research:structure,claude-code,m1,A,1,,,,,65560,,,1.8,"done, structure standard sources",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,P01,claude-code,m1,A,1,,,,,152574,,,12.9,done,harness-subagent-report,
+2026-10-16,0001-mvp-foundation,P07+P08,claude-code,m1,A,1,,,,,307115,,,34.3,"done, web shell and live review",harness-subagent-report,
+2026-10-16,0001-mvp-foundation,coordinator,claude-code,m1,A,1,,,,,,,,,66/66 scenarios,unknown,coordinator session tokens not reported per slice; other packets were run by the coordinator
+2026-10-16,0002-workspace-ux,P02,claude-code,m2,B,1,,,,,89200,,,2.8,"done, typechecks first pass",harness-subagent-report,15 tool uses
+2026-10-16,0002-workspace-ux,P05,claude-code,m2,B,1,,,,,98445,,,4.0,"done, 2/2 scenarios first pass",harness-subagent-report,26 tool uses
+2026-10-16,0002-workspace-ux,P07,claude-code,m3,C,1,,,,,116725,,,4.0,"blocked, 2/3; coordinator unblocked (D-P07-1), 8/8",harness-subagent-report,31 tool uses
+2026-10-16,0002-workspace-ux,P06,claude-code,m3,C,1,,,,,129991,,,4.9,blocked on missing web dependency (P00 gap); 3/3 after coordinator fix,harness-subagent-report,26 tool uses
+2026-10-16,0002-workspace-ux,P03,claude-code,m2,B,1,,,,,95098,,,7.7,"done, 7/7 after coordinator added the web dependency",harness-subagent-report,35 tool uses
+2026-10-16,0002-workspace-ux,P04,claude-code,m1,A,1,,,,,119140,,,11.1,"done, 3/3 (one fix after first run)",harness-subagent-report,38 tool uses
+2026-10-16,0002-workspace-ux,P01,claude-code,m1,A,1,,,,,136232,,,21.0,"done, 5/5",harness-subagent-report,53 tool uses; ran in parallel with both waves
+2026-10-16,0002-workspace-ux,follow-up:board-new-columns,claude-code,m1,A,1,,,,,,,,,"done, 89/89",unknown,"coordinator, owner request after the run; tokens not reported per slice"
+2026-10-16,0003-production-hardening,research:ux-scorer,claude-code,m1,A,1,,,,,102550,,,6.1,"done, design with sources",harness-subagent-report,38 tool uses
+2026-10-16,0003-production-hardening,P10,claude-code,m3,C,1,,,,,151715,,,6.3,"done, 22/22; R-OPS-01 waits on P03",harness-subagent-report,39 tool uses
+2026-10-16,0003-production-hardening,P06,claude-code,m2,B,1,,,,,136640,,,6.9,"done, 3/3 R-VLT-11",harness-subagent-report,31 tool uses
+2026-10-16,0003-production-hardening,P07,claude-code,m2,B,1,,,,,174900,,,17.0,"done, 19/19",harness-subagent-report,39 tool uses
+2026-10-16,0003-production-hardening,P01,claude-code,m1,A,1,,,,,197704,,,25.1,done-after-coordinator-step-fix,harness-subagent-report,74 tool uses
+2026-10-16,0003-production-hardening,P05,claude-code,m1,A,1,,,,,186175,,,25.4,"done,28/28",harness-subagent-report,70 tool uses
+2026-10-16,0003-production-hardening,P02,claude-code,m1,A,1,,,,,168816,,,25.6,"done, 43/43",harness-subagent-report,61 tool uses
+2026-10-16,0003-production-hardening,P04,claude-code,m2,B,1,,,,,126815,,,12.3,blocked on a harness timing gap; 1/1 after coordinator fix,harness-subagent-report,56 tool uses
+2026-10-16,0003-production-hardening,P03,claude-code,m1,A,1,,,,,195756,,,17.2,"done, 29/30 (R-BAK-07 was P04's)",harness-subagent-report,50 tool uses
+2026-10-16,0003-production-hardening,P08,claude-code,m2,B,1,,,,,99828,,,24.1,"done, R-PLT-06 1/1",harness-subagent-report,27 tool uses
+2026-10-16,0003-production-hardening,P11,claude-code,m2,B,1,,,,,136750,,,11.2,"done, deploy 1/1, sync 15/15",harness-subagent-report,45 tool uses; 2 docker builds
+2026-10-16,0003-production-hardening,P13,claude-code,m1,A,1,,,,,143721,,,46.3,"done, 3/3 solo runs, p95 128-234 ms",harness-subagent-report,45 tool uses; mostly waiting for a quiet machine
+2026-10-16,0003-production-hardening,P09,claude-code,m2,B,1,,,,,205685,,,47.6,blocked on a packet path the structure rules refuse; first load 435 to 183 kB gzip; done after coordinator fix,harness-subagent-report,71 tool uses
+2026-10-16,0003-production-hardening,P12,claude-code,m1,A,1,,,,,354808,,,148.5,"done, contrast 180/180, ux gate ratchet passes; R-PLT-08 left for P14",harness-subagent-report,140 tool uses
+2026-10-16,0003-production-hardening,P14,claude-code,m1,A,1,,,,,247043,,,72.2,"done, ux gate 180/180, scenarios 129/129",harness-subagent-report,107 tool uses
+2026-10-16,0003-production-hardening,coordinator,claude-code,m1,A,1,,,,,,,,,"P00, follow-ups, verification",unknown,coordinator tokens not reported per slice
+2026-10-17,0004-release-0.1.0,change,claude-code,m1,A,1,,,,,,,,,done; coordinator only,unknown,coordinator tokens not reported per slice

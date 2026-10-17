@@ -1,0 +1,20 @@
+[submodule "references/obsidian/upstream/obsidian-help"]
+	path = references/obsidian/upstream/obsidian-help
+	url = https://github.com/obsidianmd/obsidian-help
+	branch = master
+	shallow = true
+[submodule "references/obsidian/upstream/obsidian-api"]
+	path = references/obsidian/upstream/obsidian-api
+	url = https://github.com/obsidianmd/obsidian-api
+	branch = master
+	shallow = true
+[submodule "references/joplin/upstream/joplin"]
+	path = references/joplin/upstream/joplin
+	url = https://github.com/laurent22/joplin
+	branch = dev
+	shallow = true
+[submodule "references/silverbullet/upstream/silverbullet"]
+	path = references/silverbullet/upstream/silverbullet
+	url = https://github.com/silverbulletmd/silverbullet
+	branch = main
+	shallow = true

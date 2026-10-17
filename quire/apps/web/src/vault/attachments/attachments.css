@@ -1,0 +1,36 @@
+/* Attachments (vault/attachments): image embeds below their line in the editor, and the refusal message. */
+
+.cm-attachment-image {
+  padding: 4px 0 8px;
+}
+.cm-attachment-image img {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  border-radius: var(--radius);
+}
+.cm-attachment-image.is-broken {
+  display: none;
+}
+
+.attachment-alerts {
+  position: fixed;
+  right: 16px;
+  bottom: 40px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.attachment-alert {
+  pointer-events: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+}

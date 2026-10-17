@@ -127,3 +127,24 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Node / TypeScript
+node_modules/
+*.tsbuildinfo
+.vite/
+coverage/
+
+# RefSpec: captured visuals of closed-source references are never committed
+references/*/product/visuals/captures/
+
+# Quire runtime data
+quire/.data/
+quire/.e2e-data/
+quire/e2e/test-results/
+quire/test-results/
+quire/playwright-report/
+quire/.demo/
+quire/scenarios/ux/report.md
+
+# RefSpec usage ledger: real model names stay local
+usage/models.local.yaml

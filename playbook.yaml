@@ -1,0 +1,21 @@
+# Binds this repository to the RefSpec playbook (playbook/README.md).
+playbook: playbook
+version: 1
+target: quire
+modules: [specs, scenarios, structure, references, demo, usage, hardening, ux]
+specs: quire/spec
+changes: quire/changes
+references: references
+usage: usage                  # token and credit ledger (modules/usage)
+scenarios_out: quire/scenarios/.features
+check: pnpm -C quire check
+scenarios: pnpm -C quire scenarios
+demo: pnpm -C quire demo
+deploy: pnpm -C quire scenarios:deploy   # container image and Compose stack (modules/hardening)
+ux: pnpm -C quire scenarios:ux && pnpm -C quire ux   # R-PLT-08 gate, then the full UX report and ratchet (modules/ux)
+structure_roots: quire/packages, quire/apps/server/src, quire/apps/web/src
+structure_ext: .ts, .tsx
+structure_allow: shared, app   # app: the web client's shell (layout, commands, dialogs); composes capabilities
+structure_soft_lines: 300
+structure_hard_lines: 500
+scenario_filter_flag: --grep   # how gate.sh passes scenario tags to the runner

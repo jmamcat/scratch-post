@@ -1,0 +1,22 @@
+{
+  "name": "@quire/render",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Obsidian Flavored Markdown: parsing, extraction of links, tags and headings, and HTML rendering.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@quire/vault": "workspace:*",
+    "markdown-it": "^14.1.0",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-mark": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2"
+  }
+}

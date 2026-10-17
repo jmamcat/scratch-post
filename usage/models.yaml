@@ -1,0 +1,12 @@
+# Model aliases for usage/ledger.csv (playbook/modules/usage).
+# This project keeps model identifiers out of the repository: the real names live in
+# usage/models.local.yaml, which is gitignored. Ledger rows use the aliases below.
+m1:
+  tier: A
+  notes: coordinator and tier A workers
+m2:
+  tier: B
+  notes: tier B workers
+m3:
+  tier: C
+  notes: tier C workers

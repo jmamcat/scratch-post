@@ -1,0 +1,112 @@
+/* Graph view (R-NAV-08, R-NAV-09). Colours come from the theme variables in styles.css. */
+
+.graph-host {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.graph-local {
+  min-height: 240px;
+}
+/* The local graph fills the right pane body edge to edge instead of scrolling inside it. */
+.right-pane .pane-body:has(> .graph-local) {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.graph {
+  display: block;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.graph.panning {
+  cursor: grabbing;
+}
+
+.graph-edges line {
+  stroke: var(--text-faint);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition: stroke-opacity 0.15s;
+}
+.graph.hovering .graph-edges line:not(.lit) {
+  stroke-opacity: 0.12;
+}
+.graph-edges line.lit {
+  stroke: var(--accent);
+  stroke-opacity: 0.9;
+}
+
+.graph-node {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.graph-hit {
+  fill: transparent;
+  pointer-events: all;
+}
+.graph-node circle {
+  fill: var(--text-muted);
+  stroke: var(--bg);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+/* Names at body size and in the text colour (Obsidian's graph text is the normal text colour);
+   they scale with the zoom like the dots. */
+.graph-node text {
+  fill: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  pointer-events: none;
+}
+.graph-node.focus circle {
+  fill: var(--accent);
+}
+.graph-node.focus text {
+  fill: var(--text);
+  font-weight: 600;
+}
+.graph-node:hover circle,
+.graph-node:focus-visible circle {
+  fill: var(--accent);
+}
+.graph-node:focus-visible circle {
+  stroke: var(--accent-soft);
+  stroke-width: 6;
+}
+.graph-node:hover text,
+.graph-node:focus-visible text {
+  font-weight: 600;
+}
+.graph-node.dim {
+  opacity: 0.2;
+}
+/* Zoomed far out, names would only overlap; the focus and hovered note keep theirs. */
+.graph.far .graph-node:not(.focus):not(:hover):not(:focus-visible) text {
+  display: none;
+}
+
+.graph-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-edges line,
+  .graph-node {
+    transition: none;
+  }
+}

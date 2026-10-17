@@ -1,0 +1,10 @@
+# Automatic HTTPS for the Quire cloud server (compose profile "tls").
+# The host name comes from QUIRE_DOMAIN; ports 80 and 443 must reach this machine.
+{$QUIRE_DOMAIN} {
+	encode zstd gzip
+
+	# Event streams and live editing connections must not be buffered.
+	reverse_proxy cloud:8787 {
+		flush_interval -1
+	}
+}

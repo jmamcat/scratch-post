@@ -1,0 +1,97 @@
+# Quire on Docker Compose (R-OPS-04). Setup, upgrades, backups and TLS: deploy/README.md.
+#
+#   cp deploy/.env.example .env      # then set QUIRE_TOKEN (or add tokens after the first start)
+#   docker compose up -d             # the cloud server
+#   docker compose --profile local up -d   # plus a local node that replicates to it
+#   docker compose --profile tls up -d     # plus Caddy with automatic HTTPS for ${QUIRE_DOMAIN}
+#
+# Image names come from variables so a registry mirror can replace the defaults.
+
+x-quire-image: &quire-image ${QUIRE_IMAGE:-quire:latest}
+
+services:
+  cloud:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: ${QUIRE_NODE_IMAGE:-node:22-bookworm-slim}
+      # Extra CA certificates for the build, when a proxy inspects TLS (QUIRE_BUILD_CA=/path/ca.pem).
+      secrets:
+        - extra_ca
+    image: *quire-image
+    init: true
+    # Settings and secrets live in the env file, never in the image or in this file.
+    env_file:
+      - path: ${QUIRE_ENV_FILE:-.env}
+        required: false
+    environment:
+      # Set to 1 when the tls profile (or any other reverse proxy) is in front.
+      QUIRE_TRUST_PROXY: ${QUIRE_TRUST_PROXY:-0}
+    volumes:
+      - quire-data:/data
+      - quire-backups:/backups
+    ports:
+      # Loopback by default; set QUIRE_BIND=0.0.0.0 to serve the network without the tls profile.
+      - "${QUIRE_BIND:-127.0.0.1}:${QUIRE_HOST_PORT:-8787}:8787"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.QUIRE_PORT||8787)+'/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # A local node: keeps its own copy of the vault and replicates to the cloud server.
+  local:
+    profiles: ["local"]
+    image: *quire-image
+    init: true
+    depends_on:
+      cloud:
+        condition: service_healthy
+    env_file:
+      - path: ${QUIRE_ENV_FILE:-.env}
+        required: false
+    environment:
+      QUIRE_MODE: local
+      QUIRE_UPSTREAM: http://cloud:8787
+      QUIRE_UPSTREAM_TOKEN: ${QUIRE_TOKEN:-}
+      QUIRE_DEVICE: ${QUIRE_LOCAL_DEVICE:-local}
+      QUIRE_BACKUP_DIR: ""
+      QUIRE_TRUST_PROXY: "0"
+    volumes:
+      - quire-local-data:/data
+    ports:
+      - "${QUIRE_LOCAL_BIND:-127.0.0.1}:${QUIRE_LOCAL_PORT:-8788}:8787"
+    restart: unless-stopped
+
+  # TLS in front of the cloud server: Caddy gets and renews certificates for ${QUIRE_DOMAIN}.
+  caddy:
+    profiles: ["tls"]
+    image: ${QUIRE_CADDY_IMAGE:-caddy:2}
+    depends_on:
+      cloud:
+        condition: service_healthy
+    environment:
+      QUIRE_DOMAIN: ${QUIRE_DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    restart: unless-stopped
+
+secrets:
+  extra_ca:
+    file: ${QUIRE_BUILD_CA:-/dev/null}
+
+volumes:
+  quire-data:
+  quire-backups:
+  quire-local-data:
+  caddy-data:
+  caddy-config:

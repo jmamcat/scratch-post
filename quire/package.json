@@ -1,0 +1,39 @@
+{
+  "name": "quire",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "check": "pnpm -r typecheck && pnpm deps && uv run ../playbook/bin/check-structure.py",
+    "typecheck": "pnpm -r typecheck",
+    "scenarios": "pnpm --filter @quire/scenarios test",
+    "scenarios:system": "pnpm --filter @quire/scenarios system",
+    "scenarios:ux": "pnpm build:web && pnpm --filter @quire/scenarios run ux",
+    "scenarios:deploy": "pnpm --filter @quire/scenarios run deploy",
+    "scenarios:ui": "pnpm build:web && pnpm --filter @quire/scenarios ui",
+    "scenarios:approve": "pnpm --filter @quire/scenarios approve",
+    "ux": "pnpm --filter @quire/scenarios build:web:if-needed && pnpm --filter @quire/scenarios exec playwright test -c ux/playwright.config.ts",
+    "ux:approve": "pnpm --filter @quire/scenarios build:web:if-needed && QUIRE_UX_APPROVE=1 pnpm --filter @quire/scenarios exec playwright test -c ux/playwright.config.ts",
+    "dev:server": "pnpm --filter @quire/server dev",
+    "dev:web": "pnpm --filter @quire/web dev",
+    "build:web": "pnpm --filter @quire/web build",
+    "start": "pnpm build:web && pnpm --filter @quire/server start",
+    "demo": "pnpm build:web && node demo/run.mjs",
+    "deps": "depcruise --config .dependency-cruiser.cjs packages apps scenarios/support scenarios/steps",
+    "demo:conflict": "node demo/stage-conflict.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "dependency-cruiser": "^17.4.3",
+    "typescript": "~5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
