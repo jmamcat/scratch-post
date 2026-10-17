@@ -61,10 +61,9 @@ gate run before each push. Status: `[ ]` open, `[x]` shipped (with the commit or
 5. [ ] **Android debug APK in CI.** A `workflow_dispatch` job builds the Capacitor wrapper
    (JDK and Android SDK on the runner) and uploads an unsigned debug APK. Device testing
    stays with the owner (human step 5).
-6. [ ] **Dependency hygiene.**
-   - `pnpm audit` and fix what it finds.
-   - Add `.github/dependabot.yml` for npm (`quire/`), GitHub Actions and the uv tooling,
-     grouped weekly so it does not flood PRs.
+6. [x] **Dependency hygiene.** `pnpm audit` found nothing. `.github/dependabot.yml` sends
+   weekly grouped updates for npm (`quire/`) and GitHub Actions. The UX gate's pinned
+   engines are left for manual bumps. The uv tooling has no dependencies to track.
 7. [ ] **Playbook amendment 0010: handoff and budget.** Write the evidence from this run
    into the playbook:
    - session gist and next-steps files as a module;
