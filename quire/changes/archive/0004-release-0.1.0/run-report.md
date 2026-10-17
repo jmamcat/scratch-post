@@ -53,7 +53,14 @@ owner.
 
 ## Verification
 
-See the final gate results below.
+| Gate | Where | Result |
+| --- | --- | --- |
+| check | local | green: 26 modules, 0 violations, 5 warnings |
+| scenarios | local, twice | 131 passed (2.8m), 131 passed (2.8m) |
+| scenarios | CI on acbdb31 ("check and scenarios") | 131 passed (2.9m) |
+| deploy | local | first run failed: the Docker daemon was not running after a container restart (environment, not product). Rerun after starting `dockerd`, with `QUIRE_NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim`: R-OPS-04 passed (47.0s) |
+| ux | local | R-PLT-08 gate passes; 11 passed (10.0m) |
+| deploy, ux | CI | skipped on pull requests by design; they run on push to main, weekly and on demand |
 
 ## Playbook friction
 
