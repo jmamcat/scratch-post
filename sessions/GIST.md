@@ -4,7 +4,7 @@ The running handoff for whoever picks this repository up next, person or agent. 
 the end of every working turn that changes state: what is true now, what is open, what to do
 first. Keep it short; history lives in git, change folders and run reports.
 
-## Now (2026-10-17, 10:50 UTC)
+## Now (2026-10-17, 11:15 UTC)
 
 - **`main`** is at `141cf42`: Quire 0.1.0 plus PR #3.
 - **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** is ahead of `main` with
@@ -19,8 +19,11 @@ first. Keep it short; history lives in git, change folders and run reports.
   - Playbook 1.10.0 (amendment 0010).
 - **Specs.** 12 capabilities, 91 requirements, 138 scenarios. Local on Node 24: check
   green, scenarios 136/136, deploy green. Last UX approve: 180 states, unchanged scores.
-- **In flight.** A manual CI run on the branch (`fdef7e9`) verifying Node 24 and the fonts
-  line in CI.
+- **CI on the branch.** Manual run 12 on `fdef7e9`, all four jobs green on Node 24:
+  - check and scenarios;
+  - deploy;
+  - ux, with log line `fonts ui Inter, mono DejaVu Sans Mono; ratchet gated`;
+  - android APK.
 
 ## Open
 
@@ -58,7 +61,7 @@ playbook/bin/gate.sh deploy   # needs Docker
 playbook/bin/gate.sh ux       # about 10 minutes
 ```
 
-Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0005.
+Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0008.
 
 ## Environment quirks (cloud agent containers)
 
