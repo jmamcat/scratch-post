@@ -6,23 +6,29 @@ first. Keep it short; history lives in git, change folders and run reports.
 
 ## Now (2026-10-17)
 
-- **Quire 0.1.0** is on `main` (merge commit `5adae66`, PR #2). Living specs: 12
-  capabilities, 90 requirements, 133 scenarios.
-- **Playbook** is at 1.9.0 (amendments 0001 to 0009).
-- **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** (from `5adae66`):
-  - CI actions bumped to Node 24 majors;
-  - the 0004 run report's Verification table filled in;
-  - this gist added;
-  - scratchpad working docs copied into `cloud-files/`.
-  - PR #3 open; merge once CI is green.
+- **Quire 0.1.0** is on `main`.
+  - Release commit: `5adae66` (PR #2).
+  - Follow-up: `141cf42` (PR #3). It moved CI to Node 24 actions, filled in the 0004
+    verification, and added this gist and `cloud-files/`.
+- **Specs.** 12 capabilities, 90 requirements, 133 scenarios. CI "check and scenarios" is
+  green on PR #3's head.
+- **Playbook** 1.9.0 (amendments 0001 to 0009).
+- **Branch `claude/cloud-credits-github-remote-projects-rtnkko`** restarts from `main` for
+  each new piece of work; it carries this gist update.
 
 ## Open
 
-1. **Tag `v0.1.0` on `5adae66`.** The agent's git proxy refuses tag pushes (HTTP 403), so the
-   owner does it: `git tag -a v0.1.0 5adae66 -m "Quire 0.1.0" && git push origin v0.1.0`, or
-   create the release in the GitHub UI.
-2. **Make the repository private.** The owner will do this.
-3. **PR #3**: merge once "check and scenarios" is green.
+1. **Tag `v0.1.0`.** The agent's git proxy refuses tag pushes as a policy denial (HTTP
+   403), so the owner tags it. Use the release commit:
+
+   ```sh
+   git fetch origin && git tag -a v0.1.0 5adae66 -m "Quire 0.1.0" && git push origin v0.1.0
+   ```
+
+   Or create the release in the GitHub UI (Releases, Draft a new release, tag `v0.1.0`,
+   target `5adae66`).
+2. **Make the repository private.** The owner will do this. `cloud-files/` includes a
+   LinkedIn draft.
 
 ## Budget
 
@@ -61,4 +67,4 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0005.
 | Date | What |
 | --- | --- |
 | 2026-10-16 | Playbook, references, Quire MVP; changes 0001 to 0003 (workspace UX, production hardening) |
-| 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; action bumps, run report, this gist, `cloud-files/` |
+| 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; PR #3 merged (action bumps, run report, this gist, `cloud-files/`); tag push refused, left to the owner |
