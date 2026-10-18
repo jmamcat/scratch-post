@@ -75,3 +75,4 @@ Read `AGENTS.md`, `sessions/LEARNINGS.md`, then `playbook/README.md`. The next c
 | 2026-10-17 | `sessions/NEXT.md`; CI deploy and ux fixed; changes 0005 to 0007; Dependabot; Node 24; PR #4 merged |
 | 2026-10-17 | Change 0008 (templates and the slash menu) on the branch |
 | 2026-10-17 | `sessions/LEARNINGS.md`; session closed with everything pushed |
+| 2026-10-18 | `sessions/LOCAL-HANDOFF.md`: copiable prompt to move the project into the local workspace |

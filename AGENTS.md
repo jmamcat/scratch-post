@@ -16,6 +16,7 @@ This repository is bound to the **RefSpec playbook** by `playbook.yaml`. Start w
 | `sessions/GIST.md` | Session gist: current state, open items, how to resume. Read it first |
 | `sessions/NEXT.md` | Next steps: what the owner must do, and the ordered list of agent work |
 | `sessions/LEARNINGS.md` | What earlier sessions learned: budget, scenarios, front end, CI, cloud container |
+| `sessions/LOCAL-HANDOFF.md` | Copiable prompt to bring the project onto a local machine |
 
 ## Gates
 
