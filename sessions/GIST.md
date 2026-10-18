@@ -25,6 +25,16 @@ first. Keep it short; history lives in git, change folders and run reports.
   - ux, with log line `fonts ui Inter, mono DejaVu Sans Mono; ratchet gated`;
   - android APK.
 
+- **Branch `fix/windows-portability`** (2026-10-18, off `main`): the gates now run on Windows.
+  Locally on Windows 10, Node 24.18: check green, scenarios 136/136. Behaviour on Linux is
+  unchanged.
+  - Server and CLI entry guards compare `pathToFileURL(argv[1])`, not `file://` plus a path.
+  - Scenarios and the demo run tsx and vite through `process.execPath` and the package's JS
+    entry, since `node_modules/.bin` holds `.cmd` shims there that `spawn()` cannot run.
+  - Teardown stops servers before cleanups delete their folders, with retries for the
+    lock Windows keeps a moment after exit.
+  - The render gallery and the S10 structure rule use `/` paths.
+
 ## Open
 
 1. **Tag `v0.1.0`.** The agent's git proxy refuses tag pushes as a policy denial (HTTP
@@ -73,6 +83,13 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0008.
   secret (`deploy/README.md`).
 - **Tag pushes.** They are refused (403). Branch pushes work.
 
+## Environment quirks (local Windows)
+
+- **Corepack.** `corepack enable` needs write access to the Node folder. Without admin, use
+  `corepack enable --install-directory <a user folder>` and put that folder on `PATH`; the
+  scripts call `pnpm` by name.
+- **Browser.** `pnpm -C quire --filter @quire/scenarios exec playwright install chromium`.
+
 ## Log
 
 | Date | What |
@@ -80,3 +97,4 @@ Read `AGENTS.md`, then `playbook/README.md`. The next change number is 0008.
 | 2026-10-16 | Playbook, references, Quire MVP; changes 0001 to 0003 (workspace UX, production hardening) |
 | 2026-10-17 | Change 0004 (release 0.1.0), PR #2 merged; PR #3 merged (action bumps, run report, this gist, `cloud-files/`); tag push refused, left to the owner |
 | 2026-10-17 | `sessions/NEXT.md`; CI deploy and ux fixed; changes 0005 to 0007; Dependabot |
+| 2026-10-18 | Cloned into a local Windows workspace; `fix/windows-portability` makes check and scenarios pass there |

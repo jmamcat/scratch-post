@@ -106,11 +106,13 @@ export class World {
   }
 
   async dispose(): Promise<void> {
-    for (const fn of this.cleanups.reverse()) await fn();
+    // Servers stop before the cleanups and folders go: Windows refuses to delete files a live process holds,
+    // and keeps the lock a moment after it exits, hence the retries.
     for (const d of this.devices.values()) await d.close().catch(() => undefined);
     for (const n of this.nodes.values()) await n.stop();
     await this.cloud?.stop();
-    for (const s of [this.cloud, ...this.nodes.values()]) if (s) rmSync(s.dataDir, { recursive: true, force: true });
+    for (const fn of this.cleanups.reverse()) await fn();
+    for (const s of [this.cloud, ...this.nodes.values()]) if (s) rmSync(s.dataDir, { recursive: true, force: true, maxRetries: 5 });
   }
 }
 

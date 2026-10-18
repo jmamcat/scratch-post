@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.1 (2026-10-18)
+
+- `bin/check-structure.py` matches module paths in `ARCHITECTURE.md` with `/` separators, so
+  S10 no longer reports every module as unlisted on Windows.
+
 ## 1.10.0 (2026-10-17)
 
 - Amendment 0010:

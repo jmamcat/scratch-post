@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveLink } from '@quire/navigate';
 import { renderMarkdown } from '@quire/render';
@@ -12,7 +12,7 @@ function notes(dir = gallery): string[] {
   return readdirSync(dir).flatMap((name) => {
     const full = join(dir, name);
     if (statSync(full).isDirectory()) return notes(full);
-    return name.endsWith('.md') ? [relative(gallery, full)] : [];
+    return name.endsWith('.md') ? [relative(gallery, full).split(sep).join('/')] : [];
   });
 }
 

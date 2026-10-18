@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const serverDir = fileURLToPath(new URL('../../apps/server', import.meta.url));
-const tsx = join(serverDir, 'node_modules/.bin/tsx');
+// tsx's own entry run with this Node: node_modules/.bin holds .cmd shims on Windows, which spawn() cannot run.
+const tsx = join(serverDir, 'node_modules/tsx/dist/cli.mjs');
 
 export async function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -57,7 +58,7 @@ export class ServerProcess {
   async start(): Promise<void> {
     if (!this.port) this.port = await freePort();
     this.log = '';
-    this.child = spawn(tsx, ['src/main.ts'], {
+    this.child = spawn(process.execPath, [tsx, 'src/main.ts'], {
       cwd: serverDir,
       env: {
         ...process.env,

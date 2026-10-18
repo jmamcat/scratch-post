@@ -52,7 +52,7 @@ function prepareDataDir(world: World, fill: (db: DatabaseSync) => void): string 
     db.close();
   }
   world.preparedDataDir = dir;
-  world.cleanups.push(() => rmSync(dir, { recursive: true, force: true }));
+  world.cleanups.push(() => rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
   return dir;
 }
 
@@ -136,8 +136,8 @@ Given('a cloud server that keeps every revision for {int} days', async ({ world 
 
 When('the cloud server compacts its history', async ({ world }) => {
   const cloud = world.requireCloud();
-  const tsx = join(serverDir, 'node_modules/.bin/tsx');
-  const child = spawn(tsx, ['src/cli.ts', 'compact'], {
+  const tsx = join(serverDir, 'node_modules/tsx/dist/cli.mjs');
+  const child = spawn(process.execPath, [tsx, 'src/cli.ts', 'compact'], {
     cwd: serverDir,
     // The same settings the running server has, so the command sees the same change sets.
     env: { ...process.env, QUIRE_CHANGESET_GAP_MS: '1000', NODE_NO_WARNINGS: '1', ...cloud.env, QUIRE_DATA_DIR: cloud.dataDir },

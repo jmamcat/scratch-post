@@ -8,11 +8,11 @@ import { BrowserDevice } from '../support/browser-device.ts';
 import { Given, Then, When, type World, eventually } from '../support/world.ts';
 
 const serverDir = fileURLToPath(new URL('../../apps/server', import.meta.url));
-const tsx = join(serverDir, 'node_modules/.bin/tsx');
+const tsx = join(serverDir, 'node_modules/tsx/dist/cli.mjs');
 
 /** `quire tokens ...` against the cloud server's data folder, as the owner would run it. */
 async function tokensCli(world: World, args: string[]): Promise<{ code: number; output: string }> {
-  const child = spawn(tsx, ['src/cli.ts', 'tokens', ...args], {
+  const child = spawn(process.execPath, [tsx, 'src/cli.ts', 'tokens', ...args], {
     cwd: serverDir,
     env: { ...process.env, QUIRE_DATA_DIR: world.requireCloud().dataDir, NODE_NO_WARNINGS: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],

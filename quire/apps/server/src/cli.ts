@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { tokensCli } from './access/index.ts';
 import { backupCli, compactCli, restoreCli } from './backup/index.ts';
 import { loadConfig } from './platforms/index.ts';
@@ -43,7 +44,7 @@ export async function main(argv: string[]): Promise<number> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]!).href) {
   const code = await main(process.argv.slice(2));
   if (code >= 0) process.exit(code);
 }

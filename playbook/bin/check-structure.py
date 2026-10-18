@@ -102,7 +102,7 @@ def main() -> int:
                 errors.append(f"S10 {rel}: no README.md")
             elif len(readme.read_text().strip().splitlines()) > 15:
                 errors.append(f"S10 {rel}/README.md: longer than 15 lines")
-            if arch_text and str(child.relative_to(target)) not in arch_text:
+            if arch_text and child.relative_to(target).as_posix() not in arch_text:
                 errors.append(f"S10 {rel}: not listed in ARCHITECTURE.md")
 
         for f in source_files(r, exts):

@@ -15,7 +15,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const quire = join(here, '..');
 const data = join(quire, '.demo');
 const serverDir = join(quire, 'apps/server');
-const tsx = join(serverDir, 'node_modules/.bin/tsx');
+const tsx = join(serverDir, 'node_modules/tsx/dist/cli.mjs');
 
 const basePort = Number(process.env.QUIRE_DEMO_PORT ?? 8787);
 const CLOUD = { port: basePort, device: 'cloud', dir: join(data, 'cloud') };
@@ -35,7 +35,7 @@ cpSync(join(here, 'seed'), join(CLOUD.dir, 'vault'), { recursive: true });
 
 const children = [];
 function start(node, extraEnv = {}) {
-  const child = spawn(tsx, ['src/main.ts'], {
+  const child = spawn(process.execPath, [tsx, 'src/main.ts'], {
     cwd: serverDir,
     env: { ...process.env, QUIRE_DATA_DIR: node.dir, QUIRE_PORT: String(node.port), QUIRE_DEVICE: node.device, NODE_NO_WARNINGS: '1', ...extraEnv },
     stdio: ['ignore', 'inherit', 'inherit'],

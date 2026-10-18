@@ -11,7 +11,7 @@ import { Given, Then, When, type World, eventually, text } from '../support/worl
 // ---- change 0003: backup bundles, verify and restore (R-BAK-05, R-BAK-06) ----
 
 const serverDir = fileURLToPath(new URL('../../apps/server', import.meta.url));
-const tsx = join(serverDir, 'node_modules/.bin/tsx');
+const tsx = join(serverDir, 'node_modules/tsx/dist/cli.mjs');
 
 /**
  * Bundle files as the server names them: `<seq>-<full|incremental>-<sha256>.bundle.gz`
@@ -58,7 +58,7 @@ function bundleTexts(file: string): string[] {
 /** Runs `quire <args>` against the cloud server's settings; returns the exit code and output. */
 async function quire(world: World, args: string[]): Promise<{ code: number | null; output: string }> {
   const cloud = world.requireCloud();
-  const child = spawn(tsx, ['src/cli.ts', ...args], {
+  const child = spawn(process.execPath, [tsx, 'src/cli.ts', ...args], {
     cwd: serverDir,
     env: { ...process.env, QUIRE_CHANGESET_GAP_MS: '1000', NODE_NO_WARNINGS: '1', ...cloud.env, QUIRE_DATA_DIR: cloud.dataDir },
     stdio: ['ignore', 'pipe', 'pipe'],

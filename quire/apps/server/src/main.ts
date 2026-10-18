@@ -1,5 +1,6 @@
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { pathToFileURL } from 'node:url';
 import { serve } from '@hono/node-server';
 import { type QuireServer, createQuireServer } from './app.ts';
 import { type Background, startBackup } from './backup/index.ts';
@@ -85,4 +86,4 @@ export async function runServer(): Promise<void> {
   process.on('SIGTERM', shutdown);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runServer();
+if (import.meta.url === pathToFileURL(process.argv[1]!).href) await runServer();

@@ -27,7 +27,7 @@ Given('the web app is built', async ({ world }) => {
   const dir = mkdtempSync(join(tmpdir(), 'quire-budget-'));
   world.cleanups.push(() => rmSync(dir, { recursive: true, force: true }));
   try {
-    await run(join(webDir, 'node_modules/.bin/vite'), ['build', '--outDir', dir, '--emptyOutDir', '--sourcemap'], {
+    await run(process.execPath, [join(webDir, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', dir, '--emptyOutDir', '--sourcemap'], {
       cwd: webDir,
       timeout: BUILD_TIMEOUT_MS,
       maxBuffer: 64 * 1024 * 1024,
