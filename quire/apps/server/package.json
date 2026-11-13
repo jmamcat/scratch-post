@@ -15,7 +15,7 @@
     "@quire/sync": "workspace:*",
     "@quire/vault": "workspace:*",
     "fast-diff": "^1.3.0",
-    "hono": "^4.9.0",
+    "hono": "^4.13.16",
     "lib0": "^0.2.114",
     "tsx": "^4.20.0",
     "ws": "^8.18.0",
